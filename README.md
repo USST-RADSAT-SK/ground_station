@@ -14,13 +14,14 @@ All code pertaining to the ground station for the RADSAT-SK can be found in this
     1. [Indentation](#Indentation)
     2. [Variables](#Variables)
     3. [Files](#Files)
+5. [Work Flow](#Work-Flow)
 
 ## Setting Up Your Repository
 1. Get WSL (Windows Subsystem for Linux) or Git Bash for your computer
 2. Using one of the aforementioned programs, navigate to where you'd like the repository to exist
 3. Run ```git clone https://github.com/USST-RADSAT-SK/ground_station.git``` (downloads the repository to your computer)
 4. Navigate to the repo: ```cd ground_station```
-5. pip install black
+5. run ```pip install black```
 
 Now your repo should be all set up! Check out our "How to Contribute" and "Branching" sections below and coordinate with the Software and Command Team Lead(s) for further guidance.
 
@@ -60,7 +61,6 @@ GitHub (and most other Git platforms) allow you to use branch folders, simply by
 - ```test/setting_up_a_fm_reciever```
 
 Notice that all six of the directories used are based off of the Project names for the RADSAT-SK GitHub repo (minus hotfix, which is for quick fixes on alpha or beta branches).
-
 
 
 ## Coding Standard
@@ -119,3 +119,9 @@ Each line ends after exactly 100 characters, and the words are centered.
 These are not strictly enforced, but are highly recommended. Consistency is the most important thing.
 
 
+## Work Flow
+When coding for the ground station it should be noted that you are adhering to all steps mentioned before. Once your code is complete, the individual must follow the steps mentioned below before a commit is completed. 
+1. run ```black [.py file]```
+2. git add [.py file]
+3. git commit -m "[message]"
+4. git push 
