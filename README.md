@@ -14,35 +14,24 @@ All code pertaining to the ground station for the RADSAT-SK can be found in this
     1. [Indentation](#Indentation)
     2. [Variables](#Variables)
     3. [Files](#Files)
-    4. [Whitespace](#Whitespace)
-    5. [Curly Braces](#Curly-Braces)
-    6. [Parentheses in Expressions](#Parentheses-in-Expressions)
-    7. [Switch Statements](#Switch-Statements)
-    8. [Line Lengths](#Line-Lengths)
-    9. [Error Codes](#Error-Codes)
-5. [Code Documentation](#Code-Documentation)
-    1. [Functions](#Functions)
-    2. [Global Variables](#Global-Variables)
-    3. [Typedefs](#Typedefs)
-    4. [Structs](#Structs)
-    5. [Enums](#Enums)
-    6. [Macros](#Macros)
+5. [Work Flow](#Work-Flow)
 
 ## Setting Up Your Repository
 1. Get WSL (Windows Subsystem for Linux) or Git Bash for your computer
 2. Using one of the aforementioned programs, navigate to where you'd like the repository to exist
 3. Run ```git clone https://github.com/USST-RADSAT-SK/ground_station.git``` (downloads the repository to your computer)
 4. Navigate to the repo: ```cd ground_station```
+5. run ```pip install black```
 
 Now your repo should be all set up! Check out our "How to Contribute" and "Branching" sections below and coordinate with the Software and Command Team Lead(s) for further guidance.
 
 
 ## How to Contribute
 ### Issues
-Issues are how we track software development tasks. Issues are typically either feature or bug related. E.g. "Implement Payload Collection Task" or "Fix I2C Bug".
+Issues are how we track software development tasks. Issues are typically either feature or bug related. E.g. "Implement Uplink Command Task" or "Fix Recieving Bug".
 Issues can be created by going to the "Issues" tab within GitHub, and selecting "New Issue". Be sure to coordinate with your Team Lead(s) if you're unsure about this process though.
 
-Be sure to assign the appropriate Project to the Issue being created; e.g. for an I2C bugfix, that would likely go into the "Framework" Project. If you're unsure of what projec it goes under, contact your Team Lead(s).
+Be sure to assign the appropriate Project to the Issue being created; e.g. for an Recieve bugfix, that would likely go into the "Software" Project. If you're unsure of what projec it goes under, contact your Team Lead(s).
 
 ### Projects (and Managing Issues)
 GitHub has a "Projects" tab, up top near the "Issues" tab. A Project is essentially a KanBan board that tracks individual Issues (and PRs). Issues and PRs can either be "To-Do", "In Progress", "In Review" or "Done". If you're looking for something new to work on, take a look at the items in the "To-Do" list of any Project! All you have to do is drag the Issue into the "In Progress" state. Be sure to communicate with the Software Team and Team Lead if you're not super familair with the process. Don't forget to assign yourself (and anyone else you're working with) on the Issue as well, so the Team knows what you're working.
@@ -67,27 +56,23 @@ All branches **MUST** follow the few branch naming rules. Those rules are:
 
 GitHub (and most other Git platforms) allow you to use branch folders, simply by uses forward slashes. Some examples of *good* branch names:
 - ```admin/restructure-directories```
-- ```radio/gun_radio_init```
-- ```command/implement-payload-collection-task```
+- ```software/gun_radio_init```
+- ```RF/antenna_installment```
 - ```test/setting_up_a_fm_reciever```
 
 Notice that all six of the directories used are based off of the Project names for the RADSAT-SK GitHub repo (minus hotfix, which is for quick fixes on alpha or beta branches).
 
 
-
 ## Coding Standard
-Our coding standard is loosely based on the Qt coding style found [here](https://wiki.qt.io/Qt_Coding_Style).
+Our coding standard is based on the Black coding style found [here](https://black.readthedocs.io/en/stable/the_black_code_style/current_style.html).
 
 We have a coding standard so that everyone's code looks the same and is easily readable. Commits made to the project not adhering to these standards may not be allowed to be pushed. Source code from a third party will not be expected to follow these standards.
 
 Like all rules, some exceptions can be allowed. The most important takeaway is that your code should be consistent and easy to read.
 
-### Indentation
-Tabs or 4 spaces are allowed.
-
 ### Variables
 #### Naming
-Variable names should be descriptive and abbreviations should almost always be avoided. Exemptions may apply to loop variables:
+Variable names should be descriptive and abbreviations should almost always be avoided. Exemptions may apply to loop variables.
 
 All variable and function names are in camel case (first word lowercase, follwing words capitalized):
 
@@ -109,12 +94,7 @@ Names should also be short and sweet. Acronyms are fine, but are still subject t
 
 Some good examples:
 - RCommand.py
-- RRecieve.c
-
-#### Doxygen File Header
-Every single source and header file written for the RADSAT-SK cubesat needs a Doxygen file header of the following style:
-
-Including your full name and NSID is important in case the team ever needs to contact someone about a piece of code that they wrote.
+- RRecieve.py
 
 #### File Section Separators
 To increase readability (especially in larger files), multi-line function separators should be used. Ideally, these are used in all files. Do not use the separators to define a section if the section is empty, however. See the main examples of sections that are used:
@@ -138,240 +118,10 @@ To increase readability (especially in larger files), multi-line function separa
 Each line ends after exactly 100 characters, and the words are centered.
 These are not strictly enforced, but are highly recommended. Consistency is the most important thing.
 
-### Whitespace
-#### Around Brackets
-In function definitions and function calls, no additional whitespace is needed.
-``` c
-uint16_t myFunction(uint16_t arg1, uint16_t arg2) {
-	myOtherFunction(arg1, arg2);
-}
-```
-If, switch, for, and while statements have a similar style. But make sure to leave a space around the "for" keyword and the curly brace. Additional whitespace can be used when necessary, but it usually isn't.
-``` c
-for (uint8_t i = 0; i < maxCount; ++i) {
-	if (i == 0) {
-		i = maxCount;
-	}
-}
-```
 
-#### Newline Whitespace
-In between function definitions, exactly two lines of whitespace should be used. 
-``` c
-uint16_t myFunction(uint16_t arg1, uint16_t arg2) {
-	return myOtherFunction(arg1, arg2);
-}
-
-
-uint16_t myOtherFunction(uint16_t arg1, uint16_t arg2) {
-	return (arg1 + arg2);
-}
-```
-Within a function, one line of whitespace should separate functional "chunks" of code. Two lines *may* be used when things get crowded, however if you feel the need to partition your function like this, it may be time to split it into multiple functions, or use inline comment blocks to separate them:
-``` c
-uint16_t myFunction(uint16_t arg1, uint16_t arg2) {
-	// init
-	uint16_t newVariable = 0;
-	uint16_t otherVariable = 0;
-
-	// do thing
-	newVariable = arg1 + 1;
-
-	/* Now do the other thing */
-
-	// bar bar
-	newVariable += 1;
-	otherVariable = myOtherFunction(newVariable);
-
-	return otherVariable;
-}
-```
-
-Whitespace can sometimes be helpful or even necessary to increase legibility. Feel free to use additional whitespace (within reason) where you see fit.
-
-#### Asterisks
-When declaring a pointer variable, the asterisk goes right after the variable type, then a space is left between the asterisk and the variable name:
-``` c
-int main(uint16_t argc, int8_t* argv[]) {
-	uint16_t* myArray = (uint16_t*)pvPortMalloc(ARRAY_SIZE * sizeof(uint16_t));
-}
-```
-
-#### Operators
-When using operators with a single operand (like address-of), there is no space between the variable and the operator. When using operators with 2 (or 3) operands, the operator is wrapped with spaces:
-``` c
-uint16_t myInt = 0;
-uint16_t* myIntPtr = &myInt;
-myIntPtr = myIntPtr + 4;
-*myIntPtr = *myIntPtr * 2;
-```
-
-### Curly Braces
-For all conditional statements, loops, and function definitions, the opening curly brace goes on the *same* line as the conditional logic/function header.
-``` c
-uint16_t myFunction(void) {
-	uint16_t i = 0;
-	while (i++ < maxCount) {
-		printf("%d", i);
-	}
-}
-```
-Note that if a conditional statement has only a single line of code as a body, curly braces are still required and the line of code still goes on the next line for maintainability and readability.
-Else-if and else blocks have a closing curly brace, then the else keyword goes on the next line:
-``` c
-if (counter == 0) {
-	return 1;
-}
-else if (counter == 1) {
-	return 0;
-}
-else {
-	return counter;
-}
-```
-
-### Parentheses in expressions
-If there is any ambiguity to the order of operations in your expression, use parentheses (and additional whitespace) to make the order of operations explicit:
-``` c
-uint16_t errorResult = ( ( i & 1 ) * 4 ) + ( i & 3 );
-```
-
-### Switch Statements
-Cases that simply fall into the following case should be grouped together. Cases that do something and intentionally fall into the next case should explicitly say so with a comment. All case statements must end in either a break *or* return. Whitespace newline is left between each distinct set of cases. See example below.
-``` c
-uint16_t function(uint16_t n) {
-	uint16_t returnValue = 0;
-
-	switch (n) {
-	case (0):
-	case (1):
-	case (2):
-		returnValue += doExtraThing(n);
-		// FALLTHROUGH
-
-	case (3):
-		returnValue += n;
-		break;
-	
-	default:
-		return 0;
-	}
-
-	return returnValue;
-}
-```
-
-### Line Lengths
-Lines should aim to be 80 characters or less long, but the maximum accepted line length will be roughly 100 since no one really uses terminals anyways. Some exceptions may be made, but anything over 100 lines is starting to push the limits of readability.
-
-### Error Codes
-Functions that wish to return an "error code" (e.g. a value that represents if the function was successful in its operation) should follow the following format:
-Return type: int
-Return value: 0 for success, non-zero for failure. Reference the HAL, SSI, or other underlying files for more info if the error code does not originate in the function you're describing. An example is shown below:
-``` c
-/**
- * @brief Write data into the FRAM peripheral.
- * @param data The pointer to where the data will be copied from.
- * @param address The FRAM address to begin writing data to.
- * @param size The number of bytes to copy into the FRAM peripheral.
- * @return 0 for success, non-zero for failure. See hal/Storage/FRAM.h for details.
- */
-int framWrite(uint8_t* data, uint32_t address, uint32_t size) {
-
-	int error = FRAM_writeAndVerify(data, address, size);
-	return error;
-}
-```
-Note that for functions which use their return values for other purposes (e.g. returning a calculated value) or simply return `void`, this section can be ignored.
-
-
-## Code Documentation
-Our code is documented using [doxygen](http://www.doxygen.nl/). All comments
-used for documentation need to be in comment blocks starting with /** and
-ending with */ otherwise Doxygen will not recognize them.
-
-### Functions
-The documentation for functions should be put in the source (.c) file that
-the function is defined in.
-
-``` c
-/**
- * A short one line description
- *
- * The detailed description is often not necessary, and should be used sparingly.
- * It can be multiple lines long. Try not to get too technical; keep the description
- * high-level, in case the inner-workings of the function are ever changed.
- *
- * @note give a notice to anyone using this function (if any; usually not)
- * @pre describe the pre condition (if any; usually not)
- * @post describe the post condition (if any; usually not)
- * @param input short description of the input parameter
- * @return describe the return value
- */
-uint16_t function(uint8_t input) {
-    // code
-}
-```
-
-Another real example is shown below:
-``` c
-/**
- * @brief Write data into the FRAM peripheral.
- * @param data The pointer to where the data will be copied from.
- * @param address The FRAM address to begin writing data to.
- * @param size The number of bytes to copy into the FRAM peripheral.
- * @return 0 for success, non-zero for failure. See hal/Storage/FRAM.h for details.
- */
-int framWrite(uint8_t* data, uint32_t address, uint32_t size) {
-
-	int error = FRAM_writeAndVerify(data, address, size);
-	return error;
-}
-```
-
-
-### Global Variables
-Documentation for global variables should go inside the source (.c) file that they are defined in.
-``` c
-/** short description of the variable */
-uint16_t variable;
-```
-
-### Typedefs
-Documentation for typedefs should go inside the header (.h) file that they are defined in.
-``` c
-/** short description of the typedef */
-typedef uint8_t CHARACTER;
-```
-
-### Structs
-``` c
-/** short description of the struct */
-typedef struct _myStruct {
-    uint16_t a;     /**< short description of the member */
-    uint8_t b;      /**< short description of the member */
-} myStruct;
-```
-
-### Enums
-``` c
-/** short description of the enum */
-typedef enum {
-    TRUE,   /**< short description of the member */
-    FALSE,  /**< short description of the member */
-} BOOL;
-```
-
-### Macros
-``` c
-/** short description of the macro */
-#define myMacro 1
-
-/**
- * short description of the macro
- * @param x short description of x
- * @param y short description of y
- */
-#define functionMacro(x, y) (x + y)
-```
-
+## Work Flow
+When coding for the ground station it should be noted that you are adhering to all steps mentioned before. Once your code is complete, the individual must follow the steps mentioned below before a commit is completed. 
+1. run ```black [.py file]```
+2. git add [.py file]
+3. git commit -m "[message]"
+4. git push 
