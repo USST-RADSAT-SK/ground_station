@@ -37,7 +37,8 @@ from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
 from gnuradio.qtgui import Range, RangeWidget
-import limesdr
+import osmosdr
+import time
 
 from gnuradio import qtgui
 
@@ -133,6 +134,18 @@ class RFMReceiver(gr.top_block, Qt.QWidget):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 2):
             self.top_grid_layout.setColumnStretch(c, 1)
+        self.rtlsdr_source_0 = osmosdr.source(args="numchan=" + str(1) + " " + "")
+        self.rtlsdr_source_0.set_sample_rate(rfSampleRate)
+        self.rtlsdr_source_0.set_center_freq(frequency, 0)
+        self.rtlsdr_source_0.set_freq_corr(0, 0)
+        self.rtlsdr_source_0.set_dc_offset_mode(0, 0)
+        self.rtlsdr_source_0.set_iq_balance_mode(0, 0)
+        self.rtlsdr_source_0.set_gain_mode(False, 0)
+        self.rtlsdr_source_0.set_gain(rfGain, 0)
+        self.rtlsdr_source_0.set_if_gain(20, 0)
+        self.rtlsdr_source_0.set_bb_gain(20, 0)
+        self.rtlsdr_source_0.set_antenna("", 0)
+        self.rtlsdr_source_0.set_bandwidth(0, 0)
         self.qtgui_time_sink_x_0 = qtgui.time_sink_f(
             1024,  # size
             audioSampleRate,  # samp_rate
@@ -222,21 +235,6 @@ class RFMReceiver(gr.top_block, Qt.QWidget):
         self.low_pass_filter_0 = filter.fir_filter_ccf(
             1, firdes.low_pass(1, rfSampleRate, 100e3, 10e3, firdes.WIN_HAMMING, 6.76)
         )
-        self.limesdr_source_0 = limesdr.source("1D538ACAE2BD00", 0, "")
-
-        self.limesdr_source_0.set_sample_rate(rfSampleRate)
-
-        self.limesdr_source_0.set_center_freq(frequency, 0)
-
-        self.limesdr_source_0.set_bandwidth(1.5e6, 0)
-
-        self.limesdr_source_0.set_digital_filter(1e6, 0)
-
-        self.limesdr_source_0.set_gain(rfGain, 0)
-
-        self.limesdr_source_0.set_antenna(255, 0)
-
-        self.limesdr_source_0.calibrate(2.5e6, 0)
         self.blocks_multiply_const_vxx_0 = blocks.multiply_const_ff(volume)
         self.audio_sink_0 = audio.sink(audioSampleRate, "", False)
         self.analog_wfm_rcv_0 = analog.wfm_rcv(
@@ -250,9 +248,9 @@ class RFMReceiver(gr.top_block, Qt.QWidget):
         self.connect((self.analog_wfm_rcv_0, 0), (self.blocks_multiply_const_vxx_0, 0))
         self.connect((self.analog_wfm_rcv_0, 0), (self.qtgui_time_sink_x_0, 0))
         self.connect((self.blocks_multiply_const_vxx_0, 0), (self.audio_sink_0, 0))
-        self.connect((self.limesdr_source_0, 0), (self.low_pass_filter_0, 0))
-        self.connect((self.limesdr_source_0, 0), (self.qtgui_sink_x_1, 0))
         self.connect((self.low_pass_filter_0, 0), (self.analog_wfm_rcv_0, 0))
+        self.connect((self.rtlsdr_source_0, 0), (self.low_pass_filter_0, 0))
+        self.connect((self.rtlsdr_source_0, 0), (self.qtgui_sink_x_1, 0))
 
     def closeEvent(self, event):
         self.settings = Qt.QSettings("GNU Radio", "RFMReceiver")
@@ -279,26 +277,26 @@ class RFMReceiver(gr.top_block, Qt.QWidget):
 
     def set_rfSampleRate(self, rfSampleRate):
         self.rfSampleRate = rfSampleRate
-        self.limesdr_source_0.set_digital_filter(self.rfSampleRate, 1)
         self.low_pass_filter_0.set_taps(
             firdes.low_pass(1, self.rfSampleRate, 100e3, 10e3, firdes.WIN_HAMMING, 6.76)
         )
         self.qtgui_sink_x_1.set_frequency_range(self.frequency, self.rfSampleRate)
+        self.rtlsdr_source_0.set_sample_rate(self.rfSampleRate)
 
     def get_rfGain(self):
         return self.rfGain
 
     def set_rfGain(self, rfGain):
         self.rfGain = rfGain
-        self.limesdr_source_0.set_gain(self.rfGain, 0)
+        self.rtlsdr_source_0.set_gain(self.rfGain, 0)
 
     def get_frequency(self):
         return self.frequency
 
     def set_frequency(self, frequency):
         self.frequency = frequency
-        self.limesdr_source_0.set_center_freq(self.frequency, 0)
         self.qtgui_sink_x_1.set_frequency_range(self.frequency, self.rfSampleRate)
+        self.rtlsdr_source_0.set_center_freq(self.frequency, 0)
 
 
 def main(top_block_cls=RFMReceiver, options=None):
