@@ -205,7 +205,7 @@ blocks:
     bus_structure: null
     coordinate: [120, 516.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: low_pass_filter_0
   id: low_pass_filter
   parameters:
@@ -486,7 +486,7 @@ blocks:
     bb_gain7: '20'
     bb_gain8: '20'
     bb_gain9: '20'
-    bw0: bandwidth
+    bw0: '0'
     bw1: '0'
     bw10: '0'
     bw11: '0'
@@ -772,7 +772,7 @@ blocks:
     bus_structure: null
     coordinate: [80, 252.0]
     rotation: 0
-    state: disabled
+    state: enabled
 
 connections:
 - [analog_wfm_rcv_0, '0', blocks_multiply_const_vxx_0, '0']
