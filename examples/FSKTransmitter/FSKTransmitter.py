@@ -27,7 +27,7 @@ from gnuradio.filter import firdes
 import sip
 from gnuradio import analog
 from gnuradio import blocks
-import numpy
+import pmt
 from gnuradio import filter
 from gnuradio import gr
 import sys
@@ -227,6 +227,58 @@ class FSKTransmitter(gr.top_block, Qt.QWidget):
             self.tabs_grid_layout_0.setRowStretch(r, 1)
         for c in range(0, 1):
             self.tabs_grid_layout_0.setColumnStretch(c, 1)
+        self.qtgui_time_sink_x_0 = qtgui.time_sink_f(
+            64*8, #size
+            baud, #samp_rate
+            "", #name
+            1 #number of inputs
+        )
+        self.qtgui_time_sink_x_0.set_update_time(1/30)
+        self.qtgui_time_sink_x_0.set_y_axis(-0.1, 1.1)
+
+        self.qtgui_time_sink_x_0.set_y_label('Amplitude', "")
+
+        self.qtgui_time_sink_x_0.enable_tags(False)
+        self.qtgui_time_sink_x_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, 0.0, 0, 0, "")
+        self.qtgui_time_sink_x_0.enable_autoscale(False)
+        self.qtgui_time_sink_x_0.enable_grid(True)
+        self.qtgui_time_sink_x_0.enable_axis_labels(False)
+        self.qtgui_time_sink_x_0.enable_control_panel(False)
+        self.qtgui_time_sink_x_0.enable_stem_plot(True)
+
+        self.qtgui_time_sink_x_0.disable_legend()
+
+        labels = ['Tx Binary', 'TX Binary', '', '', '',
+            '', '', '', '', '']
+        widths = [1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1]
+        colors = ['red', 'blue', 'green', 'black', 'cyan',
+            'magenta', 'yellow', 'dark red', 'dark green', 'dark blue']
+        alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0, 1.0]
+        styles = [1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1]
+        markers = [-1, -1, -1, -1, -1,
+            -1, -1, -1, -1, -1]
+
+
+        for i in range(1):
+            if len(labels[i]) == 0:
+                self.qtgui_time_sink_x_0.set_line_label(i, "Data {0}".format(i))
+            else:
+                self.qtgui_time_sink_x_0.set_line_label(i, labels[i])
+            self.qtgui_time_sink_x_0.set_line_width(i, widths[i])
+            self.qtgui_time_sink_x_0.set_line_color(i, colors[i])
+            self.qtgui_time_sink_x_0.set_line_style(i, styles[i])
+            self.qtgui_time_sink_x_0.set_line_marker(i, markers[i])
+            self.qtgui_time_sink_x_0.set_line_alpha(i, alphas[i])
+
+        self._qtgui_time_sink_x_0_win = sip.wrapinstance(self.qtgui_time_sink_x_0.pyqwidget(), Qt.QWidget)
+        self.tabs_grid_layout_1.addWidget(self._qtgui_time_sink_x_0_win, 4, 0, 1, 1)
+        for r in range(4, 5):
+            self.tabs_grid_layout_1.setRowStretch(r, 1)
+        for c in range(0, 1):
+            self.tabs_grid_layout_1.setColumnStretch(c, 1)
         self.qtgui_sink_x_0_0 = qtgui.sink_c(
             1024, #fftsize
             firdes.WIN_HAMMING, #wintype
@@ -275,37 +327,35 @@ class FSKTransmitter(gr.top_block, Qt.QWidget):
         self.blocks_multiply_xx_0 = blocks.multiply_vff(1)
         self.blocks_multiply_const_vxx_1 = blocks.multiply_const_ff(-1)
         self.blocks_multiply_const_vxx_0 = blocks.multiply_const_cc(modGain)
-        self.blocks_delay_2 = blocks.delay(gr.sizeof_float*1, 0)
-        self.blocks_delay_1 = blocks.delay(gr.sizeof_float*1, 0)
+        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_char*1, '/home/austin/Documents/usst/ground_station/examples/sample_8B.bin', True, 0, 0)
+        self.blocks_file_source_0.set_begin_tag(pmt.PMT_NIL)
         self.blocks_char_to_float_1 = blocks.char_to_float(1, 1)
         self.blocks_add_xx_0 = blocks.add_vff(1)
         self.blocks_add_const_vxx_0 = blocks.add_const_ff(-1)
         self.analog_sig_source_x_0_0 = analog.sig_source_f(isamp * isps, analog.GR_COS_WAVE, isamp / sens, 1, 0, 0)
         self.analog_sig_source_x_0 = analog.sig_source_f(isamp * isps, analog.GR_COS_WAVE, 2*isamp /sens, 1, 0, 0)
-        self.analog_random_source_x_0 = blocks.vector_source_b(list(map(int, numpy.random.randint(0, 255, 16))), True)
 
 
 
         ##################################################
         # Connections
         ##################################################
-        self.connect((self.analog_random_source_x_0, 0), (self.blocks_unpack_k_bits_bb_0, 0))
         self.connect((self.analog_sig_source_x_0, 0), (self.blocks_multiply_xx_0, 0))
         self.connect((self.analog_sig_source_x_0_0, 0), (self.blocks_multiply_xx_1, 1))
         self.connect((self.blocks_add_const_vxx_0, 0), (self.blocks_multiply_const_vxx_1, 0))
         self.connect((self.blocks_add_xx_0, 0), (self.freq_xlating_fir_filter_xxx_0, 0))
         self.connect((self.blocks_add_xx_0, 0), (self.qtgui_time_sink_x_0_1_0_0_1_0, 0))
         self.connect((self.blocks_char_to_float_1, 0), (self.blocks_repeat_0, 0))
-        self.connect((self.blocks_delay_1, 0), (self.qtgui_time_sink_x_0_1_0_0_1_0, 1))
-        self.connect((self.blocks_delay_2, 0), (self.qtgui_time_sink_x_0_1_0_0_1_0, 2))
+        self.connect((self.blocks_char_to_float_1, 0), (self.qtgui_time_sink_x_0, 0))
+        self.connect((self.blocks_file_source_0, 0), (self.blocks_unpack_k_bits_bb_0, 0))
         self.connect((self.blocks_multiply_const_vxx_0, 0), (self.limesdr_sink_0_0, 0))
         self.connect((self.blocks_multiply_const_vxx_0, 0), (self.qtgui_sink_x_0_0, 0))
         self.connect((self.blocks_multiply_const_vxx_0, 0), (self.qtgui_time_sink_x_0_1_0_0, 0))
         self.connect((self.blocks_multiply_const_vxx_1, 0), (self.blocks_multiply_xx_1, 0))
         self.connect((self.blocks_multiply_xx_0, 0), (self.blocks_add_xx_0, 0))
-        self.connect((self.blocks_multiply_xx_0, 0), (self.blocks_delay_1, 0))
+        self.connect((self.blocks_multiply_xx_0, 0), (self.qtgui_time_sink_x_0_1_0_0_1_0, 1))
         self.connect((self.blocks_multiply_xx_1, 0), (self.blocks_add_xx_0, 1))
-        self.connect((self.blocks_multiply_xx_1, 0), (self.blocks_delay_2, 0))
+        self.connect((self.blocks_multiply_xx_1, 0), (self.qtgui_time_sink_x_0_1_0_0_1_0, 2))
         self.connect((self.blocks_repeat_0, 0), (self.blocks_add_const_vxx_0, 0))
         self.connect((self.blocks_repeat_0, 0), (self.blocks_multiply_xx_0, 1))
         self.connect((self.blocks_unpack_k_bits_bb_0, 0), (self.blocks_char_to_float_1, 0))
@@ -332,6 +382,7 @@ class FSKTransmitter(gr.top_block, Qt.QWidget):
         self.baud = baud
         self.set_isamp(self.baud)
         self.set_samp_rate(self.baud * self.sps)
+        self.qtgui_time_sink_x_0.set_samp_rate(self.baud)
 
     def get_txgain(self):
         return self.txgain

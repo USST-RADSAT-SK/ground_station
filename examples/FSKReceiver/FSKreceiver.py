@@ -28,6 +28,7 @@ import sip
 from gnuradio import analog
 import math
 from gnuradio import blocks
+import pmt
 from gnuradio import digital
 from gnuradio import filter
 from gnuradio import gr
@@ -78,29 +79,30 @@ class FSKreceiver(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
-        self.sps = sps = 4
+        self.sps = sps = 10
         self.baud = baud = 9600
         self.samp_rate = samp_rate = baud * sps
-        self.rxgain = rxgain = 50
+        self.rxgain = rxgain = 65
         self.freqError = freqError = 300
         self.freqDeviation = freqDeviation = 4800
         self.freq = freq = 107.1e6
         self.filw = filw = 5800
+        self.delay = delay = 0
 
         ##################################################
         # Blocks
         ##################################################
-        self._rxgain_range = Range(0, 70, 1, 50, 200)
+        self._rxgain_range = Range(0, 70, 1, 65, 200)
         self._rxgain_win = RangeWidget(self._rxgain_range, self.set_rxgain, 'Rx gain', "counter_slider", float)
         self.top_grid_layout.addWidget(self._rxgain_win, 1, 0, 1, 1)
         for r in range(1, 2):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 1):
             self.top_grid_layout.setColumnStretch(c, 1)
-        self._filw_range = Range((8e3)/2, samp_rate-1, 100, 5800, 200)
-        self._filw_win = RangeWidget(self._filw_range, self.set_filw, 'filter Width', "counter_slider", float)
-        self.top_grid_layout.addWidget(self._filw_win, 2, 0, 1, 1)
-        for r in range(2, 3):
+        self._delay_range = Range(-64*8*2, 64*8*2, 1, 0, 200)
+        self._delay_win = RangeWidget(self._delay_range, self.set_delay, 'Data Comparison Position', "counter_slider", float)
+        self.top_grid_layout.addWidget(self._delay_win, 3, 0, 1, 1)
+        for r in range(3, 4):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 1):
             self.top_grid_layout.setColumnStretch(c, 1)
@@ -110,13 +112,13 @@ class FSKreceiver(gr.top_block, Qt.QWidget):
                 taps=None,
                 fractional_bw=None)
         self.qtgui_time_sink_x_0 = qtgui.time_sink_f(
-            4*16*4, #size
+            64*8*2, #size
             baud, #samp_rate
             "", #name
-            1 #number of inputs
+            2 #number of inputs
         )
         self.qtgui_time_sink_x_0.set_update_time(1/30)
-        self.qtgui_time_sink_x_0.set_y_axis(-0.1, 1.1)
+        self.qtgui_time_sink_x_0.set_y_axis(-1.1, 1.1)
 
         self.qtgui_time_sink_x_0.set_y_label('Amplitude', "")
 
@@ -129,7 +131,7 @@ class FSKreceiver(gr.top_block, Qt.QWidget):
         self.qtgui_time_sink_x_0.enable_stem_plot(True)
 
 
-        labels = ['Rx Binary', 'TX Binary', '', '', '',
+        labels = ['RX Binary Actual', 'RX Binary Demod', '', '', '',
             '', '', '', '', '']
         widths = [1, 1, 1, 1, 1,
             1, 1, 1, 1, 1]
@@ -143,7 +145,7 @@ class FSKreceiver(gr.top_block, Qt.QWidget):
             -1, -1, -1, -1, -1]
 
 
-        for i in range(1):
+        for i in range(2):
             if len(labels[i]) == 0:
                 self.qtgui_time_sink_x_0.set_line_label(i, "Data {0}".format(i))
             else:
@@ -228,10 +230,9 @@ class FSKreceiver(gr.top_block, Qt.QWidget):
         self.osmosdr_source_0 = osmosdr.source(
             args="numchan=" + str(1) + " " + ""
         )
-        self.osmosdr_source_0.set_time_unknown_pps(osmosdr.time_spec_t())
         self.osmosdr_source_0.set_sample_rate(samp_rate)
         self.osmosdr_source_0.set_center_freq(freq, 0)
-        self.osmosdr_source_0.set_freq_corr(15, 0)
+        self.osmosdr_source_0.set_freq_corr(0, 0)
         self.osmosdr_source_0.set_dc_offset_mode(0, 0)
         self.osmosdr_source_0.set_iq_balance_mode(0, 0)
         self.osmosdr_source_0.set_gain_mode(False, 0)
@@ -240,19 +241,23 @@ class FSKreceiver(gr.top_block, Qt.QWidget):
         self.osmosdr_source_0.set_bb_gain(20, 0)
         self.osmosdr_source_0.set_antenna('', 0)
         self.osmosdr_source_0.set_bandwidth(0, 0)
-        self.low_pass_filter_0 = filter.fir_filter_ccf(
-            1,
-            firdes.low_pass(
-                1,
-                samp_rate ,
-                filw,
-                300,
-                firdes.WIN_BLACKMAN,
-                6.76))
+        self._filw_range = Range((8e3)/2, samp_rate-1, 100, 5800, 200)
+        self._filw_win = RangeWidget(self._filw_range, self.set_filw, 'filter Width', "counter_slider", float)
+        self.top_grid_layout.addWidget(self._filw_win, 2, 0, 1, 1)
+        for r in range(2, 3):
+            self.top_grid_layout.setRowStretch(r, 1)
+        for c in range(0, 1):
+            self.top_grid_layout.setColumnStretch(c, 1)
         self.digital_binary_slicer_fb_0 = digital.binary_slicer_fb()
+        self.blocks_unpack_k_bits_bb_0 = blocks.unpack_k_bits_bb(8)
+        self.blocks_uchar_to_float_0_0_0 = blocks.uchar_to_float()
         self.blocks_uchar_to_float_0_0 = blocks.uchar_to_float()
+        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_char*1, '/home/austin/Documents/usst/ground_station/examples/sample_8B.bin', True, 0, 0)
+        self.blocks_file_source_0.set_begin_tag(pmt.PMT_NIL)
+        self.blocks_delay_0 = blocks.delay(gr.sizeof_float*1, delay)
+        self.blocks_add_const_vxx_0 = blocks.add_const_ff(-1)
         self.analog_quadrature_demod_cf_0 = analog.quadrature_demod_cf(samp_rate/(2*math.pi*freqDeviation/1.0))
-        self.analog_agc_xx_0 = analog.agc_cc(0.01e-4, 0.8, 1.0)
+        self.analog_agc_xx_0 = analog.agc_cc(4/samp_rate, 0.8, 1.0)
         self.analog_agc_xx_0.set_max_gain(65536)
 
 
@@ -263,10 +268,14 @@ class FSKreceiver(gr.top_block, Qt.QWidget):
         self.connect((self.analog_agc_xx_0, 0), (self.analog_quadrature_demod_cf_0, 0))
         self.connect((self.analog_agc_xx_0, 0), (self.qtgui_freq_sink_x_0, 0))
         self.connect((self.analog_quadrature_demod_cf_0, 0), (self.rational_resampler_xxx_0, 0))
-        self.connect((self.blocks_uchar_to_float_0_0, 0), (self.qtgui_time_sink_x_0, 0))
+        self.connect((self.blocks_add_const_vxx_0, 0), (self.blocks_delay_0, 0))
+        self.connect((self.blocks_delay_0, 0), (self.qtgui_time_sink_x_0, 0))
+        self.connect((self.blocks_file_source_0, 0), (self.blocks_unpack_k_bits_bb_0, 0))
+        self.connect((self.blocks_uchar_to_float_0_0, 0), (self.qtgui_time_sink_x_0, 1))
+        self.connect((self.blocks_uchar_to_float_0_0_0, 0), (self.blocks_add_const_vxx_0, 0))
+        self.connect((self.blocks_unpack_k_bits_bb_0, 0), (self.blocks_uchar_to_float_0_0_0, 0))
         self.connect((self.digital_binary_slicer_fb_0, 0), (self.blocks_uchar_to_float_0_0, 0))
-        self.connect((self.low_pass_filter_0, 0), (self.analog_agc_xx_0, 0))
-        self.connect((self.osmosdr_source_0, 0), (self.low_pass_filter_0, 0))
+        self.connect((self.osmosdr_source_0, 0), (self.analog_agc_xx_0, 0))
         self.connect((self.osmosdr_source_0, 0), (self.qtgui_freq_sink_x_0, 1))
         self.connect((self.rational_resampler_xxx_0, 0), (self.digital_binary_slicer_fb_0, 0))
         self.connect((self.rational_resampler_xxx_0, 0), (self.qtgui_sink_x_1, 0))
@@ -298,8 +307,8 @@ class FSKreceiver(gr.top_block, Qt.QWidget):
 
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
+        self.analog_agc_xx_0.set_rate(4/self.samp_rate)
         self.analog_quadrature_demod_cf_0.set_gain(self.samp_rate/(2*math.pi*self.freqDeviation/1.0))
-        self.low_pass_filter_0.set_taps(firdes.low_pass(1, self.samp_rate , self.filw, 300, firdes.WIN_BLACKMAN, 6.76))
         self.osmosdr_source_0.set_sample_rate(self.samp_rate)
         self.qtgui_freq_sink_x_0.set_frequency_range(0, self.samp_rate)
 
@@ -336,7 +345,13 @@ class FSKreceiver(gr.top_block, Qt.QWidget):
 
     def set_filw(self, filw):
         self.filw = filw
-        self.low_pass_filter_0.set_taps(firdes.low_pass(1, self.samp_rate , self.filw, 300, firdes.WIN_BLACKMAN, 6.76))
+
+    def get_delay(self):
+        return self.delay
+
+    def set_delay(self, delay):
+        self.delay = delay
+        self.blocks_delay_0.set_dly(self.delay)
 
 
 

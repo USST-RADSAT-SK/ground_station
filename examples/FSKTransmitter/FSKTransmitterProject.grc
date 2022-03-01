@@ -89,7 +89,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [736, 876.0]
+    coordinate: [1056, 860.0]
     rotation: 0
     state: enabled
 - name: isps
@@ -101,7 +101,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [832, 876.0]
+    coordinate: [1152, 860.0]
     rotation: 0
     state: enabled
 - name: modGain
@@ -146,7 +146,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [656, 876.0]
+    coordinate: [976, 860.0]
     rotation: 0
     state: enabled
 - name: sps
@@ -199,9 +199,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [0, 972.0]
+    coordinate: [48, 972.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: analog_sig_source_x_0
   id: analog_sig_source_x
   parameters:
@@ -221,7 +221,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [376, 860.0]
+    coordinate: [664, 868.0]
     rotation: 0
     state: enabled
 - name: analog_sig_source_x_0_0
@@ -243,7 +243,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [376, 1052.0]
+    coordinate: [880, 1100.0]
     rotation: 0
     state: enabled
 - name: blocks_add_const_vxx_0
@@ -261,7 +261,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [560, 1044.0]
+    coordinate: [872, 1044.0]
     rotation: 0
     state: enabled
 - name: blocks_add_xx_0
@@ -279,7 +279,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [928, 1032.0]
+    coordinate: [1272, 1032.0]
     rotation: 0
     state: enabled
 - name: blocks_char_to_float_1
@@ -296,45 +296,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [320, 996.0]
-    rotation: 0
-    state: enabled
-- name: blocks_delay_1
-  id: blocks_delay
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    delay: '0'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    num_ports: '1'
-    type: float
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [992, 1220.0]
-    rotation: 0
-    state: enabled
-- name: blocks_delay_2
-  id: blocks_delay
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    delay: '0'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    num_ports: '1'
-    type: float
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [992, 1252.0]
+    coordinate: [464, 996.0]
     rotation: 0
     state: enabled
 - name: blocks_file_source_0
@@ -344,7 +306,7 @@ blocks:
     alias: ''
     begin_tag: pmt.PMT_NIL
     comment: ''
-    file: /home/austin/Documents/usst/testTextSmall
+    file: /home/austin/Documents/usst/ground_station/examples/sample_8B.bin
     length: '0'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -356,9 +318,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [408, 196.0]
+    coordinate: [48, 852.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: blocks_message_strobe_0
   id: blocks_message_strobe
   parameters:
@@ -391,7 +353,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1296, 1060.0]
+    coordinate: [1624, 1060.0]
     rotation: 0
     state: true
 - name: blocks_multiply_const_vxx_1
@@ -409,7 +371,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [672, 1044.0]
+    coordinate: [992, 1044.0]
     rotation: 0
     state: enabled
 - name: blocks_multiply_xx_0
@@ -427,7 +389,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [656, 968.0]
+    coordinate: [936, 968.0]
     rotation: 0
     state: enabled
 - name: blocks_multiply_xx_1
@@ -445,7 +407,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [800, 1048.0]
+    coordinate: [1144, 1048.0]
     rotation: 0
     state: enabled
 - name: blocks_random_pdu_0
@@ -482,7 +444,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [448, 996.0]
+    coordinate: [664, 996.0]
     rotation: 0
     state: enabled
 - name: blocks_unpack_k_bits_bb_0
@@ -498,7 +460,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [168, 996.0]
+    coordinate: [320, 996.0]
     rotation: 0
     state: enabled
 - name: blocks_unpacked_to_packed_xx_0
@@ -594,7 +556,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1056, 1036.0]
+    coordinate: [1400, 1036.0]
     rotation: 0
     state: enabled
 - name: import_0
@@ -675,7 +637,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1488, 1044.0]
+    coordinate: [1832, 1044.0]
     rotation: 0
     state: enabled
 - name: qtgui_edit_box_msg_0
@@ -755,7 +717,104 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1488, 1124.0]
+    coordinate: [1832, 1124.0]
+    rotation: 0
+    state: enabled
+- name: qtgui_time_sink_x_0
+  id: qtgui_time_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    axislabels: 'False'
+    color1: red
+    color10: dark blue
+    color2: blue
+    color3: green
+    color4: black
+    color5: cyan
+    color6: magenta
+    color7: yellow
+    color8: dark red
+    color9: dark green
+    comment: ''
+    ctrlpanel: 'False'
+    entags: 'False'
+    grid: 'True'
+    gui_hint: tabs@1:4,0,1,1
+    label1: Tx Binary
+    label10: ''
+    label2: TX Binary
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    legend: 'False'
+    marker1: '-1'
+    marker10: '-1'
+    marker2: '-1'
+    marker3: '-1'
+    marker4: '-1'
+    marker5: '-1'
+    marker6: '-1'
+    marker7: '-1'
+    marker8: '-1'
+    marker9: '-1'
+    name: '""'
+    nconnections: '1'
+    size: 64*8
+    srate: baud
+    stemplot: 'True'
+    style1: '1'
+    style10: '1'
+    style2: '1'
+    style3: '1'
+    style4: '1'
+    style5: '1'
+    style6: '1'
+    style7: '1'
+    style8: '1'
+    style9: '1'
+    tr_chan: '0'
+    tr_delay: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: float
+    update_time: 1/30
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    ylabel: Amplitude
+    ymax: '1.1'
+    ymin: '-0.1'
+    yunit: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [664, 1044.0]
     rotation: 0
     state: enabled
 - name: qtgui_time_sink_x_0_1_0
@@ -949,7 +1008,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1488, 964.0]
+    coordinate: [1832, 964.0]
     rotation: 0
     state: enabled
 - name: qtgui_time_sink_x_0_1_0_0_1_0
@@ -1046,7 +1105,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1120, 1192.0]
+    coordinate: [1424, 1144.0]
     rotation: 0
     state: enabled
 - name: tabs
@@ -1093,8 +1152,7 @@ connections:
 - [blocks_add_xx_0, '0', freq_xlating_fir_filter_xxx_0, '0']
 - [blocks_add_xx_0, '0', qtgui_time_sink_x_0_1_0_0_1_0, '0']
 - [blocks_char_to_float_1, '0', blocks_repeat_0, '0']
-- [blocks_delay_1, '0', qtgui_time_sink_x_0_1_0_0_1_0, '1']
-- [blocks_delay_2, '0', qtgui_time_sink_x_0_1_0_0_1_0, '2']
+- [blocks_char_to_float_1, '0', qtgui_time_sink_x_0, '0']
 - [blocks_file_source_0, '0', blocks_unpack_k_bits_bb_0, '0']
 - [blocks_file_source_0, '0', digital_gfsk_mod_0, '0']
 - [blocks_message_strobe_0, strobe, blocks_random_pdu_0, generate]
@@ -1103,9 +1161,9 @@ connections:
 - [blocks_multiply_const_vxx_0, '0', qtgui_time_sink_x_0_1_0_0, '0']
 - [blocks_multiply_const_vxx_1, '0', blocks_multiply_xx_1, '0']
 - [blocks_multiply_xx_0, '0', blocks_add_xx_0, '0']
-- [blocks_multiply_xx_0, '0', blocks_delay_1, '0']
+- [blocks_multiply_xx_0, '0', qtgui_time_sink_x_0_1_0_0_1_0, '1']
 - [blocks_multiply_xx_1, '0', blocks_add_xx_0, '1']
-- [blocks_multiply_xx_1, '0', blocks_delay_2, '0']
+- [blocks_multiply_xx_1, '0', qtgui_time_sink_x_0_1_0_0_1_0, '2']
 - [blocks_random_pdu_0, pdus, digital_hdlc_framer_pb_0, in]
 - [blocks_repeat_0, '0', blocks_add_const_vxx_0, '0']
 - [blocks_repeat_0, '0', blocks_multiply_xx_0, '1']
