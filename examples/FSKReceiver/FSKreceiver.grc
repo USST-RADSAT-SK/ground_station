@@ -48,14 +48,14 @@ blocks:
   id: variable_qtgui_range
   parameters:
     comment: ''
-    gui_hint: 3,0,1,1
+    gui_hint: 4,0,1,1
     label: Data Comparison Position
     min_len: '200'
     orient: Qt.Horizontal
     rangeType: float
-    start: -64*8*2
+    start: -16*8
     step: '1'
-    stop: 64*8*2
+    stop: 16*8
     value: '0'
     widget: counter_slider
   states:
@@ -74,9 +74,9 @@ blocks:
     min_len: '200'
     orient: Qt.Horizontal
     rangeType: float
-    start: (8e3)/2
+    start: '1000'
     step: '100'
-    stop: samp_rate-1
+    stop: '15000'
     value: '5800'
     widget: counter_slider
   states:
@@ -84,6 +84,27 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [440, 12.0]
+    rotation: 0
+    state: enabled
+- name: filwsize
+  id: variable_qtgui_range
+  parameters:
+    comment: ''
+    gui_hint: 3,0,1,1
+    label: filter size
+    min_len: '200'
+    orient: Qt.Horizontal
+    rangeType: float
+    start: '0'
+    step: '50'
+    stop: filw
+    value: '500'
+    widget: counter_slider
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [440, 148.0]
     rotation: 0
     state: enabled
 - name: freq
@@ -114,7 +135,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '300'
+    value: '100'
   states:
     bus_sink: false
     bus_source: false
@@ -159,7 +180,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '10'
+    value: '32'
   states:
     bus_sink: false
     bus_source: false
@@ -177,7 +198,7 @@ blocks:
     max_gain: '65536'
     maxoutbuf: '0'
     minoutbuf: '0'
-    rate: 4/samp_rate
+    rate: 1e-4
     reference: '0.8'
     type: complex
   states:
@@ -203,24 +224,31 @@ blocks:
     coordinate: [760, 364.0]
     rotation: 0
     state: enabled
-- name: blocks_add_const_vxx_0
-  id: blocks_add_const_vxx
+- name: band_pass_filter_0
+  id: band_pass_filter
   parameters:
     affinity: ''
     alias: ''
+    beta: '6.76'
     comment: ''
-    const: '-1'
+    decim: '1'
+    gain: '1'
+    high_cutoff_freq: filw + filwsize
+    interp: '1'
+    low_cutoff_freq: filw -filwsize
     maxoutbuf: '0'
     minoutbuf: '0'
-    type: float
-    vlen: '1'
+    samp_rate: samp_rate
+    type: fir_filter_ccf
+    width: '500'
+    win: firdes.WIN_HAMMING
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1232, 252.0]
+    coordinate: [440, 556.0]
     rotation: 0
-    state: enabled
+    state: true
 - name: blocks_delay_0
   id: blocks_delay
   parameters:
@@ -247,7 +275,7 @@ blocks:
     alias: ''
     begin_tag: pmt.PMT_NIL
     comment: ''
-    file: /home/austin/Documents/usst/ground_station/examples/sample_8B.bin
+    file: /home/radsat-gs/ground_station/examples/SampleBinaryFiles/pyramid_32B.bin
     length: '0'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -275,6 +303,24 @@ blocks:
     coordinate: [1544, 440.0]
     rotation: 0
     state: disabled
+- name: blocks_multiply_const_vxx_0
+  id: blocks_multiply_const_vxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    const: '-1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1224, 252.0]
+    rotation: 0
+    state: true
 - name: blocks_uchar_to_float_0_0
   id: blocks_uchar_to_float
   parameters:
@@ -419,7 +465,7 @@ blocks:
     channel_mode: '0'
     comment: ''
     dacVal: '180'
-    digital_bandw_ch0: filw
+    digital_bandw_ch0: '0'
     digital_bandw_ch1: samp_rate
     filename: ''
     gain_dB_ch0: rxgain
@@ -438,7 +484,31 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [320, 460.0]
+    coordinate: [152, 492.0]
+    rotation: 0
+    state: enabled
+- name: low_pass_filter_0
+  id: low_pass_filter
+  parameters:
+    affinity: ''
+    alias: ''
+    beta: '6.76'
+    comment: ''
+    cutoff_freq: filw + freqError
+    decim: '1'
+    gain: '1'
+    interp: '1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: samp_rate
+    type: fir_filter_ccf
+    width: freqError
+    win: firdes.WIN_HAMMING
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [400, 316.0]
     rotation: 0
     state: disabled
 - name: osmosdr_source_0
@@ -797,7 +867,7 @@ blocks:
     bus_structure: null
     coordinate: [80, 284.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: qtgui_freq_sink_x_0
   id: qtgui_freq_sink_x
   parameters:
@@ -875,7 +945,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [800, 416.0]
+    coordinate: [800, 480.0]
     rotation: 0
     state: enabled
 - name: qtgui_sink_x_1
@@ -938,7 +1008,7 @@ blocks:
     ctrlpanel: 'False'
     entags: 'False'
     grid: 'True'
-    gui_hint: 4,0,1,1
+    gui_hint: 5,0,1,1
     label1: RX Binary Actual
     label10: ''
     label2: RX Binary Demod
@@ -962,8 +1032,8 @@ blocks:
     marker9: '-1'
     name: '""'
     nconnections: '2'
-    size: 64*8*2
-    srate: baud
+    size: 32*8*2
+    srate: '1'
     stemplot: 'True'
     style1: '1'
     style10: '1'
@@ -1015,7 +1085,7 @@ blocks:
     interp: '1'
     maxoutbuf: '0'
     minoutbuf: '0'
-    taps: ''
+    taps: '1'
     type: fff
   states:
     bus_sink: false
@@ -1029,19 +1099,22 @@ connections:
 - [analog_agc_xx_0, '0', analog_quadrature_demod_cf_0, '0']
 - [analog_agc_xx_0, '0', qtgui_freq_sink_x_0, '0']
 - [analog_quadrature_demod_cf_0, '0', rational_resampler_xxx_0, '0']
-- [blocks_add_const_vxx_0, '0', blocks_delay_0, '0']
+- [band_pass_filter_0, '0', analog_agc_xx_0, '0']
 - [blocks_delay_0, '0', qtgui_time_sink_x_0, '0']
 - [blocks_file_source_0, '0', blocks_unpack_k_bits_bb_0, '0']
+- [blocks_multiply_const_vxx_0, '0', blocks_delay_0, '0']
 - [blocks_uchar_to_float_0_0, '0', qtgui_time_sink_x_0, '1']
-- [blocks_uchar_to_float_0_0_0, '0', blocks_add_const_vxx_0, '0']
+- [blocks_uchar_to_float_0_0_0, '0', blocks_multiply_const_vxx_0, '0']
 - [blocks_unpack_k_bits_bb_0, '0', blocks_uchar_to_float_0_0_0, '0']
 - [digital_binary_slicer_fb_0, '0', blocks_uchar_to_float_0_0, '0']
 - [digital_binary_slicer_fb_0, '0', digital_hdlc_deframer_bp_0, '0']
 - [digital_binary_slicer_fb_0, '0', epy_block_0, '0']
 - [digital_hdlc_deframer_bp_0, out, blocks_message_debug_0, print]
-- [limesdr_source_0, '0', analog_agc_xx_0, '0']
+- [limesdr_source_0, '0', band_pass_filter_0, '0']
+- [limesdr_source_0, '0', low_pass_filter_0, '0']
 - [limesdr_source_0, '0', qtgui_freq_sink_x_0, '1']
-- [osmosdr_source_0, '0', analog_agc_xx_0, '0']
+- [low_pass_filter_0, '0', analog_agc_xx_0, '0']
+- [osmosdr_source_0, '0', low_pass_filter_0, '0']
 - [osmosdr_source_0, '0', qtgui_freq_sink_x_0, '1']
 - [rational_resampler_xxx_0, '0', digital_binary_slicer_fb_0, '0']
 - [rational_resampler_xxx_0, '0', qtgui_sink_x_1, '0']
