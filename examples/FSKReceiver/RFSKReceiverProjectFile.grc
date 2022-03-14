@@ -10,7 +10,7 @@ options:
     gen_linking: dynamic
     generate_options: qt_gui
     hier_block_src_path: '.:'
-    id: FSKreceiver
+    id: RFSKReceiver
     max_nouts: '0'
     output_language: python
     placement: (0,0)
@@ -22,7 +22,7 @@ options:
     run_options: prompt
     sizing_mode: fixed
     thread_safe_setters: ''
-    title: FSK receiver
+    title: FSK Receiver
     window_size: ''
   states:
     bus_sink: false
@@ -33,7 +33,19 @@ options:
     state: enabled
 
 blocks:
-- name: baud
+- name: bandwidth
+  id: variable
+  parameters:
+    comment: ''
+    value: '5000'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [320, 76.0]
+    rotation: 0
+    state: enabled
+- name: baudRate
   id: variable
   parameters:
     comment: ''
@@ -42,10 +54,22 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [344, 12.0]
+    coordinate: [184, 140.0]
     rotation: 0
     state: enabled
-- name: delay
+- name: carrierFrequency
+  id: variable
+  parameters:
+    comment: ''
+    value: 433e6
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [320, 12.0]
+    rotation: 0
+    state: enabled
+- name: exampleDelay
   id: variable_qtgui_range
   parameters:
     comment: ''
@@ -63,55 +87,50 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [576, 12.0]
+    coordinate: [664, 12.0]
     rotation: 0
     state: enabled
-- name: filw
+- name: filterWidth
   id: variable_qtgui_range
   parameters:
     comment: ''
     gui_hint: 2,0,1,1
-    label: filter Width
+    label: Filter Width
     min_len: '200'
     orient: Qt.Horizontal
     rangeType: float
     start: '1000'
     step: '100'
     stop: '25000'
-    value: baud
+    value: frequencyDeviation
     widget: counter_slider
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [440, 12.0]
+    coordinate: [536, 12.0]
     rotation: 0
     state: enabled
-- name: filw
+- name: frequencyDeviation
   id: variable
   parameters:
-    comment: ''
-    value: '1000'
+    comment: 'BW = 2 * (f_r + delta f)
+
+
+      delta f = carrier frequency
+
+      f_r = datarate (baud for FSK)
+
+      BW = bandwidth'
+    value: abs(bandwidth//2 - baudRate)
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [992, 92.0]
+    coordinate: [320, 140.0]
     rotation: 0
-    state: disabled
-- name: filwsize
-  id: variable
-  parameters:
-    comment: ''
-    value: '0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [896, 92.0]
-    rotation: 0
-    state: disabled
-- name: filwsize
+    state: enabled
+- name: frequencyOffset
   id: variable_qtgui_range
   parameters:
     comment: ''
@@ -129,58 +148,10 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [440, 148.0]
+    coordinate: [536, 140.0]
     rotation: 0
     state: enabled
-- name: freq
-  id: variable
-  parameters:
-    comment: ''
-    value: 433e6
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [896, 12.0]
-    rotation: 0
-    state: enabled
-- name: freqDeviation
-  id: variable
-  parameters:
-    comment: ''
-    value: baud//2
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [992, 12.0]
-    rotation: 0
-    state: enabled
-- name: freqError
-  id: variable
-  parameters:
-    comment: ''
-    value: '200'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1096, 12.0]
-    rotation: 0
-    state: enabled
-- name: rxgain
-  id: variable
-  parameters:
-    comment: ''
-    value: '60'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1096, 92.0]
-    rotation: 0
-    state: disabled
-- name: rxgain
+- name: rxGain
   id: variable_qtgui_range
   parameters:
     comment: ''
@@ -192,28 +163,16 @@ blocks:
     start: '0'
     step: '1'
     stop: '70'
-    value: '40'
+    value: '0'
     widget: counter_slider
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [760, 12.0]
+    coordinate: [832, 12.0]
     rotation: 0
     state: enabled
-- name: samp_rate
-  id: variable
-  parameters:
-    comment: ''
-    value: baud * sps
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [184, 12.0]
-    rotation: 0
-    state: enabled
-- name: sps
+- name: samplePerSecond
   id: variable
   parameters:
     comment: ''
@@ -222,23 +181,21 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [272, 12.0]
+    coordinate: [184, 76.0]
     rotation: 0
     state: enabled
-- name: variable_header_format_default_0
-  id: variable_header_format_default
+- name: sampleRate
+  id: variable
   parameters:
-    access_code: '0'
-    bps: '1'
     comment: ''
-    threshold: '0'
+    value: baudRate * samplePerSecond
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1368, 12.0]
+    coordinate: [184, 12.0]
     rotation: 0
-    state: true
+    state: enabled
 - name: CLIPrintSink
   id: epy_block
   parameters:
@@ -290,10 +247,30 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1784, 668.0]
+    coordinate: [1744, 668.0]
     rotation: 0
     state: enabled
-- name: analog_agc_xx_0
+- name: FSKDemod
+  id: satellites_fsk_demodulator
+  parameters:
+    affinity: ''
+    alias: ''
+    baudrate: baudRate
+    comment: ''
+    iq: 'True'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    options: '""'
+    samp_rate: sampleRate
+    subaudio: 'False'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1320, 572.0]
+    rotation: 0
+    state: true
+- name: agc
   id: analog_agc_xx
   parameters:
     affinity: ''
@@ -313,13 +290,140 @@ blocks:
     coordinate: [1096, 564.0]
     rotation: 0
     state: enabled
-- name: blocks_delay_0
+- name: binarySlicer
+  id: digital_binary_slicer_fb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1552, 596.0]
+    rotation: 0
+    state: enabled
+- name: bitCompariosn
+  id: qtgui_time_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    axislabels: 'True'
+    color1: red
+    color10: dark blue
+    color2: blue
+    color3: green
+    color4: black
+    color5: cyan
+    color6: magenta
+    color7: yellow
+    color8: dark red
+    color9: dark green
+    comment: ''
+    ctrlpanel: 'False'
+    entags: 'False'
+    grid: 'True'
+    gui_hint: 5,0,1,1
+    label1: TX Binary
+    label10: ''
+    label2: RX Binary Demod
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    legend: 'True'
+    marker1: '-1'
+    marker10: '-1'
+    marker2: '-1'
+    marker3: '-1'
+    marker4: '-1'
+    marker5: '-1'
+    marker6: '-1'
+    marker7: '-1'
+    marker8: '-1'
+    marker9: '-1'
+    name: '""'
+    nconnections: '2'
+    size: 32*8*2
+    srate: '1'
+    stemplot: 'True'
+    style1: '1'
+    style10: '1'
+    style2: '1'
+    style3: '1'
+    style4: '1'
+    style5: '1'
+    style6: '1'
+    style7: '1'
+    style8: '1'
+    style9: '1'
+    tr_chan: '0'
+    tr_delay: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: float
+    update_time: 1/30
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    ylabel: Amplitude
+    ymax: '1.1'
+    ymin: '-1.1'
+    yunit: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1920, 556.0]
+    rotation: 0
+    state: enabled
+- name: compairUCharToFloat
+  id: blocks_uchar_to_float
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1360, 348.0]
+    rotation: 0
+    state: enabled
+- name: delayExample
   id: blocks_delay
   parameters:
     affinity: ''
     alias: ''
     comment: ''
-    delay: delay
+    delay: exampleDelay
     maxoutbuf: '0'
     minoutbuf: '0'
     num_ports: '1'
@@ -329,10 +433,10 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1768, 292.0]
+    coordinate: [1712, 340.0]
     rotation: 0
     state: enabled
-- name: blocks_file_source_0
+- name: exampleFileSource
   id: blocks_file_source
   parameters:
     affinity: ''
@@ -351,10 +455,39 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [944, 260.0]
+    coordinate: [984, 308.0]
     rotation: 0
     state: enabled
-- name: blocks_multiply_const_vxx_0
+- name: exampleUnpack
+  id: blocks_unpack_k_bits_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    k: '8'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1192, 340.0]
+    rotation: 0
+    state: enabled
+- name: import
+  id: import
+  parameters:
+    alias: ''
+    comment: ''
+    imports: import math
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [960, 12.0]
+    rotation: 0
+    state: true
+- name: invertExample
   id: blocks_multiply_const_vxx
   parameters:
     affinity: ''
@@ -369,10 +502,125 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1560, 292.0]
+    coordinate: [1552, 340.0]
     rotation: 0
     state: enabled
-- name: blocks_multiply_const_vxx_1
+- name: limeSDRSource
+  id: limesdr_source
+  parameters:
+    affinity: ''
+    alias: ''
+    allow_tcxo_dac: '0'
+    analog_bandw_ch0: 1.5e6
+    analog_bandw_ch1: 1.5e6
+    calibr_bandw_ch0: 2.5e6
+    calibr_bandw_ch1: '0'
+    channel_mode: '0'
+    comment: ''
+    dacVal: '180'
+    digital_bandw_ch0: sampleRate
+    digital_bandw_ch1: sampleRate
+    filename: ''
+    gain_dB_ch0: rxGain
+    gain_dB_ch1: '1'
+    lna_path_ch0: '255'
+    lna_path_ch1: '2'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    nco_freq_ch0: '0'
+    nco_freq_ch1: '0'
+    oversample: '0'
+    rf_freq: carrierFrequency
+    samp_rate: sampleRate * 4
+    serial: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [160, 660.0]
+    rotation: 0
+    state: disabled
+- name: lowPassCompairSink
+  id: qtgui_freq_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    average: '1.0'
+    axislabels: 'True'
+    bw: sampleRate
+    color1: '"blue"'
+    color10: '"dark blue"'
+    color2: '"red"'
+    color3: '"green"'
+    color4: '"black"'
+    color5: '"cyan"'
+    color6: '"magenta"'
+    color7: '"yellow"'
+    color8: '"dark red"'
+    color9: '"dark green"'
+    comment: ''
+    ctrlpanel: 'False'
+    fc: '0'
+    fftsize: '1024'
+    freqhalf: 'True'
+    grid: 'False'
+    gui_hint: 11,0,1,1
+    label: Relative Gain
+    label1: ''
+    label10: ''''''
+    label2: ''''''
+    label3: ''''''
+    label4: ''''''
+    label5: ''''''
+    label6: ''''''
+    label7: ''''''
+    label8: ''''''
+    label9: ''''''
+    legend: 'True'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    name: '""'
+    nconnections: '2'
+    showports: 'False'
+    tr_chan: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_tag: '""'
+    type: complex
+    units: dB
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    wintype: firdes.WIN_BLACKMAN_hARRIS
+    ymax: '10'
+    ymin: '-140'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1320, 672.0]
+    rotation: 0
+    state: enabled
+- name: multiplyConst
   id: blocks_multiply_const_vxx
   parameters:
     affinity: ''
@@ -390,160 +638,7 @@ blocks:
     coordinate: [664, 692.0]
     rotation: 0
     state: enabled
-- name: blocks_uchar_to_float_0_0
-  id: blocks_uchar_to_float
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1768, 596.0]
-    rotation: 0
-    state: enabled
-- name: blocks_uchar_to_float_0_0_0
-  id: blocks_uchar_to_float
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1360, 300.0]
-    rotation: 0
-    state: enabled
-- name: blocks_unpack_k_bits_bb_0
-  id: blocks_unpack_k_bits_bb
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    k: '8'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1144, 292.0]
-    rotation: 0
-    state: enabled
-- name: digital_binary_slicer_fb_0
-  id: digital_binary_slicer_fb
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1544, 596.0]
-    rotation: 0
-    state: enabled
-- name: freq_xlating_fir_filter_xxx_0
-  id: freq_xlating_fir_filter_xxx
-  parameters:
-    affinity: ''
-    alias: ''
-    center_freq: filwsize
-    comment: ''
-    decim: '4'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    samp_rate: samp_rate*3
-    taps: '1'
-    type: ccc
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [416, 668.0]
-    rotation: 0
-    state: enabled
-- name: import_0
-  id: import
-  parameters:
-    alias: ''
-    comment: ''
-    imports: import math
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1184, 12.0]
-    rotation: 0
-    state: true
-- name: limesdr_source_0
-  id: limesdr_source
-  parameters:
-    affinity: ''
-    alias: ''
-    allow_tcxo_dac: '0'
-    analog_bandw_ch0: 1.5e6
-    analog_bandw_ch1: 1.5e6
-    calibr_bandw_ch0: 2.5e6
-    calibr_bandw_ch1: '0'
-    channel_mode: '0'
-    comment: ''
-    dacVal: '180'
-    digital_bandw_ch0: samp_rate
-    digital_bandw_ch1: samp_rate
-    filename: ''
-    gain_dB_ch0: rxgain
-    gain_dB_ch1: '1'
-    lna_path_ch0: '255'
-    lna_path_ch1: '2'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    nco_freq_ch0: '0'
-    nco_freq_ch1: '0'
-    oversample: '0'
-    rf_freq: freq
-    samp_rate: samp_rate* 4
-    serial: 1D538ACAE2BD00
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [160, 660.0]
-    rotation: 0
-    state: disabled
-- name: low_pass_filter_0
-  id: low_pass_filter
-  parameters:
-    affinity: ''
-    alias: ''
-    beta: '6.76'
-    comment: ''
-    cutoff_freq: filw + freqError
-    decim: '1'
-    gain: '1'
-    interp: '1'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    samp_rate: samp_rate
-    type: fir_filter_ccf
-    width: freqError
-    win: firdes.WIN_HAMMING
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [920, 540.0]
-    rotation: 0
-    state: enabled
-- name: osmosdr_source_0
+- name: osmoSDRSource
   id: osmosdr_source
   parameters:
     affinity: ''
@@ -718,7 +813,7 @@ blocks:
     dc_offset_mode7: '0'
     dc_offset_mode8: '0'
     dc_offset_mode9: '0'
-    freq0: freq
+    freq0: carrierFrequency
     freq1: 100e6
     freq10: 100e6
     freq11: 100e6
@@ -750,7 +845,7 @@ blocks:
     freq7: 100e6
     freq8: 100e6
     freq9: 100e6
-    gain0: rxgain
+    gain0: rxGain
     gain1: '10'
     gain10: '10'
     gain11: '10'
@@ -882,7 +977,7 @@ blocks:
     minoutbuf: '0'
     nchan: '1'
     num_mboards: '1'
-    sample_rate: samp_rate*4
+    sample_rate: sampleRate * 4
     sync: none
     time_source0: ''
     time_source1: ''
@@ -897,102 +992,22 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [88, 420.0]
+    coordinate: [88, 412.0]
     rotation: 0
     state: enabled
-- name: qtgui_freq_sink_x_0
-  id: qtgui_freq_sink_x
-  parameters:
-    affinity: ''
-    alias: ''
-    alpha1: '1.0'
-    alpha10: '1.0'
-    alpha2: '1.0'
-    alpha3: '1.0'
-    alpha4: '1.0'
-    alpha5: '1.0'
-    alpha6: '1.0'
-    alpha7: '1.0'
-    alpha8: '1.0'
-    alpha9: '1.0'
-    autoscale: 'False'
-    average: '1.0'
-    axislabels: 'True'
-    bw: samp_rate
-    color1: '"blue"'
-    color10: '"dark blue"'
-    color2: '"red"'
-    color3: '"green"'
-    color4: '"black"'
-    color5: '"cyan"'
-    color6: '"magenta"'
-    color7: '"yellow"'
-    color8: '"dark red"'
-    color9: '"dark green"'
-    comment: ''
-    ctrlpanel: 'False'
-    fc: '0'
-    fftsize: '1024'
-    freqhalf: 'True'
-    grid: 'False'
-    gui_hint: 11,0,1,1
-    label: Relative Gain
-    label1: ''
-    label10: ''''''
-    label2: ''''''
-    label3: ''''''
-    label4: ''''''
-    label5: ''''''
-    label6: ''''''
-    label7: ''''''
-    label8: ''''''
-    label9: ''''''
-    legend: 'True'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    name: '""'
-    nconnections: '2'
-    showports: 'False'
-    tr_chan: '0'
-    tr_level: '0.0'
-    tr_mode: qtgui.TRIG_MODE_FREE
-    tr_tag: '""'
-    type: complex
-    units: dB
-    update_time: '0.10'
-    width1: '1'
-    width10: '1'
-    width2: '1'
-    width3: '1'
-    width4: '1'
-    width5: '1'
-    width6: '1'
-    width7: '1'
-    width8: '1'
-    width9: '1'
-    wintype: firdes.WIN_BLACKMAN_hARRIS
-    ymax: '10'
-    ymin: '-140'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1320, 672.0]
-    rotation: 0
-    state: enabled
-- name: qtgui_sink_x_1
+- name: postDemodGUISink
   id: qtgui_sink_x
   parameters:
     affinity: ''
     alias: ''
-    bw: baud
+    bw: baudRate
     comment: ''
-    fc: freq
+    fc: '0'
     fftsize: '1024'
     gui_hint: 12,0,1,1
     maxoutbuf: '0'
     minoutbuf: '0'
-    name: '"Pre Process"'
+    name: '"Post Demod"'
     plotconst: 'True'
     plotfreq: 'True'
     plottime: 'True'
@@ -1006,22 +1021,46 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1576, 468.0]
+    coordinate: [1552, 468.0]
     rotation: 0
     state: enabled
-- name: qtgui_sink_x_1_0
+- name: preDemodLowPassFilter
+  id: low_pass_filter
+  parameters:
+    affinity: ''
+    alias: ''
+    beta: '6.76'
+    comment: ''
+    cutoff_freq: filterWidth
+    decim: '1'
+    gain: '1'
+    interp: '1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: sampleRate
+    type: fir_filter_ccf
+    width: '300'
+    win: firdes.WIN_HAMMING
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [872, 540.0]
+    rotation: 0
+    state: enabled
+- name: preTranslateGUISink
   id: qtgui_sink_x
   parameters:
     affinity: ''
     alias: ''
-    bw: samp_rate * 4
+    bw: sampleRate * 4
     comment: ''
-    fc: freq
+    fc: carrierFrequency
     fftsize: 1024*4
     gui_hint: 13,0,1,1
     maxoutbuf: '0'
     minoutbuf: '0'
-    name: '"Pre Process"'
+    name: '"Pre Translate"'
     plotconst: 'True'
     plotfreq: 'True'
     plottime: 'True'
@@ -1035,148 +1074,66 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [416, 540.0]
+    coordinate: [416, 484.0]
     rotation: 0
     state: enabled
-- name: qtgui_time_sink_x_0
-  id: qtgui_time_sink_x
+- name: uCharToFloat
+  id: blocks_uchar_to_float
   parameters:
     affinity: ''
     alias: ''
-    alpha1: '1.0'
-    alpha10: '1.0'
-    alpha2: '1.0'
-    alpha3: '1.0'
-    alpha4: '1.0'
-    alpha5: '1.0'
-    alpha6: '1.0'
-    alpha7: '1.0'
-    alpha8: '1.0'
-    alpha9: '1.0'
-    autoscale: 'False'
-    axislabels: 'True'
-    color1: red
-    color10: dark blue
-    color2: blue
-    color3: green
-    color4: black
-    color5: cyan
-    color6: magenta
-    color7: yellow
-    color8: dark red
-    color9: dark green
     comment: ''
-    ctrlpanel: 'False'
-    entags: 'False'
-    grid: 'True'
-    gui_hint: 5,0,1,1
-    label1: TX Binary
-    label10: ''
-    label2: RX Binary Demod
-    label3: ''
-    label4: ''
-    label5: ''
-    label6: ''
-    label7: ''
-    label8: ''
-    label9: ''
-    legend: 'True'
-    marker1: '-1'
-    marker10: '-1'
-    marker2: '-1'
-    marker3: '-1'
-    marker4: '-1'
-    marker5: '-1'
-    marker6: '-1'
-    marker7: '-1'
-    marker8: '-1'
-    marker9: '-1'
-    name: '""'
-    nconnections: '2'
-    size: 32*8*2
-    srate: '1'
-    stemplot: 'True'
-    style1: '1'
-    style10: '1'
-    style2: '1'
-    style3: '1'
-    style4: '1'
-    style5: '1'
-    style6: '1'
-    style7: '1'
-    style8: '1'
-    style9: '1'
-    tr_chan: '0'
-    tr_delay: '0'
-    tr_level: '0.0'
-    tr_mode: qtgui.TRIG_MODE_FREE
-    tr_slope: qtgui.TRIG_SLOPE_POS
-    tr_tag: '""'
-    type: float
-    update_time: 1/30
-    width1: '1'
-    width10: '1'
-    width2: '1'
-    width3: '1'
-    width4: '1'
-    width5: '1'
-    width6: '1'
-    width7: '1'
-    width8: '1'
-    width9: '1'
-    ylabel: Amplitude
-    ymax: '1.1'
-    ymin: '-1.1'
-    yunit: '""'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1992, 556.0]
-    rotation: 0
-    state: enabled
-- name: satellites_fsk_demodulator_0
-  id: satellites_fsk_demodulator
-  parameters:
-    affinity: ''
-    alias: ''
-    baudrate: baud
-    comment: ''
-    iq: 'True'
     maxoutbuf: '0'
     minoutbuf: '0'
-    options: '""'
-    samp_rate: samp_rate
-    subaudio: 'False'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1312, 572.0]
+    coordinate: [1744, 596.0]
     rotation: 0
-    state: true
+    state: enabled
+- name: xlatingFIRfilter
+  id: freq_xlating_fir_filter_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    center_freq: frequencyOffset
+    comment: ''
+    decim: '4'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: sampleRate * 4
+    taps: '1'
+    type: ccc
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [416, 668.0]
+    rotation: 0
+    state: enabled
 
 connections:
-- [analog_agc_xx_0, '0', qtgui_freq_sink_x_0, '0']
-- [analog_agc_xx_0, '0', satellites_fsk_demodulator_0, '0']
-- [blocks_delay_0, '0', qtgui_time_sink_x_0, '0']
-- [blocks_file_source_0, '0', blocks_unpack_k_bits_bb_0, '0']
-- [blocks_multiply_const_vxx_0, '0', blocks_delay_0, '0']
-- [blocks_multiply_const_vxx_1, '0', low_pass_filter_0, '0']
-- [blocks_multiply_const_vxx_1, '0', qtgui_freq_sink_x_0, '1']
-- [blocks_uchar_to_float_0_0, '0', qtgui_time_sink_x_0, '1']
-- [blocks_uchar_to_float_0_0_0, '0', blocks_multiply_const_vxx_0, '0']
-- [blocks_unpack_k_bits_bb_0, '0', blocks_uchar_to_float_0_0_0, '0']
-- [digital_binary_slicer_fb_0, '0', CLIPrintSink, '0']
-- [digital_binary_slicer_fb_0, '0', blocks_uchar_to_float_0_0, '0']
-- [freq_xlating_fir_filter_xxx_0, '0', blocks_multiply_const_vxx_1, '0']
-- [limesdr_source_0, '0', freq_xlating_fir_filter_xxx_0, '0']
-- [limesdr_source_0, '0', qtgui_sink_x_1_0, '0']
-- [low_pass_filter_0, '0', analog_agc_xx_0, '0']
-- [osmosdr_source_0, '0', freq_xlating_fir_filter_xxx_0, '0']
-- [osmosdr_source_0, '0', qtgui_sink_x_1_0, '0']
-- [satellites_fsk_demodulator_0, '0', digital_binary_slicer_fb_0, '0']
-- [satellites_fsk_demodulator_0, '0', qtgui_sink_x_1, '0']
+- [FSKDemod, '0', binarySlicer, '0']
+- [FSKDemod, '0', postDemodGUISink, '0']
+- [agc, '0', FSKDemod, '0']
+- [agc, '0', lowPassCompairSink, '0']
+- [binarySlicer, '0', CLIPrintSink, '0']
+- [binarySlicer, '0', uCharToFloat, '0']
+- [compairUCharToFloat, '0', invertExample, '0']
+- [delayExample, '0', bitCompariosn, '0']
+- [exampleFileSource, '0', exampleUnpack, '0']
+- [exampleUnpack, '0', compairUCharToFloat, '0']
+- [invertExample, '0', delayExample, '0']
+- [limeSDRSource, '0', preTranslateGUISink, '0']
+- [limeSDRSource, '0', xlatingFIRfilter, '0']
+- [multiplyConst, '0', lowPassCompairSink, '1']
+- [multiplyConst, '0', preDemodLowPassFilter, '0']
+- [osmoSDRSource, '0', preTranslateGUISink, '0']
+- [osmoSDRSource, '0', xlatingFIRfilter, '0']
+- [preDemodLowPassFilter, '0', agc, '0']
+- [uCharToFloat, '0', bitCompariosn, '1']
+- [xlatingFIRfilter, '0', multiplyConst, '0']
 
 metadata:
   file_format: 1
