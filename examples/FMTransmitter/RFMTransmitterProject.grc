@@ -21,7 +21,7 @@ options:
     run_options: prompt
     sizing_mode: fixed
     thread_safe_setters: ''
-    title: RFMTransmitterProject
+    title: FM Transmitter
     window_size: ''
   states:
     bus_sink: false
@@ -32,27 +32,6 @@ options:
     state: enabled
 
 blocks:
-- name: TransmitVolume
-  id: variable_qtgui_range
-  parameters:
-    comment: ''
-    gui_hint: 0,0,1,2
-    label: Volume
-    min_len: '200'
-    orient: Qt.Horizontal
-    rangeType: float
-    start: '0'
-    step: '0.1'
-    stop: '2'
-    value: '1'
-    widget: counter_slider
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [712, 20.0]
-    rotation: 0
-    state: true
 - name: audioSampleRate
   id: variable
   parameters:
@@ -74,10 +53,10 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [504, 20.0]
+    coordinate: [504, 12.0]
     rotation: 0
     state: true
-- name: frequency
+- name: carrierFrequency
   id: variable
   parameters:
     comment: ''
@@ -86,7 +65,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [344, 12.0]
+    coordinate: [360, 12.0]
     rotation: 0
     state: enabled
 - name: preModSampleRate
@@ -98,7 +77,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [352, 76.0]
+    coordinate: [360, 76.0]
     rotation: 0
     state: enabled
 - name: preModSampleRatio
@@ -113,7 +92,7 @@ blocks:
     coordinate: [216, 76.0]
     rotation: 0
     state: enabled
-- name: rfGain
+- name: txGain
   id: variable_qtgui_range
   parameters:
     comment: ''
@@ -123,7 +102,7 @@ blocks:
     orient: Qt.Horizontal
     rangeType: float
     start: '0'
-    step: '1'
+    step: '0.1'
     stop: '60'
     value: '0'
     widget: counter_slider
@@ -131,7 +110,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [600, 20.0]
+    coordinate: [600, 12.0]
     rotation: 0
     state: true
 - name: txSampleRate
@@ -146,7 +125,7 @@ blocks:
     coordinate: [216, 140.0]
     rotation: 0
     state: enabled
-- name: analog_wfm_tx_0
+- name: WBFMModulator
   id: analog_wfm_tx
   parameters:
     affinity: ''
@@ -163,28 +142,10 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [616, 188.0]
+    coordinate: [456, 244.0]
     rotation: 0
     state: enabled
-- name: blocks_multiply_const_vxx_0_1
-  id: blocks_multiply_const_vxx
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    const: TransmitVolume
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: float
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [224, 220.0]
-    rotation: 0
-    state: enabled
-- name: blocks_wavfile_source_0
+- name: audioSource
   id: blocks_wavfile_source
   parameters:
     affinity: ''
@@ -199,10 +160,10 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [16, 212.0]
+    coordinate: [16, 268.0]
     rotation: 0
     state: enabled
-- name: limesdr_sink_0
+- name: limeSDRSink
   id: limesdr_sink
   parameters:
     affinity: ''
@@ -210,7 +171,7 @@ blocks:
     allow_tcxo_dac: '0'
     analog_bandw_ch0: 5e6
     analog_bandw_ch1: '0'
-    calibr_bandw_ch0: frequency
+    calibr_bandw_ch0: 2.5e6
     calibr_bandw_ch1: '0'
     channel_mode: '0'
     comment: ''
@@ -218,7 +179,7 @@ blocks:
     digital_bandw_ch0: bandwidth
     digital_bandw_ch1: '0'
     filename: ''
-    gain_dB_ch0: rfGain
+    gain_dB_ch0: txGain
     gain_dB_ch1: '0'
     length_tag_name: ''
     nco_freq_ch0: '0'
@@ -226,17 +187,17 @@ blocks:
     oversample: '0'
     pa_path_ch0: '255'
     pa_path_ch1: '255'
-    rf_freq: frequency
+    rf_freq: carrierFrequency
     samp_rate: txSampleRate
     serial: ''
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [920, 204.0]
+    coordinate: [768, 260.0]
     rotation: 0
     state: enabled
-- name: mmse_interpolator_xx_0
+- name: preModInterpolator
   id: mmse_interpolator_xx
   parameters:
     affinity: ''
@@ -251,10 +212,10 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [392, 212.0]
+    coordinate: [240, 268.0]
     rotation: 0
     state: true
-- name: qtgui_sink_x_0_0
+- name: txGUISink
   id: qtgui_sink_x
   parameters:
     affinity: ''
@@ -280,16 +241,15 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [920, 284.0]
+    coordinate: [768, 364.0]
     rotation: 0
     state: enabled
 
 connections:
-- [analog_wfm_tx_0, '0', limesdr_sink_0, '0']
-- [analog_wfm_tx_0, '0', qtgui_sink_x_0_0, '0']
-- [blocks_multiply_const_vxx_0_1, '0', mmse_interpolator_xx_0, '0']
-- [blocks_wavfile_source_0, '0', blocks_multiply_const_vxx_0_1, '0']
-- [mmse_interpolator_xx_0, '0', analog_wfm_tx_0, '0']
+- [WBFMModulator, '0', limeSDRSink, '0']
+- [WBFMModulator, '0', txGUISink, '0']
+- [audioSource, '0', preModInterpolator, '0']
+- [preModInterpolator, '0', WBFMModulator, '0']
 
 metadata:
   file_format: 1

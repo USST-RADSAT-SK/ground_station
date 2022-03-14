@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: GPL-3.0
 #
 # GNU Radio Python Flow Graph
-# Title: RFMTransmitterProject
+# Title: FM Transmitter
 # Author: Austin
 # GNU Radio version: 3.8.2.0
 
@@ -43,9 +43,9 @@ from gnuradio import qtgui
 
 class RFMTransmitter(gr.top_block, Qt.QWidget):
     def __init__(self):
-        gr.top_block.__init__(self, "RFMTransmitterProject")
+        gr.top_block.__init__(self, "FM Transmitter")
         Qt.QWidget.__init__(self)
-        self.setWindowTitle("RFMTransmitterProject")
+        self.setWindowTitle("FM Transmitter")
         qtgui.util.check_set_qss()
         try:
             self.setWindowIcon(Qt.QIcon.fromTheme("gnuradio-grc"))
@@ -80,37 +80,23 @@ class RFMTransmitter(gr.top_block, Qt.QWidget):
         self.preModSampleRate = preModSampleRate = bandwidth + 50e3
         self.audioSampleRate = audioSampleRate = 44100
         self.txSampleRate = txSampleRate = int(preModSampleRate * 5)
-        self.rfGain = rfGain = 0
+        self.txGain = txGain = 0
         self.preModSampleRatio = preModSampleRatio = audioSampleRate / preModSampleRate
-        self.frequency = frequency = 107.1e6
-        self.TransmitVolume = TransmitVolume = 1
+        self.carrierFrequency = carrierFrequency = 107.1e6
 
         ##################################################
         # Blocks
         ##################################################
-        self._rfGain_range = Range(0, 60, 1, 0, 200)
-        self._rfGain_win = RangeWidget(
-            self._rfGain_range, self.set_rfGain, "Gain", "counter_slider", float
+        self._txGain_range = Range(0, 60, 0.1, 0, 200)
+        self._txGain_win = RangeWidget(
+            self._txGain_range, self.set_txGain, "Gain", "counter_slider", float
         )
-        self.top_grid_layout.addWidget(self._rfGain_win, 1, 0, 1, 2)
+        self.top_grid_layout.addWidget(self._txGain_win, 1, 0, 1, 2)
         for r in range(1, 2):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 2):
             self.top_grid_layout.setColumnStretch(c, 1)
-        self._TransmitVolume_range = Range(0, 2, 0.1, 1, 200)
-        self._TransmitVolume_win = RangeWidget(
-            self._TransmitVolume_range,
-            self.set_TransmitVolume,
-            "Volume",
-            "counter_slider",
-            float,
-        )
-        self.top_grid_layout.addWidget(self._TransmitVolume_win, 0, 0, 1, 2)
-        for r in range(0, 1):
-            self.top_grid_layout.setRowStretch(r, 1)
-        for c in range(0, 2):
-            self.top_grid_layout.setColumnStretch(c, 1)
-        self.qtgui_sink_x_0_0 = qtgui.sink_c(
+        self.txGUISink = qtgui.sink_c(
             1024,  # fftsize
             firdes.WIN_HAMMING,  # wintype
             0,  # fc
@@ -121,39 +107,34 @@ class RFMTransmitter(gr.top_block, Qt.QWidget):
             False,  # plottime
             True,  # plotconst
         )
-        self.qtgui_sink_x_0_0.set_update_time(1.0 / 20)
-        self._qtgui_sink_x_0_0_win = sip.wrapinstance(
-            self.qtgui_sink_x_0_0.pyqwidget(), Qt.QWidget
-        )
+        self.txGUISink.set_update_time(1.0 / 20)
+        self._txGUISink_win = sip.wrapinstance(self.txGUISink.pyqwidget(), Qt.QWidget)
 
-        self.qtgui_sink_x_0_0.enable_rf_freq(False)
+        self.txGUISink.enable_rf_freq(False)
 
-        self.top_grid_layout.addWidget(self._qtgui_sink_x_0_0_win, 2, 0, 1, 2)
+        self.top_grid_layout.addWidget(self._txGUISink_win, 2, 0, 1, 2)
         for r in range(2, 3):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 2):
             self.top_grid_layout.setColumnStretch(c, 1)
-        self.mmse_interpolator_xx_0 = filter.mmse_interpolator_ff(0, preModSampleRatio)
-        self.limesdr_sink_0 = limesdr.sink("", 0, "", "")
+        self.preModInterpolator = filter.mmse_interpolator_ff(0, preModSampleRatio)
+        self.limeSDRSink = limesdr.sink("", 0, "", "")
 
-        self.limesdr_sink_0.set_sample_rate(txSampleRate)
+        self.limeSDRSink.set_sample_rate(txSampleRate)
 
-        self.limesdr_sink_0.set_center_freq(frequency, 0)
+        self.limeSDRSink.set_center_freq(carrierFrequency, 0)
 
-        self.limesdr_sink_0.set_bandwidth(5e6, 0)
+        self.limeSDRSink.set_bandwidth(5e6, 0)
 
-        self.limesdr_sink_0.set_digital_filter(bandwidth, 0)
+        self.limeSDRSink.set_digital_filter(bandwidth, 0)
 
-        self.limesdr_sink_0.set_gain(rfGain, 0)
+        self.limeSDRSink.set_gain(txGain, 0)
 
-        self.limesdr_sink_0.set_antenna(255, 0)
+        self.limeSDRSink.set_antenna(255, 0)
 
-        self.limesdr_sink_0.calibrate(frequency, 0)
-        self.blocks_wavfile_source_0 = blocks.wavfile_source(
-            "BrittleRilleByKevinMacLeod.wav", True
-        )
-        self.blocks_multiply_const_vxx_0_1 = blocks.multiply_const_ff(TransmitVolume)
-        self.analog_wfm_tx_0 = analog.wfm_tx(
+        self.limeSDRSink.calibrate(2.5e6, 0)
+        self.audioSource = blocks.wavfile_source("BrittleRilleByKevinMacLeod.wav", True)
+        self.WBFMModulator = analog.wfm_tx(
             audio_rate=int(preModSampleRate),
             quad_rate=int(txSampleRate),
             tau=75e-6,
@@ -164,15 +145,10 @@ class RFMTransmitter(gr.top_block, Qt.QWidget):
         ##################################################
         # Connections
         ##################################################
-        self.connect((self.analog_wfm_tx_0, 0), (self.limesdr_sink_0, 0))
-        self.connect((self.analog_wfm_tx_0, 0), (self.qtgui_sink_x_0_0, 0))
-        self.connect(
-            (self.blocks_multiply_const_vxx_0_1, 0), (self.mmse_interpolator_xx_0, 0)
-        )
-        self.connect(
-            (self.blocks_wavfile_source_0, 0), (self.blocks_multiply_const_vxx_0_1, 0)
-        )
-        self.connect((self.mmse_interpolator_xx_0, 0), (self.analog_wfm_tx_0, 0))
+        self.connect((self.WBFMModulator, 0), (self.limeSDRSink, 0))
+        self.connect((self.WBFMModulator, 0), (self.txGUISink, 0))
+        self.connect((self.audioSource, 0), (self.preModInterpolator, 0))
+        self.connect((self.preModInterpolator, 0), (self.WBFMModulator, 0))
 
     def closeEvent(self, event):
         self.settings = Qt.QSettings("GNU Radio", "RFMTransmitter")
@@ -185,7 +161,7 @@ class RFMTransmitter(gr.top_block, Qt.QWidget):
     def set_bandwidth(self, bandwidth):
         self.bandwidth = bandwidth
         self.set_preModSampleRate(self.bandwidth + 50e3)
-        self.limesdr_sink_0.set_digital_filter(self.bandwidth, 0)
+        self.limeSDRSink.set_digital_filter(self.bandwidth, 0)
 
     def get_preModSampleRate(self):
         return self.preModSampleRate
@@ -207,35 +183,28 @@ class RFMTransmitter(gr.top_block, Qt.QWidget):
 
     def set_txSampleRate(self, txSampleRate):
         self.txSampleRate = txSampleRate
-        self.qtgui_sink_x_0_0.set_frequency_range(0, self.txSampleRate)
+        self.txGUISink.set_frequency_range(0, self.txSampleRate)
 
-    def get_rfGain(self):
-        return self.rfGain
+    def get_txGain(self):
+        return self.txGain
 
-    def set_rfGain(self, rfGain):
-        self.rfGain = rfGain
-        self.limesdr_sink_0.set_gain(self.rfGain, 0)
+    def set_txGain(self, txGain):
+        self.txGain = txGain
+        self.limeSDRSink.set_gain(self.txGain, 0)
 
     def get_preModSampleRatio(self):
         return self.preModSampleRatio
 
     def set_preModSampleRatio(self, preModSampleRatio):
         self.preModSampleRatio = preModSampleRatio
-        self.mmse_interpolator_xx_0.set_interp_ratio(self.preModSampleRatio)
+        self.preModInterpolator.set_interp_ratio(self.preModSampleRatio)
 
-    def get_frequency(self):
-        return self.frequency
+    def get_carrierFrequency(self):
+        return self.carrierFrequency
 
-    def set_frequency(self, frequency):
-        self.frequency = frequency
-        self.limesdr_sink_0.set_center_freq(self.frequency, 0)
-
-    def get_TransmitVolume(self):
-        return self.TransmitVolume
-
-    def set_TransmitVolume(self, TransmitVolume):
-        self.TransmitVolume = TransmitVolume
-        self.blocks_multiply_const_vxx_0_1.set_k(self.TransmitVolume)
+    def set_carrierFrequency(self, carrierFrequency):
+        self.carrierFrequency = carrierFrequency
+        self.limeSDRSink.set_center_freq(self.carrierFrequency, 0)
 
 
 def main(top_block_cls=RFMTransmitter, options=None):

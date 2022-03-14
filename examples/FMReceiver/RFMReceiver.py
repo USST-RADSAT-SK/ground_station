@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: GPL-3.0
 #
 # GNU Radio Python Flow Graph
-# Title: RFMReceiver
+# Title: FM Receiver
 # Author: Austin
 # GNU Radio version: 3.8.2.0
 
@@ -28,7 +28,6 @@ from gnuradio.filter import firdes
 import sip
 from gnuradio import analog
 from gnuradio import audio
-from gnuradio import blocks
 from gnuradio import filter
 from gnuradio import gr
 import sys
@@ -45,9 +44,9 @@ from gnuradio import qtgui
 
 class RFMReceiver(gr.top_block, Qt.QWidget):
     def __init__(self):
-        gr.top_block.__init__(self, "RFMReceiver")
+        gr.top_block.__init__(self, "FM Receiver")
         Qt.QWidget.__init__(self)
-        self.setWindowTitle("RFMReceiver")
+        self.setWindowTitle("FM Receiver")
         qtgui.util.check_set_qss()
         try:
             self.setWindowIcon(Qt.QIcon.fromTheme("gnuradio-grc"))
@@ -79,95 +78,97 @@ class RFMReceiver(gr.top_block, Qt.QWidget):
         # Variables
         ##################################################
         self.audioSampleRate = audioSampleRate = 48000
-        self.volume = volume = 1
-        self.rfSampleRate = rfSampleRate = audioSampleRate * 25
-        self.rfGain = rfGain = 50
-        self.frequency = frequency = 95.1e6
+        self.rxSampleRate = rxSampleRate = audioSampleRate * 25
+        self.rxGain = rxGain = 0
+        self.carrierFrequency = carrierFrequency = 95.1e6
 
         ##################################################
         # Blocks
         ##################################################
-        self._volume_range = Range(0, 2, 0.1, 1, 200)
-        self._volume_win = RangeWidget(
-            self._volume_range, self.set_volume, "Volume", "counter_slider", float
+        self._rxGain_range = Range(0, 70, 1, 0, 200)
+        self._rxGain_win = RangeWidget(
+            self._rxGain_range, self.set_rxGain, "RX Gain", "counter_slider", float
         )
-        self.top_grid_layout.addWidget(self._volume_win, 0, 0, 1, 2)
-        for r in range(0, 1):
-            self.top_grid_layout.setRowStretch(r, 1)
-        for c in range(0, 2):
-            self.top_grid_layout.setColumnStretch(c, 1)
-        self._rfGain_range = Range(0, 70, 1, 50, 200)
-        self._rfGain_win = RangeWidget(
-            self._rfGain_range, self.set_rfGain, "Gain", "counter_slider", float
-        )
-        self.top_grid_layout.addWidget(self._rfGain_win, 2, 0, 1, 2)
+        self.top_grid_layout.addWidget(self._rxGain_win, 2, 0, 1, 2)
         for r in range(2, 3):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 2):
             self.top_grid_layout.setColumnStretch(c, 1)
-        self.mainTabs = Qt.QTabWidget()
-        self.mainTabs_widget_0 = Qt.QWidget()
-        self.mainTabs_layout_0 = Qt.QBoxLayout(
-            Qt.QBoxLayout.TopToBottom, self.mainTabs_widget_0
+        self._carrierFrequency_range = Range(50e6, 1.6e9, 0.025e6, 95.1e6, 200)
+        self._carrierFrequency_win = RangeWidget(
+            self._carrierFrequency_range,
+            self.set_carrierFrequency,
+            "Carrier Frequency (Hz)",
+            "counter",
+            float,
         )
-        self.mainTabs_grid_layout_0 = Qt.QGridLayout()
-        self.mainTabs_layout_0.addLayout(self.mainTabs_grid_layout_0)
-        self.mainTabs.addTab(self.mainTabs_widget_0, "RF")
-        self.mainTabs_widget_1 = Qt.QWidget()
-        self.mainTabs_layout_1 = Qt.QBoxLayout(
-            Qt.QBoxLayout.TopToBottom, self.mainTabs_widget_1
-        )
-        self.mainTabs_grid_layout_1 = Qt.QGridLayout()
-        self.mainTabs_layout_1.addLayout(self.mainTabs_grid_layout_1)
-        self.mainTabs.addTab(self.mainTabs_widget_1, "Audio")
-        self.top_grid_layout.addWidget(self.mainTabs, 3, 0, 1, 2)
-        for r in range(3, 4):
-            self.top_grid_layout.setRowStretch(r, 1)
-        for c in range(0, 2):
-            self.top_grid_layout.setColumnStretch(c, 1)
-        self._frequency_range = Range(50e6, 1.6e9, 0.025e6, 95.1e6, 200)
-        self._frequency_win = RangeWidget(
-            self._frequency_range, self.set_frequency, "Frequency", "counter", float
-        )
-        self.top_grid_layout.addWidget(self._frequency_win, 1, 0, 1, 2)
+        self.top_grid_layout.addWidget(self._carrierFrequency_win, 1, 0, 1, 2)
         for r in range(1, 2):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 2):
             self.top_grid_layout.setColumnStretch(c, 1)
-        self.rtlsdr_source_0 = osmosdr.source(args="numchan=" + str(1) + " " + "")
-        self.rtlsdr_source_0.set_sample_rate(rfSampleRate)
-        self.rtlsdr_source_0.set_center_freq(frequency, 0)
-        self.rtlsdr_source_0.set_freq_corr(0, 0)
-        self.rtlsdr_source_0.set_dc_offset_mode(0, 0)
-        self.rtlsdr_source_0.set_iq_balance_mode(0, 0)
-        self.rtlsdr_source_0.set_gain_mode(False, 0)
-        self.rtlsdr_source_0.set_gain(rfGain, 0)
-        self.rtlsdr_source_0.set_if_gain(20, 0)
-        self.rtlsdr_source_0.set_bb_gain(20, 0)
-        self.rtlsdr_source_0.set_antenna("", 0)
-        self.rtlsdr_source_0.set_bandwidth(0, 0)
-        self.qtgui_time_sink_x_0 = qtgui.time_sink_f(
+        self.rtlSDRSource = osmosdr.source(args="numchan=" + str(1) + " " + "")
+        self.rtlSDRSource.set_sample_rate(rxSampleRate)
+        self.rtlSDRSource.set_center_freq(carrierFrequency, 0)
+        self.rtlSDRSource.set_freq_corr(0, 0)
+        self.rtlSDRSource.set_dc_offset_mode(0, 0)
+        self.rtlSDRSource.set_iq_balance_mode(0, 0)
+        self.rtlSDRSource.set_gain_mode(False, 0)
+        self.rtlSDRSource.set_gain(rxGain, 0)
+        self.rtlSDRSource.set_if_gain(20, 0)
+        self.rtlSDRSource.set_bb_gain(20, 0)
+        self.rtlSDRSource.set_antenna("", 0)
+        self.rtlSDRSource.set_bandwidth(0, 0)
+        self.lowPassFilter = filter.fir_filter_ccf(
+            1, firdes.low_pass(1, rxSampleRate, 100e3, 10e3, firdes.WIN_HAMMING, 6.76)
+        )
+        self.guiSink = qtgui.sink_c(
+            1024,  # fftsize
+            firdes.WIN_BLACKMAN_hARRIS,  # wintype
+            carrierFrequency,  # fc
+            rxSampleRate,  # bw
+            "",  # name
+            True,  # plotfreq
+            True,  # plotwaterfall
+            False,  # plottime
+            False,  # plotconst
+        )
+        self.guiSink.set_update_time(1.0 / 20)
+        self._guiSink_win = sip.wrapinstance(self.guiSink.pyqwidget(), Qt.QWidget)
+
+        self.guiSink.enable_rf_freq(True)
+
+        self.top_grid_layout.addWidget(self._guiSink_win, 3, 0, 1, 1)
+        for r in range(3, 4):
+            self.top_grid_layout.setRowStretch(r, 1)
+        for c in range(0, 1):
+            self.top_grid_layout.setColumnStretch(c, 1)
+        self.fmDemodulator = analog.wfm_rcv(
+            quad_rate=rxSampleRate,
+            audio_decimation=rxSampleRate // audioSampleRate,
+        )
+        self.audioTimeSink = qtgui.time_sink_f(
             1024,  # size
             audioSampleRate,  # samp_rate
             "",  # name
             1,  # number of inputs
         )
-        self.qtgui_time_sink_x_0.set_update_time(1 / 20)
-        self.qtgui_time_sink_x_0.set_y_axis(-1.2, 1.2)
+        self.audioTimeSink.set_update_time(1 / 20)
+        self.audioTimeSink.set_y_axis(-1.2, 1.2)
 
-        self.qtgui_time_sink_x_0.set_y_label("Amplitude", "")
+        self.audioTimeSink.set_y_label("Amplitude", "")
 
-        self.qtgui_time_sink_x_0.enable_tags(True)
-        self.qtgui_time_sink_x_0.set_trigger_mode(
+        self.audioTimeSink.enable_tags(True)
+        self.audioTimeSink.set_trigger_mode(
             qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, 0.0, 0, 0, ""
         )
-        self.qtgui_time_sink_x_0.enable_autoscale(False)
-        self.qtgui_time_sink_x_0.enable_grid(True)
-        self.qtgui_time_sink_x_0.enable_axis_labels(True)
-        self.qtgui_time_sink_x_0.enable_control_panel(True)
-        self.qtgui_time_sink_x_0.enable_stem_plot(False)
+        self.audioTimeSink.enable_autoscale(False)
+        self.audioTimeSink.enable_grid(True)
+        self.audioTimeSink.enable_axis_labels(True)
+        self.audioTimeSink.enable_control_panel(True)
+        self.audioTimeSink.enable_stem_plot(False)
 
-        self.qtgui_time_sink_x_0.disable_legend()
+        self.audioTimeSink.disable_legend()
 
         labels = [
             "Signal 1",
@@ -200,57 +201,33 @@ class RFMReceiver(gr.top_block, Qt.QWidget):
 
         for i in range(1):
             if len(labels[i]) == 0:
-                self.qtgui_time_sink_x_0.set_line_label(i, "Data {0}".format(i))
+                self.audioTimeSink.set_line_label(i, "Data {0}".format(i))
             else:
-                self.qtgui_time_sink_x_0.set_line_label(i, labels[i])
-            self.qtgui_time_sink_x_0.set_line_width(i, widths[i])
-            self.qtgui_time_sink_x_0.set_line_color(i, colors[i])
-            self.qtgui_time_sink_x_0.set_line_style(i, styles[i])
-            self.qtgui_time_sink_x_0.set_line_marker(i, markers[i])
-            self.qtgui_time_sink_x_0.set_line_alpha(i, alphas[i])
+                self.audioTimeSink.set_line_label(i, labels[i])
+            self.audioTimeSink.set_line_width(i, widths[i])
+            self.audioTimeSink.set_line_color(i, colors[i])
+            self.audioTimeSink.set_line_style(i, styles[i])
+            self.audioTimeSink.set_line_marker(i, markers[i])
+            self.audioTimeSink.set_line_alpha(i, alphas[i])
 
-        self._qtgui_time_sink_x_0_win = sip.wrapinstance(
-            self.qtgui_time_sink_x_0.pyqwidget(), Qt.QWidget
+        self._audioTimeSink_win = sip.wrapinstance(
+            self.audioTimeSink.pyqwidget(), Qt.QWidget
         )
-        self.mainTabs_layout_1.addWidget(self._qtgui_time_sink_x_0_win)
-        self.qtgui_sink_x_1 = qtgui.sink_c(
-            1024,  # fftsize
-            firdes.WIN_BLACKMAN_hARRIS,  # wintype
-            frequency,  # fc
-            rfSampleRate,  # bw
-            "",  # name
-            True,  # plotfreq
-            True,  # plotwaterfall
-            False,  # plottime
-            False,  # plotconst
-        )
-        self.qtgui_sink_x_1.set_update_time(1.0 / 20)
-        self._qtgui_sink_x_1_win = sip.wrapinstance(
-            self.qtgui_sink_x_1.pyqwidget(), Qt.QWidget
-        )
-
-        self.qtgui_sink_x_1.enable_rf_freq(True)
-
-        self.mainTabs_layout_0.addWidget(self._qtgui_sink_x_1_win)
-        self.low_pass_filter_0 = filter.fir_filter_ccf(
-            1, firdes.low_pass(1, rfSampleRate, 100e3, 10e3, firdes.WIN_HAMMING, 6.76)
-        )
-        self.blocks_multiply_const_vxx_0 = blocks.multiply_const_ff(volume)
-        self.audio_sink_0 = audio.sink(audioSampleRate, "", False)
-        self.analog_wfm_rcv_0 = analog.wfm_rcv(
-            quad_rate=rfSampleRate,
-            audio_decimation=rfSampleRate // audioSampleRate,
-        )
+        self.top_grid_layout.addWidget(self._audioTimeSink_win, 3, 1, 1, 1)
+        for r in range(3, 4):
+            self.top_grid_layout.setRowStretch(r, 1)
+        for c in range(1, 2):
+            self.top_grid_layout.setColumnStretch(c, 1)
+        self.audioSink = audio.sink(audioSampleRate, "", False)
 
         ##################################################
         # Connections
         ##################################################
-        self.connect((self.analog_wfm_rcv_0, 0), (self.blocks_multiply_const_vxx_0, 0))
-        self.connect((self.analog_wfm_rcv_0, 0), (self.qtgui_time_sink_x_0, 0))
-        self.connect((self.blocks_multiply_const_vxx_0, 0), (self.audio_sink_0, 0))
-        self.connect((self.low_pass_filter_0, 0), (self.analog_wfm_rcv_0, 0))
-        self.connect((self.rtlsdr_source_0, 0), (self.low_pass_filter_0, 0))
-        self.connect((self.rtlsdr_source_0, 0), (self.qtgui_sink_x_1, 0))
+        self.connect((self.fmDemodulator, 0), (self.audioSink, 0))
+        self.connect((self.fmDemodulator, 0), (self.audioTimeSink, 0))
+        self.connect((self.lowPassFilter, 0), (self.fmDemodulator, 0))
+        self.connect((self.rtlSDRSource, 0), (self.guiSink, 0))
+        self.connect((self.rtlSDRSource, 0), (self.lowPassFilter, 0))
 
     def closeEvent(self, event):
         self.settings = Qt.QSettings("GNU Radio", "RFMReceiver")
@@ -262,46 +239,37 @@ class RFMReceiver(gr.top_block, Qt.QWidget):
 
     def set_audioSampleRate(self, audioSampleRate):
         self.audioSampleRate = audioSampleRate
-        self.set_rfSampleRate(self.audioSampleRate * 25)
-        self.qtgui_time_sink_x_0.set_samp_rate(self.audioSampleRate)
+        self.set_rxSampleRate(self.audioSampleRate * 25)
+        self.audioTimeSink.set_samp_rate(self.audioSampleRate)
 
-    def get_volume(self):
-        return self.volume
+    def get_rxSampleRate(self):
+        return self.rxSampleRate
 
-    def set_volume(self, volume):
-        self.volume = volume
-        self.blocks_multiply_const_vxx_0.set_k(self.volume)
-
-    def get_rfSampleRate(self):
-        return self.rfSampleRate
-
-    def set_rfSampleRate(self, rfSampleRate):
-        self.rfSampleRate = rfSampleRate
-        self.low_pass_filter_0.set_taps(
-            firdes.low_pass(1, self.rfSampleRate, 100e3, 10e3, firdes.WIN_HAMMING, 6.76)
+    def set_rxSampleRate(self, rxSampleRate):
+        self.rxSampleRate = rxSampleRate
+        self.guiSink.set_frequency_range(self.carrierFrequency, self.rxSampleRate)
+        self.lowPassFilter.set_taps(
+            firdes.low_pass(1, self.rxSampleRate, 100e3, 10e3, firdes.WIN_HAMMING, 6.76)
         )
-        self.qtgui_sink_x_1.set_frequency_range(self.frequency, self.rfSampleRate)
-        self.rtlsdr_source_0.set_sample_rate(self.rfSampleRate)
+        self.rtlSDRSource.set_sample_rate(self.rxSampleRate)
 
-    def get_rfGain(self):
-        return self.rfGain
+    def get_rxGain(self):
+        return self.rxGain
 
-    def set_rfGain(self, rfGain):
-        self.rfGain = rfGain
-        self.rtlsdr_source_0.set_gain(self.rfGain, 0)
+    def set_rxGain(self, rxGain):
+        self.rxGain = rxGain
+        self.rtlSDRSource.set_gain(self.rxGain, 0)
 
-    def get_frequency(self):
-        return self.frequency
+    def get_carrierFrequency(self):
+        return self.carrierFrequency
 
-    def set_frequency(self, frequency):
-        self.frequency = frequency
-        self.qtgui_sink_x_1.set_frequency_range(self.frequency, self.rfSampleRate)
-        self.rtlsdr_source_0.set_center_freq(self.frequency, 0)
+    def set_carrierFrequency(self, carrierFrequency):
+        self.carrierFrequency = carrierFrequency
+        self.guiSink.set_frequency_range(self.carrierFrequency, self.rxSampleRate)
+        self.rtlSDRSource.set_center_freq(self.carrierFrequency, 0)
 
 
 def main(top_block_cls=RFMReceiver, options=None):
-    if gr.enable_realtime_scheduling() != gr.RT_OK:
-        print("Error: failed to enable real-time scheduling.")
 
     if StrictVersion("4.5.0") <= StrictVersion(Qt.qVersion()) < StrictVersion("5.0.0"):
         style = gr.prefs().get_string("qtgui", "style", "raster")

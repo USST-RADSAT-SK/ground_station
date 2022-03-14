@@ -15,13 +15,13 @@ options:
     output_language: python
     placement: (0,0)
     qt_qss_theme: ''
-    realtime_scheduling: '1'
+    realtime_scheduling: ''
     run: 'True'
     run_command: '{python} -u {filename}'
     run_options: prompt
     sizing_mode: fixed
     thread_safe_setters: ''
-    title: RFMReceiver
+    title: FM Receiver
     window_size: ''
   states:
     bus_sink: false
@@ -44,12 +44,12 @@ blocks:
     coordinate: [216, 12.0]
     rotation: 0
     state: enabled
-- name: frequency
+- name: carrierFrequency
   id: variable_qtgui_range
   parameters:
     comment: ''
     gui_hint: 1,0,1,2
-    label: Frequency
+    label: Carrier Frequency (Hz)
     min_len: '200'
     orient: Qt.Horizontal
     rangeType: float
@@ -65,28 +65,28 @@ blocks:
     coordinate: [344, 12.0]
     rotation: 0
     state: enabled
-- name: rfGain
+- name: rxGain
   id: variable_qtgui_range
   parameters:
     comment: ''
     gui_hint: 2,0,1,2
-    label: Gain
+    label: RX Gain
     min_len: '200'
     orient: Qt.Horizontal
     rangeType: float
     start: '0'
     step: '1'
     stop: '70'
-    value: '50'
+    value: '0'
     widget: counter_slider
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [480, 12.0]
+    coordinate: [512, 12.0]
     rotation: 0
     state: true
-- name: rfSampleRate
+- name: rxSampleRate
   id: variable
   parameters:
     comment: ''
@@ -98,45 +98,7 @@ blocks:
     coordinate: [216, 76.0]
     rotation: 0
     state: enabled
-- name: volume
-  id: variable_qtgui_range
-  parameters:
-    comment: ''
-    gui_hint: 0,0,1,2
-    label: Volume
-    min_len: '200'
-    orient: Qt.Horizontal
-    rangeType: float
-    start: '0'
-    step: '0.1'
-    stop: '2'
-    value: '1'
-    widget: counter_slider
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [600, 12.0]
-    rotation: 0
-    state: true
-- name: analog_wfm_rcv_0
-  id: analog_wfm_rcv
-  parameters:
-    affinity: ''
-    alias: ''
-    audio_decimation: rfSampleRate // audioSampleRate
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    quad_rate: rfSampleRate
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [680, 324.0]
-    rotation: 0
-    state: true
-- name: audio_sink_0
+- name: audioSink
   id: audio_sink
   parameters:
     affinity: ''
@@ -150,176 +112,10 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1096, 332.0]
-    rotation: 0
-    state: true
-- name: blocks_multiply_const_vxx_0
-  id: blocks_multiply_const_vxx
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    const: volume
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: float
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
     coordinate: [920, 332.0]
     rotation: 0
     state: true
-- name: limesdr_source_0
-  id: limesdr_source
-  parameters:
-    affinity: ''
-    alias: ''
-    allow_tcxo_dac: '0'
-    analog_bandw_ch0: 1.5e6
-    analog_bandw_ch1: 1.5e6
-    calibr_bandw_ch0: 2.5e6
-    calibr_bandw_ch1: 2.5e6
-    channel_mode: '0'
-    comment: ''
-    dacVal: '180'
-    digital_bandw_ch0: 1e6
-    digital_bandw_ch1: rfSampleRate
-    filename: ''
-    gain_dB_ch0: rfGain
-    gain_dB_ch1: '70'
-    lna_path_ch0: '255'
-    lna_path_ch1: '2'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    nco_freq_ch0: '0'
-    nco_freq_ch1: '0'
-    oversample: '0'
-    rf_freq: frequency
-    samp_rate: rfSampleRate
-    serial: 1D538ACAE2BD00
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [120, 516.0]
-    rotation: 0
-    state: disabled
-- name: low_pass_filter_0
-  id: low_pass_filter
-  parameters:
-    affinity: ''
-    alias: ''
-    beta: '6.76'
-    comment: ''
-    cutoff_freq: 100e3
-    decim: '1'
-    gain: '1'
-    interp: '1'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    samp_rate: rfSampleRate
-    type: fir_filter_ccf
-    width: 10e3
-    win: firdes.WIN_HAMMING
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [456, 284.0]
-    rotation: 0
-    state: enabled
-- name: mainTabs
-  id: qtgui_tab_widget
-  parameters:
-    alias: ''
-    comment: ''
-    gui_hint: 3,0,1,2
-    label0: RF
-    label1: Audio
-    label10: Tab 10
-    label11: Tab 11
-    label12: Tab 12
-    label13: Tab 13
-    label14: Tab 14
-    label15: Tab 15
-    label16: Tab 16
-    label17: Tab 17
-    label18: Tab 18
-    label19: Tab 19
-    label2: Tab 2
-    label3: Tab 3
-    label4: Tab 4
-    label5: Tab 5
-    label6: Tab 6
-    label7: Tab 7
-    label8: Tab 8
-    label9: Tab 9
-    num_tabs: '2'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [760, 12.0]
-    rotation: 0
-    state: true
-- name: note_0
-  id: note
-  parameters:
-    alias: ''
-    comment: ''
-    note: LimeSDR
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [144, 476.0]
-    rotation: 0
-    state: true
-- name: note_1
-  id: note
-  parameters:
-    alias: ''
-    comment: ''
-    note: RTL-SDR
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [144, 212.0]
-    rotation: 0
-    state: true
-- name: qtgui_sink_x_1
-  id: qtgui_sink_x
-  parameters:
-    affinity: ''
-    alias: ''
-    bw: rfSampleRate
-    comment: ''
-    fc: frequency
-    fftsize: '1024'
-    gui_hint: mainTabs@0
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    name: '""'
-    plotconst: 'False'
-    plotfreq: 'True'
-    plottime: 'False'
-    plotwaterfall: 'True'
-    rate: '20'
-    showports: 'False'
-    showrf: 'True'
-    type: complex
-    wintype: firdes.WIN_BLACKMAN_hARRIS
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [456, 516.0]
-    rotation: 0
-    state: true
-- name: qtgui_time_sink_x_0
+- name: audioTimeSink
   id: qtgui_time_sink_x
   parameters:
     affinity: ''
@@ -350,7 +146,7 @@ blocks:
     ctrlpanel: 'True'
     entags: 'True'
     grid: 'True'
-    gui_hint: mainTabs@1
+    gui_hint: 3,1,1,1
     label1: Signal 1
     label10: Signal 10
     label2: Signal 2
@@ -413,10 +209,115 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [920, 516.0]
+    coordinate: [920, 412.0]
     rotation: 0
     state: enabled
-- name: rtlsdr_source_0
+- name: fmDemodulator
+  id: analog_wfm_rcv
+  parameters:
+    affinity: ''
+    alias: ''
+    audio_decimation: rxSampleRate // audioSampleRate
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    quad_rate: rxSampleRate
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [680, 324.0]
+    rotation: 0
+    state: true
+- name: guiSink
+  id: qtgui_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    bw: rxSampleRate
+    comment: ''
+    fc: carrierFrequency
+    fftsize: '1024'
+    gui_hint: 3,0,1,1
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    name: '""'
+    plotconst: 'False'
+    plotfreq: 'True'
+    plottime: 'False'
+    plotwaterfall: 'True'
+    rate: '20'
+    showports: 'False'
+    showrf: 'True'
+    type: complex
+    wintype: firdes.WIN_BLACKMAN_hARRIS
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [456, 484.0]
+    rotation: 0
+    state: true
+- name: limeSDRSource
+  id: limesdr_source
+  parameters:
+    affinity: ''
+    alias: ''
+    allow_tcxo_dac: '0'
+    analog_bandw_ch0: 1.5e6
+    analog_bandw_ch1: '0'
+    calibr_bandw_ch0: 2.5e6
+    calibr_bandw_ch1: '0'
+    channel_mode: '0'
+    comment: ''
+    dacVal: '180'
+    digital_bandw_ch0: 1e6
+    digital_bandw_ch1: '0'
+    filename: ''
+    gain_dB_ch0: rxGain
+    gain_dB_ch1: '0'
+    lna_path_ch0: '255'
+    lna_path_ch1: '2'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    nco_freq_ch0: '0'
+    nco_freq_ch1: '0'
+    oversample: '0'
+    rf_freq: carrierFrequency
+    samp_rate: rxSampleRate
+    serial: 1D538ACAE2BD00
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [152, 484.0]
+    rotation: 0
+    state: disabled
+- name: lowPassFilter
+  id: low_pass_filter
+  parameters:
+    affinity: ''
+    alias: ''
+    beta: '6.76'
+    comment: ''
+    cutoff_freq: 100e3
+    decim: '1'
+    gain: '1'
+    interp: '1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: rxSampleRate
+    type: fir_filter_ccf
+    width: 10e3
+    win: firdes.WIN_HAMMING
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [456, 284.0]
+    rotation: 0
+    state: enabled
+- name: rtlSDRSource
   id: rtlsdr_source
   parameters:
     affinity: ''
@@ -591,7 +492,7 @@ blocks:
     dc_offset_mode7: '0'
     dc_offset_mode8: '0'
     dc_offset_mode9: '0'
-    freq0: frequency
+    freq0: carrierFrequency
     freq1: 100e6
     freq10: 100e6
     freq11: 100e6
@@ -623,7 +524,7 @@ blocks:
     freq7: 100e6
     freq8: 100e6
     freq9: 100e6
-    gain0: rfGain
+    gain0: rxGain
     gain1: '10'
     gain10: '10'
     gain11: '10'
@@ -755,7 +656,7 @@ blocks:
     minoutbuf: '0'
     nchan: '1'
     num_mboards: '1'
-    sample_rate: rfSampleRate
+    sample_rate: rxSampleRate
     sync: none
     time_source0: ''
     time_source1: ''
@@ -775,14 +676,13 @@ blocks:
     state: enabled
 
 connections:
-- [analog_wfm_rcv_0, '0', blocks_multiply_const_vxx_0, '0']
-- [analog_wfm_rcv_0, '0', qtgui_time_sink_x_0, '0']
-- [blocks_multiply_const_vxx_0, '0', audio_sink_0, '0']
-- [limesdr_source_0, '0', low_pass_filter_0, '0']
-- [limesdr_source_0, '0', qtgui_sink_x_1, '0']
-- [low_pass_filter_0, '0', analog_wfm_rcv_0, '0']
-- [rtlsdr_source_0, '0', low_pass_filter_0, '0']
-- [rtlsdr_source_0, '0', qtgui_sink_x_1, '0']
+- [fmDemodulator, '0', audioSink, '0']
+- [fmDemodulator, '0', audioTimeSink, '0']
+- [limeSDRSource, '0', guiSink, '0']
+- [limeSDRSource, '0', lowPassFilter, '0']
+- [lowPassFilter, '0', fmDemodulator, '0']
+- [rtlSDRSource, '0', guiSink, '0']
+- [rtlSDRSource, '0', lowPassFilter, '0']
 
 metadata:
   file_format: 1
