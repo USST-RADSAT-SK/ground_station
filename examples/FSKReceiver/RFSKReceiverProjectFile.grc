@@ -87,7 +87,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [664, 12.0]
+    coordinate: [880, 12.0]
     rotation: 0
     state: enabled
 - name: filterWidth
@@ -108,7 +108,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [536, 12.0]
+    coordinate: [752, 12.0]
     rotation: 0
     state: enabled
 - name: frequencyDeviation
@@ -148,7 +148,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [536, 140.0]
+    coordinate: [752, 140.0]
     rotation: 0
     state: enabled
 - name: rxGain
@@ -169,7 +169,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [832, 12.0]
+    coordinate: [1056, 12.0]
     rotation: 0
     state: enabled
 - name: samplePerSecond
@@ -399,7 +399,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1920, 556.0]
+    coordinate: [1896, 556.0]
     rotation: 0
     state: enabled
 - name: compairUCharToFloat
@@ -414,7 +414,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1360, 348.0]
+    coordinate: [1328, 356.0]
     rotation: 0
     state: enabled
 - name: delayExample
@@ -433,7 +433,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1712, 340.0]
+    coordinate: [1680, 348.0]
     rotation: 0
     state: enabled
 - name: exampleFileSource
@@ -455,7 +455,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [984, 308.0]
+    coordinate: [952, 316.0]
     rotation: 0
     state: enabled
 - name: exampleUnpack
@@ -471,7 +471,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1192, 340.0]
+    coordinate: [1160, 348.0]
     rotation: 0
     state: enabled
 - name: import
@@ -484,7 +484,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [960, 12.0]
+    coordinate: [1184, 12.0]
     rotation: 0
     state: true
 - name: invertExample
@@ -502,7 +502,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1552, 340.0]
+    coordinate: [1520, 348.0]
     rotation: 0
     state: enabled
 - name: limeSDRSource
@@ -537,7 +537,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [160, 660.0]
+    coordinate: [136, 660.0]
     rotation: 0
     state: disabled
 - name: lowPassCompairSink
@@ -1089,7 +1089,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1744, 596.0]
+    coordinate: [1728, 596.0]
     rotation: 0
     state: enabled
 - name: xlatingFIRfilter

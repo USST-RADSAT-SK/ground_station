@@ -22,13 +22,13 @@ if __name__ == '__main__':
             print("Warning: failed to XInitThreads()")
 
 from PyQt5 import Qt
+from PyQt5.QtCore import QObject, pyqtSlot
 from gnuradio import qtgui
 from gnuradio.filter import firdes
 import sip
 from gnuradio import analog
 from gnuradio import blocks
 import pmt
-from gnuradio import filter
 from gnuradio import gr
 import sys
 import signal
@@ -36,8 +36,7 @@ from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
 from gnuradio.qtgui import Range, RangeWidget
-import limesdr
-import math
+import math, os
 
 from gnuradio import qtgui
 
@@ -77,28 +76,22 @@ class FSKTransmitter(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
-        self.sps = sps = 32
-        self.baud = baud = 9600
-        self.txgain = txgain = 10
-        self.sens = sens = 1
-        self.samp_rate = samp_rate = baud * sps
-        self.modGain = modGain = 2
-        self.isps = isps = sps
-        self.isamp = isamp = baud
-        self.freqError = freqError = 100
-        self.freqDeviation = freqDeviation = 4800
-        self.freq = freq = 107.1e6
+        self.samplesPerSymbol = samplesPerSymbol = int(32*4)
+        self.baudRate = baudRate = 9600
+        self.testFiles = testFiles = "/home/austin/Desktop/ground_station/examples/SampleBinaryFiles/"
+        self.sampleRate = sampleRate = baudRate * samplesPerSymbol
+        self.radioGain = radioGain = 0
+        self.manualModulation = manualModulation = 0
+        self.manualMode = manualMode = 1
+        self.invertBits = invertBits = 1
+        self.frequencyError = frequencyError = 100
+        self.frequencyDeviation = frequencyDeviation = 4800
+        self.fileName = fileName = "random_32B.bin"
+        self.carrierFrequency = carrierFrequency = 915e6
 
         ##################################################
         # Blocks
         ##################################################
-        self._txgain_range = Range(0, 60, 1, 10, 200)
-        self._txgain_win = RangeWidget(self._txgain_range, self.set_txgain, 'Tx gain', "counter_slider", float)
-        self.top_grid_layout.addWidget(self._txgain_win, 1, 0, 1, 1)
-        for r in range(1, 2):
-            self.top_grid_layout.setRowStretch(r, 1)
-        for c in range(0, 1):
-            self.top_grid_layout.setColumnStretch(c, 1)
         self.tabs = Qt.QTabWidget()
         self.tabs_widget_0 = Qt.QWidget()
         self.tabs_layout_0 = Qt.QBoxLayout(Qt.QBoxLayout.TopToBottom, self.tabs_widget_0)
@@ -110,87 +103,89 @@ class FSKTransmitter(gr.top_block, Qt.QWidget):
         self.tabs_grid_layout_1 = Qt.QGridLayout()
         self.tabs_layout_1.addLayout(self.tabs_grid_layout_1)
         self.tabs.addTab(self.tabs_widget_1, 'FSK Mod')
-        self.top_grid_layout.addWidget(self.tabs, 10, 0, 1, 1)
+        self.top_grid_layout.addWidget(self.tabs, 10, 0, 1, 4)
         for r in range(10, 11):
             self.top_grid_layout.setRowStretch(r, 1)
-        for c in range(0, 1):
+        for c in range(0, 4):
             self.top_grid_layout.setColumnStretch(c, 1)
-        self._modGain_range = Range(0, 5, 0.1, 2, 200)
-        self._modGain_win = RangeWidget(self._modGain_range, self.set_modGain, 'Mod Gain', "counter_slider", float)
-        self.top_grid_layout.addWidget(self._modGain_win, 0, 0, 1, 1)
-        for r in range(0, 1):
+        self._manualModulation_range = Range(-1, 1, 0.05, 0, 200)
+        self._manualModulation_win = RangeWidget(self._manualModulation_range, self.set_manualModulation, ' ', "counter_slider", float)
+        self.top_grid_layout.addWidget(self._manualModulation_win, 2, 1, 1, 3)
+        for r in range(2, 3):
+            self.top_grid_layout.setRowStretch(r, 1)
+        for c in range(1, 4):
+            self.top_grid_layout.setColumnStretch(c, 1)
+        _manualMode_check_box = Qt.QCheckBox('Manual Mode')
+        self._manualMode_choices = {True: 0, False: 1}
+        self._manualMode_choices_inv = dict((v,k) for k,v in self._manualMode_choices.items())
+        self._manualMode_callback = lambda i: Qt.QMetaObject.invokeMethod(_manualMode_check_box, "setChecked", Qt.Q_ARG("bool", self._manualMode_choices_inv[i]))
+        self._manualMode_callback(self.manualMode)
+        _manualMode_check_box.stateChanged.connect(lambda i: self.set_manualMode(self._manualMode_choices[bool(i)]))
+        self.top_grid_layout.addWidget(_manualMode_check_box, 2, 0, 1, 1)
+        for r in range(2, 3):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 1):
             self.top_grid_layout.setColumnStretch(c, 1)
-        self.qtgui_time_sink_x_0_1_0_0_1_0 = qtgui.time_sink_f(
-            1024, #size
-            samp_rate, #samp_rate
-            "", #name
-            3 #number of inputs
-        )
-        self.qtgui_time_sink_x_0_1_0_0_1_0.set_update_time(0.10)
-        self.qtgui_time_sink_x_0_1_0_0_1_0.set_y_axis(-1.2, 1.2)
-
-        self.qtgui_time_sink_x_0_1_0_0_1_0.set_y_label('Amplitude', "")
-
-        self.qtgui_time_sink_x_0_1_0_0_1_0.enable_tags(True)
-        self.qtgui_time_sink_x_0_1_0_0_1_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, 0.0, 0, 0, "")
-        self.qtgui_time_sink_x_0_1_0_0_1_0.enable_autoscale(False)
-        self.qtgui_time_sink_x_0_1_0_0_1_0.enable_grid(True)
-        self.qtgui_time_sink_x_0_1_0_0_1_0.enable_axis_labels(True)
-        self.qtgui_time_sink_x_0_1_0_0_1_0.enable_control_panel(True)
-        self.qtgui_time_sink_x_0_1_0_0_1_0.enable_stem_plot(False)
-
-
-        labels = ['Tx Binary', '', '', '', '',
-            '', '', '', '', '']
-        widths = [1, 1, 1, 1, 1,
-            1, 1, 1, 1, 1]
-        colors = ['blue', 'red', 'green', 'black', 'cyan',
-            'magenta', 'yellow', 'dark red', 'dark green', 'dark blue']
-        alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
-            1.0, 1.0, 1.0, 1.0, 1.0]
-        styles = [1, 1, 1, 1, 1,
-            1, 1, 1, 1, 1]
-        markers = [-1, -1, -1, -1, -1,
-            -1, -1, -1, -1, -1]
-
-
-        for i in range(3):
-            if len(labels[i]) == 0:
-                self.qtgui_time_sink_x_0_1_0_0_1_0.set_line_label(i, "Data {0}".format(i))
-            else:
-                self.qtgui_time_sink_x_0_1_0_0_1_0.set_line_label(i, labels[i])
-            self.qtgui_time_sink_x_0_1_0_0_1_0.set_line_width(i, widths[i])
-            self.qtgui_time_sink_x_0_1_0_0_1_0.set_line_color(i, colors[i])
-            self.qtgui_time_sink_x_0_1_0_0_1_0.set_line_style(i, styles[i])
-            self.qtgui_time_sink_x_0_1_0_0_1_0.set_line_marker(i, markers[i])
-            self.qtgui_time_sink_x_0_1_0_0_1_0.set_line_alpha(i, alphas[i])
-
-        self._qtgui_time_sink_x_0_1_0_0_1_0_win = sip.wrapinstance(self.qtgui_time_sink_x_0_1_0_0_1_0.pyqwidget(), Qt.QWidget)
-        self.tabs_grid_layout_1.addWidget(self._qtgui_time_sink_x_0_1_0_0_1_0_win, 5, 0, 1, 1)
-        for r in range(5, 6):
-            self.tabs_grid_layout_1.setRowStretch(r, 1)
+        _invertBits_check_box = Qt.QCheckBox('Invert Bits')
+        self._invertBits_choices = {True: -1, False: 1}
+        self._invertBits_choices_inv = dict((v,k) for k,v in self._invertBits_choices.items())
+        self._invertBits_callback = lambda i: Qt.QMetaObject.invokeMethod(_invertBits_check_box, "setChecked", Qt.Q_ARG("bool", self._invertBits_choices_inv[i]))
+        self._invertBits_callback(self.invertBits)
+        _invertBits_check_box.stateChanged.connect(lambda i: self.set_invertBits(self._invertBits_choices[bool(i)]))
+        self.top_grid_layout.addWidget(_invertBits_check_box, 1, 1, 1, 1)
+        for r in range(1, 2):
+            self.top_grid_layout.setRowStretch(r, 1)
+        for c in range(1, 2):
+            self.top_grid_layout.setColumnStretch(c, 1)
+        # Create the options list
+        self._fileName_options = ("1s_32B.bin", "0s_32B.bin", "50p_duty_32B.bin", "pyramid_32B.bin", "random_32B.bin", )
+        # Create the labels list
+        self._fileName_labels = ('All 1s', 'All 0s', '50% Duty', 'In/Decressing', 'Random', )
+        # Create the combo box
+        self._fileName_tool_bar = Qt.QToolBar(self)
+        self._fileName_tool_bar.addWidget(Qt.QLabel('Transmit' + ": "))
+        self._fileName_combo_box = Qt.QComboBox()
+        self._fileName_tool_bar.addWidget(self._fileName_combo_box)
+        for _label in self._fileName_labels: self._fileName_combo_box.addItem(_label)
+        self._fileName_callback = lambda i: Qt.QMetaObject.invokeMethod(self._fileName_combo_box, "setCurrentIndex", Qt.Q_ARG("int", self._fileName_options.index(i)))
+        self._fileName_callback(self.fileName)
+        self._fileName_combo_box.currentIndexChanged.connect(
+            lambda i: self.set_fileName(self._fileName_options[i]))
+        # Create the radio buttons
+        self.top_grid_layout.addWidget(self._fileName_tool_bar, 1, 0, 1, 1)
+        for r in range(1, 2):
+            self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 1):
-            self.tabs_grid_layout_1.setColumnStretch(c, 1)
-        self.qtgui_time_sink_x_0_1_0_0 = qtgui.time_sink_c(
-            1024, #size
-            samp_rate, #samp_rate
+            self.top_grid_layout.setColumnStretch(c, 1)
+        self.stretchTransform = blocks.multiply_const_ff(2 * invertBits)
+        self.shiftTransform = blocks.add_const_ff(-1 * invertBits)
+        self.repeatToSymbolLength = blocks.repeat(gr.sizeof_float*1, samplesPerSymbol)
+        self._radioGain_range = Range(0, 60, 0.1, 0, 200)
+        self._radioGain_win = RangeWidget(self._radioGain_range, self.set_radioGain, 'Radio Gain', "counter_slider", float)
+        self.top_grid_layout.addWidget(self._radioGain_win, 0, 0, 1, 4)
+        for r in range(0, 1):
+            self.top_grid_layout.setRowStretch(r, 1)
+        for c in range(0, 4):
+            self.top_grid_layout.setColumnStretch(c, 1)
+        self.manualSource = analog.sig_source_f(0, analog.GR_CONST_WAVE, 0, 0, manualModulation)
+        self.iqTimeOutput = qtgui.time_sink_c(
+            1024 * 2, #size
+            sampleRate, #samp_rate
             "", #name
             1 #number of inputs
         )
-        self.qtgui_time_sink_x_0_1_0_0.set_update_time(0.10)
-        self.qtgui_time_sink_x_0_1_0_0.set_y_axis(-1.2, 1.2)
+        self.iqTimeOutput.set_update_time(0.10)
+        self.iqTimeOutput.set_y_axis(-1.2, 1.2)
 
-        self.qtgui_time_sink_x_0_1_0_0.set_y_label('Amplitude', "")
+        self.iqTimeOutput.set_y_label('Amplitude', "")
 
-        self.qtgui_time_sink_x_0_1_0_0.enable_tags(True)
-        self.qtgui_time_sink_x_0_1_0_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, 0.0, 0, 0, "")
-        self.qtgui_time_sink_x_0_1_0_0.enable_autoscale(False)
-        self.qtgui_time_sink_x_0_1_0_0.enable_grid(True)
-        self.qtgui_time_sink_x_0_1_0_0.enable_axis_labels(True)
-        self.qtgui_time_sink_x_0_1_0_0.enable_control_panel(True)
-        self.qtgui_time_sink_x_0_1_0_0.enable_stem_plot(True)
+        self.iqTimeOutput.enable_tags(True)
+        self.iqTimeOutput.set_trigger_mode(qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, 0.0, 0, 0, "")
+        self.iqTimeOutput.enable_autoscale(False)
+        self.iqTimeOutput.enable_grid(True)
+        self.iqTimeOutput.enable_axis_labels(True)
+        self.iqTimeOutput.enable_control_panel(True)
+        self.iqTimeOutput.enable_stem_plot(True)
 
 
         labels = ['Tx Binary', '', '', '', '',
@@ -210,43 +205,71 @@ class FSKTransmitter(gr.top_block, Qt.QWidget):
         for i in range(2):
             if len(labels[i]) == 0:
                 if (i % 2 == 0):
-                    self.qtgui_time_sink_x_0_1_0_0.set_line_label(i, "Re{{Data {0}}}".format(i/2))
+                    self.iqTimeOutput.set_line_label(i, "Re{{Data {0}}}".format(i/2))
                 else:
-                    self.qtgui_time_sink_x_0_1_0_0.set_line_label(i, "Im{{Data {0}}}".format(i/2))
+                    self.iqTimeOutput.set_line_label(i, "Im{{Data {0}}}".format(i/2))
             else:
-                self.qtgui_time_sink_x_0_1_0_0.set_line_label(i, labels[i])
-            self.qtgui_time_sink_x_0_1_0_0.set_line_width(i, widths[i])
-            self.qtgui_time_sink_x_0_1_0_0.set_line_color(i, colors[i])
-            self.qtgui_time_sink_x_0_1_0_0.set_line_style(i, styles[i])
-            self.qtgui_time_sink_x_0_1_0_0.set_line_marker(i, markers[i])
-            self.qtgui_time_sink_x_0_1_0_0.set_line_alpha(i, alphas[i])
+                self.iqTimeOutput.set_line_label(i, labels[i])
+            self.iqTimeOutput.set_line_width(i, widths[i])
+            self.iqTimeOutput.set_line_color(i, colors[i])
+            self.iqTimeOutput.set_line_style(i, styles[i])
+            self.iqTimeOutput.set_line_marker(i, markers[i])
+            self.iqTimeOutput.set_line_alpha(i, alphas[i])
 
-        self._qtgui_time_sink_x_0_1_0_0_win = sip.wrapinstance(self.qtgui_time_sink_x_0_1_0_0.pyqwidget(), Qt.QWidget)
-        self.tabs_grid_layout_0.addWidget(self._qtgui_time_sink_x_0_1_0_0_win, 3, 0, 1, 1)
+        self._iqTimeOutput_win = sip.wrapinstance(self.iqTimeOutput.pyqwidget(), Qt.QWidget)
+        self.tabs_grid_layout_0.addWidget(self._iqTimeOutput_win, 3, 0, 1, 1)
         for r in range(3, 4):
             self.tabs_grid_layout_0.setRowStretch(r, 1)
         for c in range(0, 1):
             self.tabs_grid_layout_0.setColumnStretch(c, 1)
-        self.qtgui_time_sink_x_0 = qtgui.time_sink_f(
-            64*8, #size
-            baud, #samp_rate
+        self.iqOutput = qtgui.sink_c(
+            1024, #fftsize
+            firdes.WIN_HAMMING, #wintype
+            0, #fc
+            sampleRate, #bw
             "", #name
+            True, #plotfreq
+            True, #plotwaterfall
+            True, #plottime
+            True #plotconst
+        )
+        self.iqOutput.set_update_time(1.0/10)
+        self._iqOutput_win = sip.wrapinstance(self.iqOutput.pyqwidget(), Qt.QWidget)
+
+        self.iqOutput.enable_rf_freq(False)
+
+        self.tabs_grid_layout_0.addWidget(self._iqOutput_win, 0, 0, 1, 1)
+        for r in range(0, 1):
+            self.tabs_grid_layout_0.setRowStretch(r, 1)
+        for c in range(0, 1):
+            self.tabs_grid_layout_0.setColumnStretch(c, 1)
+        self.frequencyModulator = analog.frequency_modulator_fc(2* math.pi * (baudRate / sampleRate))
+        self.fileSource = blocks.file_source(gr.sizeof_char*1, testFiles + fileName, True, 0, 0)
+        self.fileSource.set_begin_tag(pmt.PMT_NIL)
+        self.convertToBinary = blocks.unpack_k_bits_bb(8)
+        self.charToFloat = blocks.char_to_float(1, 1)
+        self.blocks_selector_0 = blocks.selector(gr.sizeof_float*1,manualMode,0)
+        self.blocks_selector_0.set_enabled(True)
+        self.binDisplay = qtgui.time_sink_f(
+            32*8*2, #size
+            baudRate, #samp_rate
+            "Binary Transmittion", #name
             1 #number of inputs
         )
-        self.qtgui_time_sink_x_0.set_update_time(1/30)
-        self.qtgui_time_sink_x_0.set_y_axis(-0.1, 1.1)
+        self.binDisplay.set_update_time(1/30)
+        self.binDisplay.set_y_axis(-0.1, 1.1)
 
-        self.qtgui_time_sink_x_0.set_y_label('Amplitude', "")
+        self.binDisplay.set_y_label('', "")
 
-        self.qtgui_time_sink_x_0.enable_tags(False)
-        self.qtgui_time_sink_x_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, 0.0, 0, 0, "")
-        self.qtgui_time_sink_x_0.enable_autoscale(False)
-        self.qtgui_time_sink_x_0.enable_grid(True)
-        self.qtgui_time_sink_x_0.enable_axis_labels(False)
-        self.qtgui_time_sink_x_0.enable_control_panel(False)
-        self.qtgui_time_sink_x_0.enable_stem_plot(True)
+        self.binDisplay.enable_tags(False)
+        self.binDisplay.set_trigger_mode(qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, 0.0, 0, 0, "")
+        self.binDisplay.enable_autoscale(False)
+        self.binDisplay.enable_grid(True)
+        self.binDisplay.enable_axis_labels(False)
+        self.binDisplay.enable_control_panel(False)
+        self.binDisplay.enable_stem_plot(True)
 
-        self.qtgui_time_sink_x_0.disable_legend()
+        self.binDisplay.disable_legend()
 
         labels = ['Tx Binary', 'TX Binary', '', '', '',
             '', '', '', '', '']
@@ -264,102 +287,38 @@ class FSKTransmitter(gr.top_block, Qt.QWidget):
 
         for i in range(1):
             if len(labels[i]) == 0:
-                self.qtgui_time_sink_x_0.set_line_label(i, "Data {0}".format(i))
+                self.binDisplay.set_line_label(i, "Data {0}".format(i))
             else:
-                self.qtgui_time_sink_x_0.set_line_label(i, labels[i])
-            self.qtgui_time_sink_x_0.set_line_width(i, widths[i])
-            self.qtgui_time_sink_x_0.set_line_color(i, colors[i])
-            self.qtgui_time_sink_x_0.set_line_style(i, styles[i])
-            self.qtgui_time_sink_x_0.set_line_marker(i, markers[i])
-            self.qtgui_time_sink_x_0.set_line_alpha(i, alphas[i])
+                self.binDisplay.set_line_label(i, labels[i])
+            self.binDisplay.set_line_width(i, widths[i])
+            self.binDisplay.set_line_color(i, colors[i])
+            self.binDisplay.set_line_style(i, styles[i])
+            self.binDisplay.set_line_marker(i, markers[i])
+            self.binDisplay.set_line_alpha(i, alphas[i])
 
-        self._qtgui_time_sink_x_0_win = sip.wrapinstance(self.qtgui_time_sink_x_0.pyqwidget(), Qt.QWidget)
-        self.tabs_grid_layout_1.addWidget(self._qtgui_time_sink_x_0_win, 4, 0, 1, 1)
+        self._binDisplay_win = sip.wrapinstance(self.binDisplay.pyqwidget(), Qt.QWidget)
+        self.tabs_grid_layout_1.addWidget(self._binDisplay_win, 4, 0, 1, 1)
         for r in range(4, 5):
             self.tabs_grid_layout_1.setRowStretch(r, 1)
         for c in range(0, 1):
             self.tabs_grid_layout_1.setColumnStretch(c, 1)
-        self.qtgui_sink_x_0_0 = qtgui.sink_c(
-            1024, #fftsize
-            firdes.WIN_HAMMING, #wintype
-            0, #fc
-            samp_rate, #bw
-            "", #name
-            True, #plotfreq
-            True, #plotwaterfall
-            True, #plottime
-            True #plotconst
-        )
-        self.qtgui_sink_x_0_0.set_update_time(1.0/10)
-        self._qtgui_sink_x_0_0_win = sip.wrapinstance(self.qtgui_sink_x_0_0.pyqwidget(), Qt.QWidget)
-
-        self.qtgui_sink_x_0_0.enable_rf_freq(False)
-
-        self.tabs_grid_layout_0.addWidget(self._qtgui_sink_x_0_0_win, 0, 0, 1, 1)
-        for r in range(0, 1):
-            self.tabs_grid_layout_0.setRowStretch(r, 1)
-        for c in range(0, 1):
-            self.tabs_grid_layout_0.setColumnStretch(c, 1)
-        self.limesdr_sink_0_0 = limesdr.sink('', 0, '', '')
-
-
-        self.limesdr_sink_0_0.set_sample_rate(samp_rate)
-
-
-        self.limesdr_sink_0_0.set_center_freq(freq, 0)
-
-
-
-        self.limesdr_sink_0_0.set_digital_filter(freqDeviation * 2, 0)
-
-
-        self.limesdr_sink_0_0.set_gain(txgain, 0)
-
-
-        self.limesdr_sink_0_0.set_antenna(255, 0)
-
-
-        self.limesdr_sink_0_0.calibrate(2.5e6, 0)
-        self.freq_xlating_fir_filter_xxx_0 = filter.freq_xlating_fir_filter_fcc(1, firdes.low_pass(1, isamp * isps,(2 * isamp * sens - isamp * sens)/2+400, 300 ), (2 * isamp * sens + isamp * sens)/2, samp_rate)
-        self.blocks_unpack_k_bits_bb_0 = blocks.unpack_k_bits_bb(8)
-        self.blocks_repeat_0 = blocks.repeat(gr.sizeof_float*1, isps)
-        self.blocks_multiply_xx_1 = blocks.multiply_vff(1)
-        self.blocks_multiply_xx_0 = blocks.multiply_vff(1)
-        self.blocks_multiply_const_vxx_1 = blocks.multiply_const_ff(-1)
-        self.blocks_multiply_const_vxx_0 = blocks.multiply_const_cc(modGain)
-        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_char*1, '/home/austin/Documents/usst/ground_station/examples/sample_8B.bin', True, 0, 0)
-        self.blocks_file_source_0.set_begin_tag(pmt.PMT_NIL)
-        self.blocks_char_to_float_1 = blocks.char_to_float(1, 1)
-        self.blocks_add_xx_0 = blocks.add_vff(1)
-        self.blocks_add_const_vxx_0 = blocks.add_const_ff(-1)
-        self.analog_sig_source_x_0_0 = analog.sig_source_f(isamp * isps, analog.GR_COS_WAVE, isamp / sens, 1, 0, 0)
-        self.analog_sig_source_x_0 = analog.sig_source_f(isamp * isps, analog.GR_COS_WAVE, 2*isamp /sens, 1, 0, 0)
 
 
 
         ##################################################
         # Connections
         ##################################################
-        self.connect((self.analog_sig_source_x_0, 0), (self.blocks_multiply_xx_0, 0))
-        self.connect((self.analog_sig_source_x_0_0, 0), (self.blocks_multiply_xx_1, 1))
-        self.connect((self.blocks_add_const_vxx_0, 0), (self.blocks_multiply_const_vxx_1, 0))
-        self.connect((self.blocks_add_xx_0, 0), (self.freq_xlating_fir_filter_xxx_0, 0))
-        self.connect((self.blocks_add_xx_0, 0), (self.qtgui_time_sink_x_0_1_0_0_1_0, 0))
-        self.connect((self.blocks_char_to_float_1, 0), (self.blocks_repeat_0, 0))
-        self.connect((self.blocks_char_to_float_1, 0), (self.qtgui_time_sink_x_0, 0))
-        self.connect((self.blocks_file_source_0, 0), (self.blocks_unpack_k_bits_bb_0, 0))
-        self.connect((self.blocks_multiply_const_vxx_0, 0), (self.limesdr_sink_0_0, 0))
-        self.connect((self.blocks_multiply_const_vxx_0, 0), (self.qtgui_sink_x_0_0, 0))
-        self.connect((self.blocks_multiply_const_vxx_0, 0), (self.qtgui_time_sink_x_0_1_0_0, 0))
-        self.connect((self.blocks_multiply_const_vxx_1, 0), (self.blocks_multiply_xx_1, 0))
-        self.connect((self.blocks_multiply_xx_0, 0), (self.blocks_add_xx_0, 0))
-        self.connect((self.blocks_multiply_xx_0, 0), (self.qtgui_time_sink_x_0_1_0_0_1_0, 1))
-        self.connect((self.blocks_multiply_xx_1, 0), (self.blocks_add_xx_0, 1))
-        self.connect((self.blocks_multiply_xx_1, 0), (self.qtgui_time_sink_x_0_1_0_0_1_0, 2))
-        self.connect((self.blocks_repeat_0, 0), (self.blocks_add_const_vxx_0, 0))
-        self.connect((self.blocks_repeat_0, 0), (self.blocks_multiply_xx_0, 1))
-        self.connect((self.blocks_unpack_k_bits_bb_0, 0), (self.blocks_char_to_float_1, 0))
-        self.connect((self.freq_xlating_fir_filter_xxx_0, 0), (self.blocks_multiply_const_vxx_0, 0))
+        self.connect((self.blocks_selector_0, 0), (self.frequencyModulator, 0))
+        self.connect((self.charToFloat, 0), (self.binDisplay, 0))
+        self.connect((self.charToFloat, 0), (self.stretchTransform, 0))
+        self.connect((self.convertToBinary, 0), (self.charToFloat, 0))
+        self.connect((self.fileSource, 0), (self.convertToBinary, 0))
+        self.connect((self.frequencyModulator, 0), (self.iqOutput, 0))
+        self.connect((self.frequencyModulator, 0), (self.iqTimeOutput, 0))
+        self.connect((self.manualSource, 0), (self.blocks_selector_0, 0))
+        self.connect((self.repeatToSymbolLength, 0), (self.blocks_selector_0, 1))
+        self.connect((self.shiftTransform, 0), (self.repeatToSymbolLength, 0))
+        self.connect((self.stretchTransform, 0), (self.shiftTransform, 0))
 
 
     def closeEvent(self, event):
@@ -367,97 +326,94 @@ class FSKTransmitter(gr.top_block, Qt.QWidget):
         self.settings.setValue("geometry", self.saveGeometry())
         event.accept()
 
-    def get_sps(self):
-        return self.sps
+    def get_samplesPerSymbol(self):
+        return self.samplesPerSymbol
 
-    def set_sps(self, sps):
-        self.sps = sps
-        self.set_isps(self.sps)
-        self.set_samp_rate(self.baud * self.sps)
+    def set_samplesPerSymbol(self, samplesPerSymbol):
+        self.samplesPerSymbol = samplesPerSymbol
+        self.set_sampleRate(self.baudRate * self.samplesPerSymbol)
+        self.repeatToSymbolLength.set_interpolation(self.samplesPerSymbol)
 
-    def get_baud(self):
-        return self.baud
+    def get_baudRate(self):
+        return self.baudRate
 
-    def set_baud(self, baud):
-        self.baud = baud
-        self.set_isamp(self.baud)
-        self.set_samp_rate(self.baud * self.sps)
-        self.qtgui_time_sink_x_0.set_samp_rate(self.baud)
+    def set_baudRate(self, baudRate):
+        self.baudRate = baudRate
+        self.set_sampleRate(self.baudRate * self.samplesPerSymbol)
+        self.binDisplay.set_samp_rate(self.baudRate)
+        self.frequencyModulator.set_sensitivity(2* math.pi * (self.baudRate / self.sampleRate))
 
-    def get_txgain(self):
-        return self.txgain
+    def get_testFiles(self):
+        return self.testFiles
 
-    def set_txgain(self, txgain):
-        self.txgain = txgain
-        self.limesdr_sink_0_0.set_gain(self.txgain, 0)
+    def set_testFiles(self, testFiles):
+        self.testFiles = testFiles
+        self.fileSource.open(self.testFiles + self.fileName, True)
 
-    def get_sens(self):
-        return self.sens
+    def get_sampleRate(self):
+        return self.sampleRate
 
-    def set_sens(self, sens):
-        self.sens = sens
-        self.analog_sig_source_x_0.set_frequency(2*self.isamp /self.sens)
-        self.analog_sig_source_x_0_0.set_frequency(self.isamp / self.sens)
-        self.freq_xlating_fir_filter_xxx_0.set_taps(firdes.low_pass(1, self.isamp * self.isps,(2 * self.isamp * self.sens - self.isamp * self.sens)/2+400, 300 ))
-        self.freq_xlating_fir_filter_xxx_0.set_center_freq((2 * self.isamp * self.sens + self.isamp * self.sens)/2)
+    def set_sampleRate(self, sampleRate):
+        self.sampleRate = sampleRate
+        self.frequencyModulator.set_sensitivity(2* math.pi * (self.baudRate / self.sampleRate))
+        self.iqOutput.set_frequency_range(0, self.sampleRate)
+        self.iqTimeOutput.set_samp_rate(self.sampleRate)
 
-    def get_samp_rate(self):
-        return self.samp_rate
+    def get_radioGain(self):
+        return self.radioGain
 
-    def set_samp_rate(self, samp_rate):
-        self.samp_rate = samp_rate
-        self.qtgui_sink_x_0_0.set_frequency_range(0, self.samp_rate)
-        self.qtgui_time_sink_x_0_1_0_0.set_samp_rate(self.samp_rate)
-        self.qtgui_time_sink_x_0_1_0_0_1_0.set_samp_rate(self.samp_rate)
+    def set_radioGain(self, radioGain):
+        self.radioGain = radioGain
 
-    def get_modGain(self):
-        return self.modGain
+    def get_manualModulation(self):
+        return self.manualModulation
 
-    def set_modGain(self, modGain):
-        self.modGain = modGain
-        self.blocks_multiply_const_vxx_0.set_k(self.modGain)
+    def set_manualModulation(self, manualModulation):
+        self.manualModulation = manualModulation
+        self.manualSource.set_offset(self.manualModulation)
 
-    def get_isps(self):
-        return self.isps
+    def get_manualMode(self):
+        return self.manualMode
 
-    def set_isps(self, isps):
-        self.isps = isps
-        self.analog_sig_source_x_0.set_sampling_freq(self.isamp * self.isps)
-        self.analog_sig_source_x_0_0.set_sampling_freq(self.isamp * self.isps)
-        self.blocks_repeat_0.set_interpolation(self.isps)
-        self.freq_xlating_fir_filter_xxx_0.set_taps(firdes.low_pass(1, self.isamp * self.isps,(2 * self.isamp * self.sens - self.isamp * self.sens)/2+400, 300 ))
+    def set_manualMode(self, manualMode):
+        self.manualMode = manualMode
+        self._manualMode_callback(self.manualMode)
+        self.blocks_selector_0.set_input_index(self.manualMode)
 
-    def get_isamp(self):
-        return self.isamp
+    def get_invertBits(self):
+        return self.invertBits
 
-    def set_isamp(self, isamp):
-        self.isamp = isamp
-        self.analog_sig_source_x_0.set_sampling_freq(self.isamp * self.isps)
-        self.analog_sig_source_x_0.set_frequency(2*self.isamp /self.sens)
-        self.analog_sig_source_x_0_0.set_sampling_freq(self.isamp * self.isps)
-        self.analog_sig_source_x_0_0.set_frequency(self.isamp / self.sens)
-        self.freq_xlating_fir_filter_xxx_0.set_taps(firdes.low_pass(1, self.isamp * self.isps,(2 * self.isamp * self.sens - self.isamp * self.sens)/2+400, 300 ))
-        self.freq_xlating_fir_filter_xxx_0.set_center_freq((2 * self.isamp * self.sens + self.isamp * self.sens)/2)
+    def set_invertBits(self, invertBits):
+        self.invertBits = invertBits
+        self._invertBits_callback(self.invertBits)
+        self.shiftTransform.set_k(-1 * self.invertBits)
+        self.stretchTransform.set_k(2 * self.invertBits)
 
-    def get_freqError(self):
-        return self.freqError
+    def get_frequencyError(self):
+        return self.frequencyError
 
-    def set_freqError(self, freqError):
-        self.freqError = freqError
+    def set_frequencyError(self, frequencyError):
+        self.frequencyError = frequencyError
 
-    def get_freqDeviation(self):
-        return self.freqDeviation
+    def get_frequencyDeviation(self):
+        return self.frequencyDeviation
 
-    def set_freqDeviation(self, freqDeviation):
-        self.freqDeviation = freqDeviation
-        self.limesdr_sink_0_0.set_digital_filter(self.freqDeviation * 2, 0)
+    def set_frequencyDeviation(self, frequencyDeviation):
+        self.frequencyDeviation = frequencyDeviation
 
-    def get_freq(self):
-        return self.freq
+    def get_fileName(self):
+        return self.fileName
 
-    def set_freq(self, freq):
-        self.freq = freq
-        self.limesdr_sink_0_0.set_center_freq(self.freq, 0)
+    def set_fileName(self, fileName):
+        self.fileName = fileName
+        self._fileName_callback(self.fileName)
+        self.fileSource.open(self.testFiles + self.fileName, True)
+
+    def get_carrierFrequency(self):
+        return self.carrierFrequency
+
+    def set_carrierFrequency(self, carrierFrequency):
+        self.carrierFrequency = carrierFrequency
 
 
 
