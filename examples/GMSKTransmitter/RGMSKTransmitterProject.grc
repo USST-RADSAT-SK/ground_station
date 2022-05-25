@@ -132,7 +132,7 @@ blocks:
     alias: ''
     begin_tag: pmt.PMT_NIL
     comment: ''
-    file: /home/austin/Documents/usst/ground_station/examples/SampleBinaryFiles/pyramid_32B.bin
+    file: /home/radsat-gs/ground_station/examples/SampleBinaryFiles/50p_duty_32B.bin
     length: '0'
     maxoutbuf: '0'
     minoutbuf: '0'
