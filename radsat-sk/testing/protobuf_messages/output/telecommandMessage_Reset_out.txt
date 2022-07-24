@@ -1,3 +1,0 @@
-Reset {
-  hard: 1
-}

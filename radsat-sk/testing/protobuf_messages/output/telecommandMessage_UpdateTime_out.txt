@@ -1,3 +1,0 @@
-UpdateTime {
-  unixTime: 1123
-}

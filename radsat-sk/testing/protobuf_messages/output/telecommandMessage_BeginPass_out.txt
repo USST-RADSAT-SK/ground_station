@@ -1,3 +1,0 @@
-BeginPass {
-  passLength: 10
-}

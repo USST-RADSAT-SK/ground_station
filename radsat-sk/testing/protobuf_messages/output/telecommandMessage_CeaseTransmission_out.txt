@@ -1,3 +1,0 @@
-CeaseTransmission {
-  duration: 1
-}
