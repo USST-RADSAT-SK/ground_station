@@ -40,11 +40,12 @@ message update_time {
 // Instruct the OBC to reset a certain component via Software reset (hard=0) or Power-Cycle (hard=1)
 message reset {
 	enum device_t {
-		Obc				= 0;
-		Transmitter		= 1;
-		Receiver		= 2;
-		AntennaSideA	= 3;
-		AntennaSideB	= 4;
+		None			= 0;
+		Obc				= 1;
+		Transmitter		= 2;
+		Receiver		= 3;
+		AntennaSideA	= 4;
+		AntennaSideB	= 5;
 	}
 	device_t device	= 1;
 	uint32 hard 	= 2;

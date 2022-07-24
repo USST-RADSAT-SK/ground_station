@@ -70,17 +70,17 @@ message camera_telemetry {
 
 // Information about the state of the Electrical Power Supply
 message eps_telemetry {
-
+	uint32 uptime	= 1;
 }
 
 // Information about the state of the Battery
 message battery_telemetry {
-
+	uint32 uptime	= 1;
 }
 
 // Information about the state of the Antenna
 message antenna_telemetry {
-
+	uint32 uptime	= 1;
 }
 
 // Payload Data for a single Dosimeter board
@@ -104,10 +104,11 @@ message dosimeter_data {
 
 // Enum for image types (i.e. sizes)
 enum image_type_t {
-	FullResolution		= 0;	///< 1024 x 1024 = 1MB
-	HalfResolution		= 1;	///< 512  x 512  = 256kB
-	QuarterResolution	= 2;	///< 256  x 256  = 64kB
-	Thumbnail			= 3;	///< 64   x 64   = 4kB
+	None				= 0;
+	FullResolution		= 1;	///< 1024 x 1024 = 1MB
+	HalfResolution		= 2;	///< 512  x 512  = 256kB
+	QuarterResolution	= 3;	///< 256  x 256  = 64kB
+	Thumbnail			= 4;	///< 64   x 64   = 4kB
 }
 
 // Image Packet
