@@ -1,35 +1,81 @@
 from time import *
-from crc import CrcCalculator, Configuration
 from numpy import *
 import RFileTransfer_pb2 as fileTransfer
 import RTelecommands_pb2 as telecommands  
+from crc import CrcCalculator, Configuration
+
+########################## Read / Write Message Functions ##########################
 
 def writeToFile(protoMessage, fileName = "serializedFile"):
     fw = open("./output/" + fileName,"wb")
     fw.write(protoMessage.SerializeToString())  
     fw.close()
 
-def readFileTransferMessage(fileName = "serializedFile"):
+def readMessage(msgClass, fileName = "serializedFile", withHeader = False):
     # Read data from file
-    fb = open("./output/" + fileName,"rb")
-    output = fileTransfer.file_transfer_message()
-    output.ParseFromString(fb.read())
-    fb.close()
+    if withHeader:
+        fileName += "_header"
+        fb = open("./output/" + fileName,"rb")
+        removedHeader = fb.read()[9:]
+        output = msgClass
+        output.ParseFromString(removedHeader)
+        fb.close()
+        print("Data from file :\n#########################\n")
 
-    fc = open("./output/" + fileName + "_out.txt","w")
-    fc.write(str(output))
+    elif not withHeader:
+        fb = open("./output/" + fileName,"rb")
+        output = msgClass
+        output.ParseFromString(fb.read())
+        fb.close()
+        print("Data into file :\n#########################\n")
+
     print(output)
+    print("#########################\n")
 
-def readTelecommandMessage(fileName = "serializedFile"):
-    # Read data from file
+def addHeader(fileName = "serializedFile", checkHeader=False):
     fb = open("./output/" + fileName,"rb")
-    output = telecommands.telecommand_message()
-    output.ParseFromString(fb.read())
-    fb.close()
+    messageData = fb.read()
+    
+    preamble = int(0x2018).to_bytes(2,byteorder="big")
 
-    fc = open("./output/" + fileName + "_out.txt","w")
-    fc.write(str(output))
-    print(output)
+    length = len(messageData).to_bytes(1,byteorder="big")
+
+    unixTime = int(time()).to_bytes(4,byteorder="big")
+
+    header = length + unixTime + messageData
+    
+
+    width = 16
+    poly=0x8005
+    init_value=0x0000
+    final_xor_value=0x0000
+    reverse_input=True
+    reverse_output=True
+    configuration = Configuration(width, poly, init_value, final_xor_value, reverse_input, reverse_output)
+    crc_calculator = CrcCalculator(configuration, True)
+    checksum = int(crc_calculator.calculate_checksum(header)).to_bytes(2,byteorder="big")
+    
+    if checkHeader:
+        print("Header data : ", "".join(f"0x{i:02x} " for i in header))
+        print("Checksum : 0x" + str(checksum.hex()).upper())
+
+    fullMessage = preamble + checksum + header
+
+    fh = open("./output/" + fileName + "_header","wb")
+    fh.write(bytearray(fullMessage))
+    fh.close()
+
+def xorCipher(inString):
+    xorKey = 'P'
+    length = len(inString)
+
+    for i in range(length):
+        inString = (inString[:i] + chr(ord(inString[i]) ^ ord(xorKey)) + inString[i + 1:])
+        print(inString[i], end = "")
+     
+    return inString
+
+############################ Populate Message Functions ############################
 
 def makeFileTransferMessage():
     
@@ -41,10 +87,11 @@ def makeFileTransferMessage():
 (11) Error Report Summary\n")
     
     if messageType == "1":
-        message.ObcTelemetry.mode = 0
-        message.ObcTelemetry.uptime = 0
-        message.ObcTelemetry.rtcTime = 0
-        message.ObcTelemetry.rtcTemperature = 0
+        message.ObcTelemetry.mode = 1
+        message.ObcTelemetry.uptime = 12
+        message.ObcTelemetry.rtcTime = 23423
+        message.ObcTelemetry.rtcTemperature = 32
+        msgType = "ObcTelemetry"
     
     elif messageType == "2":
         message.TransceiverTelemetry.receiver.rxDoppler = 1.02
@@ -69,55 +116,69 @@ def makeFileTransferMessage():
         message.TransceiverTelemetry.transmitter.powerAmplifierTemperature = 6.11
         message.TransceiverTelemetry.transmitter.boardTemperature = 28.6
         message.TransceiverTelemetry.transmitter.uptime = 1191
+        msgType = "TransceiverTelemetry"
 
     elif messageType == "3":
-        message.CameraTelemetry.uptime = 0
+        message.CameraTelemetry.uptime = 5744
+        msgType = "CameraTelemetry"
 
     elif messageType == "4":
-        message.EpsTelemetry = 0
+        message.EpsTelemetry.uptime = 2344
+        msgType = "EpsTelemetry"
 
     elif messageType == "5":
-        message.BatteryTelemetry = -1
+        message.BatteryTelemetry.uptime = 3423
+        msgType = "BatteryTelemetry"
 
     elif messageType == "6":
-        message.AntennaTelemetry = -1
+        message.AntennaTelemetry.uptime = 9368
+        msgType = "AntennaTelemetry"
 
     elif messageType == "7":
-        message.DosimeterData.boardOne.channelZero = 0
-        message.DosimeterData.boardOne.channelOne = 0
-        message.DosimeterData.boardOne.channelTwo = 0
-        message.DosimeterData.boardOne.channelThree = 0  
-        message.DosimeterData.boardOne.channelFour = 0
-        message.DosimeterData.boardOne.channelFive = 0
-        message.DosimeterData.boardOne.channelSix = 0
-        message.DosimeterData.boardOne.channelSeven = 0
+        message.DosimeterData.boardOne.channelZero = 1
+        message.DosimeterData.boardOne.channelOne = 1
+        message.DosimeterData.boardOne.channelTwo = 1
+        message.DosimeterData.boardOne.channelThree = 1  
+        message.DosimeterData.boardOne.channelFour = 1
+        message.DosimeterData.boardOne.channelFive = 1
+        message.DosimeterData.boardOne.channelSix = 1
+        message.DosimeterData.boardOne.channelSeven = 1
 
-        message.DosimeterData.boardTwo.channelZero = 0
-        message.DosimeterData.boardTwo.channelOne = 0
-        message.DosimeterData.boardTwo.channelTwo = 0
-        message.DosimeterData.boardTwo.channelThree = 0  
-        message.DosimeterData.boardTwo.channelFour = 0
-        message.DosimeterData.boardTwo.channelFive = 0
-        message.DosimeterData.boardTwo.channelSix = 0
-        message.DosimeterData.boardTwo.channelSeven = 0  
+        message.DosimeterData.boardTwo.channelZero = 2
+        message.DosimeterData.boardTwo.channelOne = 2
+        message.DosimeterData.boardTwo.channelTwo = 2
+        message.DosimeterData.boardTwo.channelThree = 2  
+        message.DosimeterData.boardTwo.channelFour = 2
+        message.DosimeterData.boardTwo.channelFive = 2
+        message.DosimeterData.boardTwo.channelSix = 2
+        message.DosimeterData.boardTwo.channelSeven = 2  
+        msgType = "DosimeterData"
 
     elif messageType == "8":
-        message.ImagePacket.id = 0
-        message.ImagePacket.type = "FullResolution"
-        message.ImagePacket.data = 0
+        message.ImagePacket.id = 124122
+        message.ImagePacket.type = 1
+        message.ImagePacket.data = b'0x01'
+        msgType = "ImagePacket"
 
     elif messageType == "9":
-        message.ModuleErrorReport.uptime = 0
+        message.ModuleErrorReport.module = 1231
+        message.ModuleErrorReport.error = 1231
+        msgType = "ModuleErrorReport"
 
     elif messageType == "10": 
-        message.ComponentErrorReport.uptime = 0
+        message.ComponentErrorReport.component = 5231
+        message.ComponentErrorReport.error = 2231
+        msgType = "ComponentErrorReport"
 
     elif messageType == "11":
-        message.ErrorReportSummary.uptime = 0
+        message.ErrorReportSummary.moduleErrorCount.extend([1,2])
+        message.ErrorReportSummary.componentErrorCount.extend([3,4,5,6])
+        msgType = "ErrorReportSummary"
 
-    writeToFile(message, "fileTransferMessage")
+    fileName = "fileTransferMessage" + msgType
+    writeToFile(message, fileName)
 
-    return message
+    return message,fileName
 
 def makeTelecommandMessage():
 
@@ -147,64 +208,27 @@ def makeTelecommandMessage():
         msgType = "UpdateTime"
 
     elif messageType == "6":
-        message.Reset.Obc
+        message.Reset.device = "Obc"
         message.Reset.hard = 1
         msgType = "Reset"
 
-    fileName = "telecommandMessage_" + msgType
+    fileName = "telecommandMessage" + msgType
     writeToFile(message, fileName)
 
     return message,fileName
 
-def addHeader(fileName = "serializedFile"):
-    fb = open("./output/" + fileName,"rb")
-    messageData = fb.read()
-    
-    preamble = int(0x2018).to_bytes(2,byteorder="big")
+################################# Script Interface #################################
 
-    length = len(messageData).to_bytes(1,byteorder="big")
-
-    unixTime = int(time()).to_bytes(4,byteorder="big")
-
-    header1 = length + unixTime + messageData
-    print("Header data : ", "".join(f"0x{i:02x} " for i in header1)) 
-
-    width = 16
-    poly=0x8005
-    init_value=0x0000
-    final_xor_value=0x0000
-    reverse_input=True
-    reverse_output=True
-    configuration = Configuration(width, poly, init_value, final_xor_value, reverse_input, reverse_output)
-    crc_calculator = CrcCalculator(configuration, True)
-    checksum = int(crc_calculator.calculate_checksum(header1)).to_bytes(2,byteorder="big")
-    print("Checksum : 0x" + str(checksum.hex()))
-
-    header = preamble + checksum + header1
-    fullMessage = header + messageData
-
-    fh = open("./output/" + fileName + "_header","wb")
-    fh.write(bytearray(fullMessage))
-    fh.close()
-
-def readBinFile(file):
-    with open(file,"rb") as f:
-        byte = f.read(1)
-        while byte:
-            # Do stuff with byte.
-            byte = f.read(1)
-            print(byte)
-
-messageType = "3" #input("Select message type:\n(1) File Transfer\n(2) Telecommand\n")
+messageType = "2"#input("Select message type:\n(1) File Transfer\n(2) Telecommand\n")
 
 if messageType == "1":
-    message = makeFileTransferMessage()
-    readFileTransferMessage("fileTransferMessage")
+    message,fileName = makeFileTransferMessage()
+    readMessage(fileTransfer.file_transfer_message(), fileName)
+    addHeader(fileName)
+    readMessage(fileTransfer.file_transfer_message(), fileName,withHeader=True)
 
 elif messageType == "2":
     message,fileName = makeTelecommandMessage()
-    readTelecommandMessage(fileName)
+    readMessage(telecommands.telecommand_message(), fileName)
     addHeader(fileName)
-
-elif messageType == "3":
-    readBinFile("./output/telecommandMessage_BeginFileTransfer_header2")
+    readMessage(telecommands.telecommand_message(), fileName,withHeader=True)

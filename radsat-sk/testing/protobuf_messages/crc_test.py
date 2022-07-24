@@ -1,7 +1,6 @@
 from crc import CrcCalculator, Configuration
 
 data = bytes([0x00,0x01,0x02,0x03,0x04,0x05])
-expected_checksum = 0xBB3D
 width = 16
 poly=0x8005
 init_value=0x0000
