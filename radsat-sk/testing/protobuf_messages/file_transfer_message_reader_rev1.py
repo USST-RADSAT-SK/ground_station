@@ -16,7 +16,16 @@ def readMessage(msgClass, fileName = "serializedFile", withHeader = False):
     if withHeader:
         fileName += "_header"
         fb = open("./output/" + fileName,"rb")
-        removedHeader = fb.read()[9:]
+
+        encryptedMessage = list(fb.read())
+        decryptedMessage = []
+
+        with open("encryption_key","rb") as fk:
+            key = fk.read()
+        for i in encryptedMessage:
+            decryptedMessage.append(i ^key[0])
+
+        removedHeader = bytes(decryptedMessage[9:])
         output = msgClass
         output.ParseFromString(removedHeader)
         fb.close()
@@ -33,6 +42,8 @@ def readMessage(msgClass, fileName = "serializedFile", withHeader = False):
     print("#########################\n")
 
 def addHeader(fileName = "serializedFile", checkHeader=False):
+    
+    # Make header
     fb = open("./output/" + fileName,"rb")
     messageData = fb.read()
     
@@ -43,7 +54,6 @@ def addHeader(fileName = "serializedFile", checkHeader=False):
     unixTime = int(time()).to_bytes(4,byteorder="big")
 
     header = length + unixTime + messageData
-    
 
     width = 16
     poly=0x8005
@@ -59,21 +69,20 @@ def addHeader(fileName = "serializedFile", checkHeader=False):
         print("Header data : ", "".join(f"0x{i:02x} " for i in header))
         print("Checksum : 0x" + str(checksum.hex()).upper())
 
-    fullMessage = preamble + checksum + header
+    headerMessage = list(preamble + checksum + header)
+    
+    # Encrypt message with header
+    with open("encryption_key","rb") as fk:
+        key = fk.read()
+
+    fullMessage = []
+    
+    for i in headerMessage:
+        fullMessage.append(i ^key[0])
 
     fh = open("./output/" + fileName + "_header","wb")
     fh.write(bytearray(fullMessage))
     fh.close()
-
-def xorCipher(inString):
-    xorKey = 'P'
-    length = len(inString)
-
-    for i in range(length):
-        inString = (inString[:i] + chr(ord(inString[i]) ^ ord(xorKey)) + inString[i + 1:])
-        print(inString[i], end = "")
-     
-    return inString
 
 ############################ Populate Message Functions ############################
 
@@ -219,7 +228,7 @@ def makeTelecommandMessage():
 
 ################################# Script Interface #################################
 
-messageType = "2"#input("Select message type:\n(1) File Transfer\n(2) Telecommand\n")
+messageType = input("Select message type:\n(1) File Transfer\n(2) Telecommand\n")
 
 if messageType == "1":
     message,fileName = makeFileTransferMessage()
