@@ -1,10 +1,12 @@
 from time import *
 from numpy import *
+import RRadsat_pb2 as radsat
+import RProtocol_pb2 as protocol
 import RFileTransfer_pb2 as fileTransfer
-import RTelecommands_pb2 as telecommands  
+import RTelecommands_pb2 as telecommands
 from crc import CrcCalculator, Configuration
 
-########################## Read / Write Message Functions ##########################
+####################################### Read / Write Message Functions #######################################
 
 def writeToFile(protoMessage, fileName = "serializedFile"):
     fw = open("./output/" + fileName,"wb")
@@ -84,160 +86,243 @@ def addHeader(fileName = "serializedFile", checkHeader=False):
     fh.write(bytearray(fullMessage))
     fh.close()
 
-############################ Populate Message Functions ############################
+def printDataAsHex(fileName, header = False):
+    if header:
+        fileName = fileName + "_header"
+    with open('./output/' + fileName,'rb') as fr:
+        out = bytearray(fr.read()).hex()
+    return out
+
+######################################### Populate Message Functions #########################################
 
 def makeFileTransferMessage():
     
-    message = fileTransfer.file_transfer_message()
+    message = radsat.radsat_message()
 
-    messageType = input("Select message type:\n(1) OBC Telemetry\n(2) Tranceiver Telemetry\n\
+    while True:
+
+        messageType = input("Select message type:\n(1) OBC Telemetry\n(2) Tranceiver Telemetry\n\
 (3) Camera Telemetry\n(4) EPS Telemetry\n(5) Battery Telemetry\n(6) Antenna Telemetry\n\
 (7) Dosimeter Data\n(8) Image Packet\n(9) Module Error Report\n(10) Component Error Report\n\
 (11) Error Report Summary\n")
     
-    if messageType == "1":
-        message.ObcTelemetry.mode = 1
-        message.ObcTelemetry.uptime = 12
-        message.ObcTelemetry.rtcTime = 23423
-        message.ObcTelemetry.rtcTemperature = 32
-        msgType = "ObcTelemetry"
-    
-    elif messageType == "2":
-        message.TransceiverTelemetry.receiver.rxDoppler = 1.02
-        message.TransceiverTelemetry.receiver.rxRssi = 34.56
-        message.TransceiverTelemetry.receiver.busVoltage = 5.9
-        message.TransceiverTelemetry.receiver.totalCurrent = 2.50
-        message.TransceiverTelemetry.receiver.txCurrent = 1.98
-        message.TransceiverTelemetry.receiver.rxCurrent = 2.01
-        message.TransceiverTelemetry.receiver.powerAmplifierCurrent = 28.4
-        message.TransceiverTelemetry.receiver.powerAmplifierTemperature = 29.8
-        message.TransceiverTelemetry.receiver.boardTemperature = 30.2
-        message.TransceiverTelemetry.receiver.uptime = 1092
-        message.TransceiverTelemetry.receiver.frames = 234
+        if messageType == "1":
+            message.FileTransferMessage.ObcTelemetry.mode = 1
+            message.FileTransferMessage.ObcTelemetry.uptime = 12
+            message.FileTransferMessage.ObcTelemetry.rtcTime = 23423
+            message.FileTransferMessage.ObcTelemetry.rtcTemperature = 32
+            msgType = "ObcTelemetry"
+            break
 
-        message.TransceiverTelemetry.transmitter.reflectedPower = 1.23
-        message.TransceiverTelemetry.transmitter.forwardPower = 26.98
-        message.TransceiverTelemetry.transmitter.busVoltage = 4.5
-        message.TransceiverTelemetry.transmitter.totalCurrent = 3.1
-        message.TransceiverTelemetry.transmitter.txCurrent = 2.21
-        message.TransceiverTelemetry.transmitter.rxCurrent = 2.23
-        message.TransceiverTelemetry.transmitter.powerAmplifierCurrent = 5.9
-        message.TransceiverTelemetry.transmitter.powerAmplifierTemperature = 6.11
-        message.TransceiverTelemetry.transmitter.boardTemperature = 28.6
-        message.TransceiverTelemetry.transmitter.uptime = 1191
-        msgType = "TransceiverTelemetry"
+        elif messageType == "2":
+            message.FileTransferMessage.TransceiverTelemetry.receiver.rxDoppler = 1.02
+            message.FileTransferMessage.TransceiverTelemetry.receiver.rxRssi = 34.56
+            message.FileTransferMessage.TransceiverTelemetry.receiver.busVoltage = 5.9
+            message.FileTransferMessage.TransceiverTelemetry.receiver.totalCurrent = 2.50
+            message.FileTransferMessage.TransceiverTelemetry.receiver.txCurrent = 1.98
+            message.FileTransferMessage.TransceiverTelemetry.receiver.rxCurrent = 2.01
+            message.FileTransferMessage.TransceiverTelemetry.receiver.powerAmplifierCurrent = 28.4
+            message.FileTransferMessage.TransceiverTelemetry.receiver.powerAmplifierTemperature = 29.8
+            message.FileTransferMessage.TransceiverTelemetry.receiver.boardTemperature = 30.2
+            message.FileTransferMessage.TransceiverTelemetry.receiver.uptime = 1092
+            message.FileTransferMessage.TransceiverTelemetry.receiver.frames = 234
 
-    elif messageType == "3":
-        message.CameraTelemetry.uptime = 5744
-        msgType = "CameraTelemetry"
+            message.FileTransferMessage.TransceiverTelemetry.transmitter.reflectedPower = 1.23
+            message.FileTransferMessage.TransceiverTelemetry.transmitter.forwardPower = 26.98
+            message.FileTransferMessage.TransceiverTelemetry.transmitter.busVoltage = 4.5
+            message.FileTransferMessage.TransceiverTelemetry.transmitter.totalCurrent = 3.1
+            message.FileTransferMessage.TransceiverTelemetry.transmitter.txCurrent = 2.21
+            message.FileTransferMessage.TransceiverTelemetry.transmitter.rxCurrent = 2.23
+            message.FileTransferMessage.TransceiverTelemetry.transmitter.powerAmplifierCurrent = 5.9
+            message.FileTransferMessage.TransceiverTelemetry.transmitter.powerAmplifierTemperature = 6.11
+            message.FileTransferMessage.TransceiverTelemetry.transmitter.boardTemperature = 28.6
+            message.FileTransferMessage.TransceiverTelemetry.transmitter.uptime = 1191
+            msgType = "TransceiverTelemetry"
+            break
 
-    elif messageType == "4":
-        message.EpsTelemetry.uptime = 2344
-        msgType = "EpsTelemetry"
+        elif messageType == "3":
+            message.FileTransferMessage.CameraTelemetry.uptime = 5744
+            msgType = "CameraTelemetry"
+            break
 
-    elif messageType == "5":
-        message.BatteryTelemetry.uptime = 3423
-        msgType = "BatteryTelemetry"
+        elif messageType == "4":
+            message.FileTransferMessage.EpsTelemetry.uptime = 2344
+            msgType = "EpsTelemetry"
+            break
 
-    elif messageType == "6":
-        message.AntennaTelemetry.uptime = 9368
-        msgType = "AntennaTelemetry"
+        elif messageType == "5":
+            message.FileTransferMessage.BatteryTelemetry.uptime = 3423
+            msgType = "BatteryTelemetry"
+            break
 
-    elif messageType == "7":
-        message.DosimeterData.boardOne.channelZero = 1
-        message.DosimeterData.boardOne.channelOne = 1
-        message.DosimeterData.boardOne.channelTwo = 1
-        message.DosimeterData.boardOne.channelThree = 1  
-        message.DosimeterData.boardOne.channelFour = 1
-        message.DosimeterData.boardOne.channelFive = 1
-        message.DosimeterData.boardOne.channelSix = 1
-        message.DosimeterData.boardOne.channelSeven = 1
+        elif messageType == "6":
+            message.FileTransferMessage.AntennaTelemetry.uptime = 9368
+            msgType = "AntennaTelemetry"
+            break
 
-        message.DosimeterData.boardTwo.channelZero = 2
-        message.DosimeterData.boardTwo.channelOne = 2
-        message.DosimeterData.boardTwo.channelTwo = 2
-        message.DosimeterData.boardTwo.channelThree = 2  
-        message.DosimeterData.boardTwo.channelFour = 2
-        message.DosimeterData.boardTwo.channelFive = 2
-        message.DosimeterData.boardTwo.channelSix = 2
-        message.DosimeterData.boardTwo.channelSeven = 2  
-        msgType = "DosimeterData"
+        elif messageType == "7":
+            message.FileTransferMessage.DosimeterData.boardOne.channelZero = 1
+            message.FileTransferMessage.DosimeterData.boardOne.channelOne = 1
+            message.FileTransferMessage.DosimeterData.boardOne.channelTwo = 1
+            message.FileTransferMessage.DosimeterData.boardOne.channelThree = 1  
+            message.FileTransferMessage.DosimeterData.boardOne.channelFour = 1
+            message.FileTransferMessage.DosimeterData.boardOne.channelFive = 1
+            message.FileTransferMessage.DosimeterData.boardOne.channelSix = 1
+            message.FileTransferMessage.DosimeterData.boardOne.channelSeven = 1
 
-    elif messageType == "8":
-        message.ImagePacket.id = 124122
-        message.ImagePacket.type = 1
-        message.ImagePacket.data = b'0x01'
-        msgType = "ImagePacket"
+            message.FileTransferMessage.DosimeterData.boardTwo.channelZero = 2
+            message.FileTransferMessage.DosimeterData.boardTwo.channelOne = 2
+            message.FileTransferMessage.DosimeterData.boardTwo.channelTwo = 2
+            message.FileTransferMessage.DosimeterData.boardTwo.channelThree = 2  
+            message.FileTransferMessage.DosimeterData.boardTwo.channelFour = 2
+            message.FileTransferMessage.DosimeterData.boardTwo.channelFive = 2
+            message.FileTransferMessage.DosimeterData.boardTwo.channelSix = 2
+            message.FileTransferMessage.DosimeterData.boardTwo.channelSeven = 2  
+            msgType = "DosimeterData"
+            break
 
-    elif messageType == "9":
-        message.ModuleErrorReport.module = 1231
-        message.ModuleErrorReport.error = 1231
-        msgType = "ModuleErrorReport"
+        elif messageType == "8":
+            message.FileTransferMessage.ImagePacket.id = 124122
+            message.FileTransferMessage.ImagePacket.type = 1
+            message.FileTransferMessage.ImagePacket.data = b'0x01'
+            msgType = "ImagePacket"
+            break
 
-    elif messageType == "10": 
-        message.ComponentErrorReport.component = 5231
-        message.ComponentErrorReport.error = 2231
-        msgType = "ComponentErrorReport"
+        elif messageType == "9":
+            message.FileTransferMessage.ModuleErrorReport.module = 1231
+            message.FileTransferMessage.ModuleErrorReport.error = 1231
+            msgType = "ModuleErrorReport"
+            break
 
-    elif messageType == "11":
-        message.ErrorReportSummary.moduleErrorCount.extend([1,2])
-        message.ErrorReportSummary.componentErrorCount.extend([3,4,5,6])
-        msgType = "ErrorReportSummary"
+        elif messageType == "10": 
+            message.FileTransferMessage.ComponentErrorReport.component = 5231
+            message.FileTransferMessage.ComponentErrorReport.error = 2231
+            msgType = "ComponentErrorReport"
+            break
 
-    fileName = "fileTransferMessage" + msgType
+        elif messageType == "11":
+            message.FileTransferMessage.ErrorReportSummary.moduleErrorCount.extend([1,2])
+            message.FileTransferMessage.ErrorReportSummary.componentErrorCount.extend([3,4,5,6])
+            msgType = "ErrorReportSummary"
+            break
+
+        else:
+            print("Invalid entry\n")
+
+    fileName = "fileTransferMessage_" + msgType
     writeToFile(message, fileName)
 
     return message,fileName
 
 def makeTelecommandMessage():
 
-    message = telecommands.telecommand_message()
-
-    messageType = input("Select message type:\n(1) Begin Pass\n(2) Begin File Transfer\n\
+    message = radsat.radsat_message()
+    while True:
+        messageType = input("Select message type:\n(1) Begin Pass\n(2) Begin File Transfer\n\
 (3) Cease Transmission\n(4) Resume Transmission\n(5) Update Time\n(6) Reset\n")
 
-    if messageType == "1":
-        message.BeginPass.passLength = 10
-        msgType = "BeginPass"
+        if messageType == "1":
+            message.TelecommandMessage.BeginPass.passLength = 10
+            msgType = "BeginPass"
+            print("MADE IT")
+            break
     
-    elif messageType == "2":
-        message.BeginFileTransfer.begin = True
-        msgType = "BeginFileTransfer"
+        elif messageType == "2":
+            message.TelecommandMessage.BeginFileTransfer.begin = True
+            msgType = "BeginFileTransfer"
+            break
 
-    elif messageType == "3":
-        message.CeaseTransmission.duration = 1
-        msgType = "CeaseTransmission"
+        elif messageType == "3":
+            message.TelecommandMessage.CeaseTransmission.duration = 1
+            msgType = "CeaseTransmission"
+            break
 
-    elif messageType == "4":
-        message.ResumeTransmission.resume = True
-        msgType = "ResumeTransmission"
+        elif messageType == "4":
+            message.TelecommandMessage.ResumeTransmission.resume = True
+            msgType = "ResumeTransmission"
+            break
 
-    elif messageType == "5":
-        message.UpdateTime.unixTime = 1123
-        msgType = "UpdateTime"
+        elif messageType == "5":
+            message.TelecommandMessage.UpdateTime.unixTime = 1123
+            msgType = "UpdateTime"
+            break
 
-    elif messageType == "6":
-        message.Reset.device = "Obc"
-        message.Reset.hard = 1
-        msgType = "Reset"
+        elif messageType == "6":
+            message.TelecommandMessage.Reset.device = "Obc"
+            message.Reset.hard = 1
+            msgType = "Reset"
+            break
 
-    fileName = "telecommandMessage" + msgType
+        else:
+            print("Invalid entry\n")
+
+    fileName = "telecommandMessage_" + msgType
     writeToFile(message, fileName)
 
     return message,fileName
 
-################################# Script Interface #################################
+def makeProtocolMessage():
+    
+    message = radsat.radsat_message()
+    while True:
+        messageType = input("Select message type:\n(1) ACK\n(2) NACK\n")
 
-messageType = input("Select message type:\n(1) File Transfer\n(2) Telecommand\n")
+        if messageType == "1":
+            message.ProtocolMessage.Ack.resp = 0
+            msgType = "ack"
+            break
 
-if messageType == "1":
-    message,fileName = makeFileTransferMessage()
-    readMessage(fileTransfer.file_transfer_message(), fileName)
-    addHeader(fileName)
-    readMessage(fileTransfer.file_transfer_message(), fileName,withHeader=True)
 
-elif messageType == "2":
-    message,fileName = makeTelecommandMessage()
-    readMessage(telecommands.telecommand_message(), fileName)
-    addHeader(fileName)
-    readMessage(telecommands.telecommand_message(), fileName,withHeader=True)
+        elif messageType == "2":
+            message.ProtocolMessage.Nack.resp = 0
+            msgType = "nack"
+            break
+
+        else:
+            print("Invalid entry\n")
+
+    fileName = "protocol_" + msgType
+    writeToFile(message, fileName)
+
+    return message,fileName
+
+############################################## Script Interface ##############################################
+
+while True:
+
+    messageType = input("Select message type:\n(1) Protocol\n(2) File Transfer\n(3) Telecommand\n(Q) Quit\n")
+
+    if messageType == "1":
+        message,fileName = makeProtocolMessage()
+        readMessage(radsat.radsat_message(), fileName)
+        print("Pre-scramble data : " + printDataAsHex(fileName))
+        addHeader(fileName)
+        readMessage(radsat.radsat_message(), fileName,withHeader=True)
+        print("Post-scramble data : " + printDataAsHex(fileName,header = True))
+
+    elif messageType == "2":
+        message,fileName = makeFileTransferMessage()
+        readMessage(radsat.radsat_message(), fileName)
+        print("Pre-scramble data : " + printDataAsHex(fileName))
+        addHeader(fileName)
+        readMessage(radsat.radsat_message(), fileName,withHeader=True)
+        print("Post-scramble data : " + printDataAsHex(fileName,header = True))
+
+    elif messageType == "3":
+        message,fileName = makeTelecommandMessage()
+        readMessage(radsat.radsat_message(), fileName)
+        print("Pre-scramble data : " + printDataAsHex(fileName))
+        addHeader(fileName)
+        readMessage(radsat.radsat_message(), fileName,withHeader=True)
+        print("Post-scramble data : " + printDataAsHex(fileName,header = True))
+        print(type(printDataAsHex(fileName,header = True)))
+        print(len(printDataAsHex(fileName,header = True)))
+
+
+
+    elif messageType.upper() == "Q":
+        print("Exiting ... ")
+        break
+    
+    else:
+        print("Invalid entry\n")
