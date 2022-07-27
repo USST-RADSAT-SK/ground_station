@@ -1,3 +1,13 @@
+/* file: telecommands.proto
+ * date: January 18 2021
+ *
+ * This proto file includes the raw definitions (using proto3 syntax) of
+ * messages that are to be compiled into C structs using the protoc library.
+ *
+ * The messages defined in this file will be used for sending telecommands to
+ * the RADSAT-SK Satellite from the Ground Station on Earth.
+ */
+
 syntax = "proto3";
 
 // top level File Transfer message object
@@ -19,7 +29,7 @@ message begin_pass {
 
 // Inform OBC that there are no more telecommands; Ground Station is ready to receive Files (telemetry, images, etc.)
 message begin_file_transfer {
-	bool begin = 1;
+    uint32 resp     = 1; ///< dummy variable
 }
 
 // Inform the OBC that it is to cease all downlink transmissions immediately (no ACK will follow this message)
@@ -29,7 +39,7 @@ message cease_transmission {
 
 // Inform the OBC that it can end its previous halting of all downlink transmissions
 message resume_transmission {
-	bool resume = 1;
+    uint32 resp     = 1; ///< dummy variable
 }
 
 // Update the OBC's local time on its Real-Time Clock
@@ -40,12 +50,11 @@ message update_time {
 // Instruct the OBC to reset a certain component via Software reset (hard=0) or Power-Cycle (hard=1)
 message reset {
 	enum device_t {
-		None			= 0;
-		Obc				= 1;
-		Transmitter		= 2;
-		Receiver		= 3;
-		AntennaSideA	= 4;
-		AntennaSideB	= 5;
+		Obc				= 0;
+		Transmitter		= 1;
+		Receiver		= 2;
+		AntennaSideA	= 3;
+		AntennaSideB	= 4;
 	}
 	device_t device	= 1;
 	uint32 hard 	= 2;

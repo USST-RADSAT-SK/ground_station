@@ -9,22 +9,22 @@
  * Station.
  */
 
- syntax = "proto3";
+syntax = "proto3";
 
- // top level File Transfer message object
- message protocol_message {
-     oneof message {
-         ack Ack     = 1;
-         nack Nack   = 2;
-     }
- }
- 
+// top level File Transfer message object
+message protocol_message {
+	oneof message {
+		ack Ack     = 1;
+		nack Nack   = 2;
+	}
+}
+
  // Positive Acknowledgement
  message ack {
-    uint32 resp      = 1;
+    uint32 resp     = 1; ///< dummy variable
  }
  
  // Negative Acknowledgement
  message nack {
-    uint32 resp     = 1;
+    uint32 resp     = 1; ///< dummy variable
  }
