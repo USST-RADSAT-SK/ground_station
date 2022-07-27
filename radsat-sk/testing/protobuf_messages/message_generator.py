@@ -105,6 +105,18 @@ def printDataAsHex(fileName, header = False):
     hexData = ("".join(f"0x{i:02x}, " for i in out))
     return hexData
 
+def readHexMessage(msgClass, hexString, withHeader = True):
+    hexString.replace(" ","")
+    output = msgClass
+
+    if withHeader:
+        body = bytes.fromhex(hexString)
+        output.ParseFromString(body[9:])
+    elif not withHeader:
+        output.ParseFromString(bytes.fromhex(hexString))
+
+    print("Message Type : \n",output)
+
 ######################################### Populate Message Functions #########################################
 
 def makeFileTransferMessage():
@@ -359,12 +371,12 @@ def makeProtocolMessage():
 
 ############################################## Script Interface ##############################################
 
-useCipher = True
+useCipher = False
 
 while True:
 
     messageType = input("Select message type:\n(1) Protocol\n(2) File Transfer\n\
-(3) Telecommand\n(4) Check Cipher Key\n(Q) Quit\n")
+(3) Telecommand\n(4) Check XOR Key\n(5) Read Hex String\n(Q) Quit\n")
 
     if messageType == "1":
         message,fileName = makeProtocolMessage()
@@ -392,6 +404,15 @@ while True:
 
     elif messageType == "4":
         print(printDataAsHex("./xorCipher/new_key"))
+
+    elif messageType == "5":
+        try:
+            hexString = input("Enter hex string : ")
+        except ValueError:
+            print("Invalid Entry")
+            hexString = ""
+            pass
+        readHexMessage(radsat.radsat_message(), hexString)
 
     elif messageType.upper() == "Q":
         print("Exiting ... ")
