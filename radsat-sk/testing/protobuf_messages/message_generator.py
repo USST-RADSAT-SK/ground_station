@@ -1,9 +1,6 @@
 from time import *
 from numpy import *
 import RRadsat_pb2 as radsat
-#import RProtocol_pb2 as protocol
-#import RFileTransfer_pb2 as fileTransfer
-#import RTelecommands_pb2 as telecommands
 from crc import CrcCalculator, Configuration
 
 ####################################### Read / Write Message Functions #######################################
@@ -20,7 +17,6 @@ def readMessage(msgClass, fileName = "serializedFile", xorCipher = True, withHea
         fb = open("./output/" + fileName,"rb")
 
         encryptedMessage = list(fb.read())
-
 
         if xorCipher:
             decryptedMessage = []
@@ -111,6 +107,11 @@ def readHexMessage(msgClass, hexString, withHeader = True):
 
     if withHeader:
         body = bytes.fromhex(hexString)
+        preamble = bytes(reversed(body[0:2])).hex()
+        crc = bytes(reversed(body[2:4])).hex()
+        unixTime = bytes(body[5:9])
+        print("Preamble = " + str(preamble) + "\nCRC = " + str(crc))
+        print("UnixTime = " + str(int.from_bytes(unixTime,byteorder="little")))
         output.ParseFromString(body[9:])
     elif not withHeader:
         output.ParseFromString(bytes.fromhex(hexString))
@@ -371,7 +372,7 @@ def makeProtocolMessage():
 
 ############################################## Script Interface ##############################################
 
-useCipher = False
+useCipher = True
 
 while True:
 
@@ -382,7 +383,7 @@ while True:
         message,fileName = makeProtocolMessage()
         readMessage(radsat.radsat_message(), fileName, xorCipher = useCipher)
         print("Pre-scramble data : " + printDataAsHex("./output/" + fileName))
-        addHeader(fileName,xorCipher = useCipher)
+        addHeader(fileName,xorCipher = useCipher, checkHeader=True)
         readMessage(radsat.radsat_message(), fileName, xorCipher = useCipher, withHeader=True)
         print("Post-scramble data : " + printDataAsHex("./output/" + fileName,header = True))
 
@@ -390,7 +391,7 @@ while True:
         message,fileName = makeFileTransferMessage()
         readMessage(radsat.radsat_message(), fileName, xorCipher = useCipher)
         print("Pre-scramble data : " + printDataAsHex("./output/" + fileName))
-        addHeader(fileName,xorCipher = useCipher)
+        addHeader(fileName,xorCipher = useCipher, checkHeader=True)
         readMessage(radsat.radsat_message(), fileName, xorCipher = useCipher, withHeader=True)
         print("Post-scramble data : " + printDataAsHex("./output/" + fileName,header = True))
 
@@ -412,7 +413,7 @@ while True:
             print("Invalid Entry")
             hexString = ""
             pass
-        readHexMessage(radsat.radsat_message(), hexString)
+        readHexMessage(radsat.radsat_message(), hexString, xorCipher = useCipher)
 
     elif messageType.upper() == "Q":
         print("Exiting ... ")
