@@ -2,7 +2,7 @@ options:
   parameters:
     author: Crawford
     catch_exceptions: 'True'
-    category: '[GRC Hier Blocks]'
+    category: '[RADSAT-SK]'
     cmake_opt: ''
     comment: ''
     copyright: ''
@@ -10,7 +10,7 @@ options:
     gen_cmake: 'On'
     gen_linking: dynamic
     generate_options: hb
-    hier_block_src_path: '.:'
+    hier_block_src_path: '~/.grc_gnuradio:'
     id: FM_Modulator_rev1
     max_nouts: '0'
     output_language: python
@@ -22,7 +22,7 @@ options:
     run_options: prompt
     sizing_mode: fixed
     thread_safe_setters: ''
-    title: FM_Modulator_rev1
+    title: FM Modulator
     window_size: (1000,1000)
   states:
     bus_sink: false
@@ -42,7 +42,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [416, 92.0]
+    coordinate: [416, 108.0]
     rotation: 0
     state: enabled
 - name: centerFrequency
@@ -54,9 +54,26 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [296, 92.0]
+    coordinate: [296, 108.0]
     rotation: 0
     state: enabled
+- name: lowPassFilterFaps
+  id: variable_low_pass_filter_taps
+  parameters:
+    beta: '6.76'
+    comment: ''
+    cutoff_freq: frequencyDeviation*6
+    gain: '1.0'
+    samp_rate: sampleRate
+    width: '200'
+    win: window.WIN_HAMMING
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [600, 12.0]
+    rotation: 0
+    state: true
 - name: sampleRate
   id: variable
   parameters:
@@ -66,7 +83,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [192, 92.0]
+    coordinate: [192, 108.0]
     rotation: 0
     state: enabled
 - name: analog_const_source_x_0
@@ -83,7 +100,40 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [504, 348.0]
+    coordinate: [496, 460.0]
+    rotation: 0
+    state: disabled
+- name: analog_const_source_x_0_0
+  id: analog_const_source_x
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    const: '1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: float
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [304, 764.0]
+    rotation: 0
+    state: enabled
+- name: analog_frequency_modulator_fc_0
+  id: analog_frequency_modulator_fc
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    sensitivity: 2 * math.pi * ( frequencyDeviation  / sampleRate )
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [640, 716.0]
     rotation: 0
     state: enabled
 - name: analog_sig_source_x_0_0
@@ -105,9 +155,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [632, 92.0]
+    coordinate: [624, 204.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: analog_sig_source_x_0_0_0
   id: analog_sig_source_x
   parameters:
@@ -127,9 +177,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [624, 436.0]
+    coordinate: [616, 548.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: baudRate
   id: parameter
   parameters:
@@ -138,7 +188,7 @@ blocks:
     hide: none
     label: baudRate
     short_id: ''
-    type: ''
+    type: intx
     value: '9600'
   states:
     bus_sink: false
@@ -162,9 +212,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1056, 280.0]
+    coordinate: [1048, 392.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: blocks_char_to_float_0
   id: blocks_char_to_float
   parameters:
@@ -179,7 +229,25 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [488, 220.0]
+    coordinate: [480, 332.0]
+    rotation: 0
+    state: enabled
+- name: blocks_multiply_const_vxx_0
+  id: blocks_multiply_const_vxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    const: '2'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [248, 636.0]
     rotation: 0
     state: enabled
 - name: blocks_multiply_xx_0
@@ -197,9 +265,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [888, 224.0]
+    coordinate: [880, 336.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: blocks_multiply_xx_0_0
   id: blocks_multiply_xx
   parameters:
@@ -215,9 +283,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [888, 336.0]
+    coordinate: [880, 448.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: blocks_repeat_0
   id: blocks_repeat
   parameters:
@@ -233,7 +301,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [328, 220.0]
+    coordinate: [320, 332.0]
     rotation: 0
     state: enabled
 - name: blocks_sub_xx_0
@@ -251,7 +319,25 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [712, 352.0]
+    coordinate: [704, 464.0]
+    rotation: 0
+    state: disabled
+- name: blocks_sub_xx_1
+  id: blocks_sub_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_inputs: '2'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [496, 656.0]
     rotation: 0
     state: enabled
 - name: exampleUnpack
@@ -267,9 +353,29 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [176, 220.0]
+    coordinate: [168, 332.0]
     rotation: 0
-    state: enabled
+    state: bypassed
+- name: freq_xlating_fir_filter_xxx_0
+  id: freq_xlating_fir_filter_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    center_freq: centerFrequency
+    comment: ''
+    decim: '1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: sampleRate
+    taps: lowPassFilterFaps
+    type: fcc
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1160, 396.0]
+    rotation: 0
+    state: disabled
 - name: frequencyDeviation
   id: parameter
   parameters:
@@ -278,8 +384,8 @@ blocks:
     hide: none
     label: frequencyDeviation
     short_id: ''
-    type: ''
-    value: 4.8E3
+    type: eng_float
+    value: '4800'
   states:
     bus_sink: false
     bus_source: false
@@ -287,6 +393,43 @@ blocks:
     coordinate: [296, 12.0]
     rotation: 0
     state: true
+- name: import_0
+  id: import
+  parameters:
+    alias: ''
+    comment: ''
+    imports: import math
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [880, 52.0]
+    rotation: 0
+    state: true
+- name: low_pass_filter_0
+  id: low_pass_filter
+  parameters:
+    affinity: ''
+    alias: ''
+    beta: '6.76'
+    comment: ''
+    cutoff_freq: '11500'
+    decim: '1'
+    gain: '1'
+    interp: '1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: sampleRate
+    type: fir_filter_ccf
+    width: '500'
+    win: window.WIN_HAMMING
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1016, 680.0]
+    rotation: 0
+    state: bypassed
 - name: pad_sink_0
   id: pad_sink
   parameters:
@@ -296,13 +439,13 @@ blocks:
     label: FSK Mod
     num_streams: '1'
     optional: 'False'
-    type: float
+    type: complex
     vlen: '1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1152, 292.0]
+    coordinate: [1400, 420.0]
     rotation: 0
     state: true
 - name: pad_sink_0_0
@@ -320,9 +463,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [712, 276.0]
+    coordinate: [704, 388.0]
     rotation: 0
-    state: true
+    state: disabled
 - name: pad_source_0
   id: pad_source
   parameters:
@@ -340,7 +483,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [24, 220.0]
+    coordinate: [16, 332.0]
     rotation: 0
     state: true
 - name: samplesPerSymbol
@@ -351,8 +494,8 @@ blocks:
     hide: none
     label: samplesPerSymbol
     short_id: ''
-    type: ''
-    value: '80'
+    type: intx
+    value: '30'
   states:
     bus_sink: false
     bus_source: false
@@ -363,19 +506,25 @@ blocks:
 
 connections:
 - [analog_const_source_x_0, '0', blocks_sub_xx_0, '0']
+- [analog_const_source_x_0_0, '0', blocks_sub_xx_1, '1']
+- [analog_frequency_modulator_fc_0, '0', low_pass_filter_0, '0']
 - [analog_sig_source_x_0_0, '0', blocks_multiply_xx_0, '1']
 - [analog_sig_source_x_0_0_0, '0', blocks_multiply_xx_0_0, '0']
-- [blocks_add_xx_0, '0', pad_sink_0, '0']
+- [blocks_add_xx_0, '0', freq_xlating_fir_filter_xxx_0, '0']
+- [blocks_char_to_float_0, '0', blocks_multiply_const_vxx_0, '0']
 - [blocks_char_to_float_0, '0', blocks_multiply_xx_0, '0']
 - [blocks_char_to_float_0, '0', blocks_sub_xx_0, '1']
 - [blocks_char_to_float_0, '0', pad_sink_0_0, '0']
+- [blocks_multiply_const_vxx_0, '0', blocks_sub_xx_1, '0']
 - [blocks_multiply_xx_0, '0', blocks_add_xx_0, '0']
 - [blocks_multiply_xx_0_0, '0', blocks_add_xx_0, '1']
 - [blocks_repeat_0, '0', blocks_char_to_float_0, '0']
 - [blocks_sub_xx_0, '0', blocks_multiply_xx_0_0, '1']
+- [blocks_sub_xx_1, '0', analog_frequency_modulator_fc_0, '0']
 - [exampleUnpack, '0', blocks_repeat_0, '0']
+- [freq_xlating_fir_filter_xxx_0, '0', pad_sink_0, '0']
+- [low_pass_filter_0, '0', pad_sink_0, '0']
 - [pad_source_0, '0', exampleUnpack, '0']
 
 metadata:
   file_format: 1
-  grc_version: 3.10.4.0

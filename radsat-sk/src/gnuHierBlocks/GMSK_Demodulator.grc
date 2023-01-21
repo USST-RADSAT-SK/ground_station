@@ -1,6 +1,6 @@
 options:
   parameters:
-    author: Crawford
+    author: Austin
     catch_exceptions: 'True'
     category: '[RADSAT-SK]'
     cmake_opt: ''
@@ -10,8 +10,8 @@ options:
     gen_cmake: 'On'
     gen_linking: dynamic
     generate_options: hb
-    hier_block_src_path: ~/.grc_gnuradio/
-    id: FM_Demodulator_rev1
+    hier_block_src_path: '.:'
+    id: GMSK_Demodulator
     max_nouts: '0'
     output_language: python
     placement: (0,0)
@@ -22,39 +22,27 @@ options:
     run_options: prompt
     sizing_mode: fixed
     thread_safe_setters: ''
-    title: '"FM Demodulator"'
+    title: GMSK Demodulator
     window_size: (1000,1000)
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 12.0]
+    coordinate: [16, 12.0]
     rotation: 0
     state: enabled
 
 blocks:
-- name: centerFrequency
+- name: frequencyDeviation
   id: variable
   parameters:
     comment: ''
-    value: frequencyDeviation * 8
+    value: sampleRate//2
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [296, 92.0]
-    rotation: 0
-    state: enabled
-- name: sampleRate
-  id: variable
-  parameters:
-    comment: ''
-    value: samplesPerSymbol * baudRate
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [192, 92.0]
+    coordinate: [200, 108.0]
     rotation: 0
     state: enabled
 - name: analog_quadrature_demod_cf_0
@@ -63,48 +51,14 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    gain: (sampleRate/(2*math.pi*frequencyDeviation))
+    gain: sampleRate/(2*math.pi*frequencyDeviation)
     maxoutbuf: '0'
     minoutbuf: '0'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [368, 220.0]
-    rotation: 0
-    state: enabled
-- name: baudRate
-  id: parameter
-  parameters:
-    alias: ''
-    comment: ''
-    hide: none
-    label: baudRate
-    short_id: ''
-    type: ''
-    value: '9600'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [192, 12.0]
-    rotation: 0
-    state: true
-- name: blocks_char_to_float_1
-  id: blocks_char_to_float
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    scale: '1'
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1008, 172.0]
+    coordinate: [336, 204.0]
     rotation: 0
     state: enabled
 - name: digital_binary_slicer_fb_0
@@ -119,9 +73,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [864, 176.0]
+    coordinate: [936, 120.0]
     rotation: 0
-    state: enabled
+    state: true
 - name: digital_symbol_sync_xx_0
   id: digital_symbol_sync_xx
   parameters:
@@ -140,107 +94,67 @@ blocks:
     resamp_type: digital.IR_MMSE_8TAP
     sps: samplesPerSymbol
     ted_gain: '1.0'
-    ted_type: digital.TED_GARDNER
+    ted_type: digital.TED_SIGNUM_TIMES_SLOPE_ML
     type: ff
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [552, 164.0]
-    rotation: 0
-    state: true
-- name: frequencyDeviation
-  id: parameter
-  parameters:
-    alias: ''
-    comment: ''
-    hide: none
-    label: frequencyDeviation
-    short_id: ''
-    type: ''
-    value: 4.8E3
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [296, 12.0]
-    rotation: 0
-    state: true
-- name: lowPassCutoff
-  id: parameter
-  parameters:
-    alias: ''
-    comment: ''
-    hide: none
-    label: lowPassCutoff
-    short_id: ''
-    type: ''
-    value: '10200'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [600, 12.0]
-    rotation: 0
-    state: true
-- name: low_pass_filter_0
-  id: low_pass_filter
-  parameters:
-    affinity: ''
-    alias: ''
-    beta: '6.76'
-    comment: ''
-    cutoff_freq: lowPassCutoff
-    decim: '1'
-    gain: '1'
-    interp: '1'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    samp_rate: sampleRate
-    type: fir_filter_ccf
-    width: '100'
-    win: window.WIN_RECTANGULAR
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [160, 172.0]
+    coordinate: [504, 148.0]
     rotation: 0
     state: enabled
-- name: pad_sink_0
-  id: pad_sink
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    label: FSK Demod
-    num_streams: '1'
-    optional: 'False'
-    type: float
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1160, 172.0]
-    rotation: 0
-    state: true
 - name: pad_sink_0_0
   id: pad_sink
   parameters:
     affinity: ''
     alias: ''
     comment: ''
-    label: Post Low-Pass
+    label: out
     num_streams: '1'
     optional: 'True'
-    type: complex
+    type: float
     vlen: '1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [368, 276.0]
+    coordinate: [1064, 156.0]
+    rotation: 0
+    state: true
+- name: pad_sink_0_0_0
+  id: pad_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    label: error
+    num_streams: '1'
+    optional: 'True'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1064, 188.0]
+    rotation: 0
+    state: true
+- name: pad_sink_0_0_1
+  id: pad_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    label: bin out
+    num_streams: '1'
+    optional: 'False'
+    type: byte
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1064, 116.0]
     rotation: 0
     state: true
 - name: pad_source_0
@@ -249,7 +163,7 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    label: FSK Mod
+    label: in
     maxoutbuf: '0'
     minoutbuf: '0'
     num_streams: '1'
@@ -260,7 +174,24 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 220.0]
+    coordinate: [216, 204.0]
+    rotation: 0
+    state: true
+- name: sampleRate
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: Sample Rate
+    short_id: ''
+    type: eng_float
+    value: '9600'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [200, 12.0]
     rotation: 0
     state: true
 - name: samplesPerSymbol
@@ -269,7 +200,7 @@ blocks:
     alias: ''
     comment: ''
     hide: none
-    label: samplesPerSymbol
+    label: Samples per Symbol
     short_id: ''
     type: intx
     value: '30'
@@ -277,18 +208,17 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [448, 12.0]
+    coordinate: [320, 12.0]
     rotation: 0
     state: true
 
 connections:
 - [analog_quadrature_demod_cf_0, '0', digital_symbol_sync_xx_0, '0']
-- [blocks_char_to_float_1, '0', pad_sink_0, '0']
-- [digital_binary_slicer_fb_0, '0', blocks_char_to_float_1, '0']
+- [digital_binary_slicer_fb_0, '0', pad_sink_0_0_1, '0']
 - [digital_symbol_sync_xx_0, '0', digital_binary_slicer_fb_0, '0']
-- [low_pass_filter_0, '0', analog_quadrature_demod_cf_0, '0']
-- [low_pass_filter_0, '0', pad_sink_0_0, '0']
-- [pad_source_0, '0', low_pass_filter_0, '0']
+- [digital_symbol_sync_xx_0, '0', pad_sink_0_0, '0']
+- [digital_symbol_sync_xx_0, '1', pad_sink_0_0_0, '0']
+- [pad_source_0, '0', analog_quadrature_demod_cf_0, '0']
 
 metadata:
   file_format: 1
