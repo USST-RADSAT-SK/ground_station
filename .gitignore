@@ -1,0 +1,7 @@
+# top level files
+*.yml
+*.png
+*.tex
+
+# ignore useless output files
+*.pyc
