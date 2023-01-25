@@ -11,7 +11,7 @@ options:
     gen_linking: dynamic
     generate_options: hb
     hier_block_src_path: '.:'
-    id: TRXVU_AX25_Deframer
+    id: trxvuAx25Deframer
     max_nouts: '0'
     output_language: python
     placement: (0,0)
@@ -48,7 +48,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [544, 244.0]
+    coordinate: [576, 244.0]
     rotation: 0
     state: enabled
 - name: digital_diff_decoder_bb_0
@@ -65,7 +65,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [368, 260.0]
+    coordinate: [384, 260.0]
     rotation: 0
     state: enabled
 - name: epy_block_1_0
@@ -89,7 +89,7 @@ blocks:
       \    \ndef decodeCallsign(chars):\n    return bytes([i >> 1 for i in chars]).decode('ascii',\
       \ errors='backslashreplace')\n\n\nclass deframer:\n    def __init__(self, flag=0x7e,\
       \ maxLen=255, minLen=0, enableCrc=True):\n        self._flag = flag\n      \
-      \  self._max = maxLen*8 - 16  # subtract flag lengths\n        self._min = minLen*8\n\
+      \  self._max = maxLen*8  # subtract flag lengths\n        self._min = minLen*8\n\
       \        self.__startFlag = np.uint8(0)\n        self.__endFlag = np.uint8(0)\n\
       \        self.__body = [i for i in range(maxLen)] # np.zeros((maxLen,), dtype=np.uint8)\n\
       \        self.__bodyLen = -7\n        self.__stuffingCounter = 0\n        self.crc_calculator\
@@ -179,11 +179,11 @@ blocks:
     comment: ''
     enableCrc: 'True'
     flag: '0x7e'
-    maxLen: '235'
+    maxLen: '255'
     maxoutbuf: '0'
     minLen: '5'
     minoutbuf: '0'
-    output_Type: '2'
+    output_Type: '1'
   states:
     _io_cache: ('CLI Print Sink', 'blk', [('flag', '126'), ('maxLen', '255'), ('minLen',
       '0'), ('output_Type', '0'), ('enableCrc', 'True')], [('0', 'byte', 1)], [('msg_out',
@@ -191,7 +191,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [672, 228.0]
+    coordinate: [720, 228.0]
     rotation: 0
     state: enabled
 - name: pad_sink_0
@@ -209,7 +209,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [848, 260.0]
+    coordinate: [904, 260.0]
     rotation: 0
     state: true
 - name: pad_source_0

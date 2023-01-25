@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: GPL-3.0
 #
 # GNU Radio Python Flow Graph
-# Title: FSK_testing
+# Title: Radsat Radio Service
 # Author: Crawford
 # GNU Radio version: 3.10.1.1
 
@@ -31,7 +31,6 @@ from gnuradio import qtgui
 from gnuradio.filter import firdes
 import sip
 from TRXVU_AX_25_Framer import TRXVU_AX_25_Framer  # grc-generated hier_block
-from gnuradio import blocks
 from gnuradio import gr
 from gnuradio.fft import window
 import signal
@@ -40,20 +39,20 @@ from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
 from gnuradio import uhd
 import time
-from gnuradio import zeromq
 from gnuradio.qtgui import Range, RangeWidget
 from PyQt5 import QtCore
+from math import pi
 
 
 
 from gnuradio import qtgui
 
-class FSK_testing(gr.top_block, Qt.QWidget):
+class RRadsatRadioService(gr.top_block, Qt.QWidget):
 
     def __init__(self):
-        gr.top_block.__init__(self, "FSK_testing", catch_exceptions=True)
+        gr.top_block.__init__(self, "Radsat Radio Service", catch_exceptions=True)
         Qt.QWidget.__init__(self)
-        self.setWindowTitle("FSK_testing")
+        self.setWindowTitle("Radsat Radio Service")
         qtgui.util.check_set_qss()
         try:
             self.setWindowIcon(Qt.QIcon.fromTheme('gnuradio-grc'))
@@ -71,7 +70,7 @@ class FSK_testing(gr.top_block, Qt.QWidget):
         self.top_grid_layout = Qt.QGridLayout()
         self.top_layout.addLayout(self.top_grid_layout)
 
-        self.settings = Qt.QSettings("GNU Radio", "FSK_testing")
+        self.settings = Qt.QSettings("GNU Radio", "RRadsatRadioService")
 
         try:
             if StrictVersion(Qt.qVersion()) < StrictVersion("5.0.0"):
@@ -87,13 +86,12 @@ class FSK_testing(gr.top_block, Qt.QWidget):
         self.rxSamplesPerSymbol = rxSamplesPerSymbol = 30
         self.rxBaudRate = rxBaudRate = 9600
         self.txSamplesPerSymbol = txSamplesPerSymbol = 60
-        self.txBaudRate = txBaudRate = 9600
+        self.txBaudRate = txBaudRate = rxBaudRate
         self.rxSampleRate = rxSampleRate = rxSamplesPerSymbol * rxBaudRate
         self.rxLowPassCutoff = rxLowPassCutoff = rxBaudRate+2000
         self.txSampleRate = txSampleRate = txSamplesPerSymbol * txBaudRate
-        self.txLowPassCutoff = txLowPassCutoff = rxBaudRate
         self.txGain = txGain = 0
-        self.txFrequencyOffset = txFrequencyOffset = 15000
+        self.txFrequencyOffset = txFrequencyOffset = 0
         self.txFrequencyDeviation = txFrequencyDeviation = 3500
         self.txCorrection = txCorrection = 0
         self.txBaseband = txBaseband = 145.83E6
@@ -103,6 +101,7 @@ class FSK_testing(gr.top_block, Qt.QWidget):
         self.rxFrequencyDeviation = rxFrequencyDeviation = rxBaudRate // 4
         self.rxCorrection = rxCorrection = -1000
         self.rxBaseband = rxBaseband = 435.4e6
+        self.bufMax = bufMax = 256*8*2+64
 
         ##################################################
         # Blocks
@@ -110,7 +109,6 @@ class FSK_testing(gr.top_block, Qt.QWidget):
         self._txGain_range = Range(0, 100, 1, 0, 200)
         self._txGain_win = RangeWidget(self._txGain_range, self.set_txGain, "Tx Gain", "counter_slider", float, QtCore.Qt.Horizontal)
         self.top_layout.addWidget(self._txGain_win)
-        self.zeromq_sub_msg_source_0 = zeromq.sub_msg_source('tcp://127.0.0.1:15530', 100, True)
         self.uhd_usrp_sink_0 = uhd.usrp_sink(
             ",".join(("serial=31E34AD", 'name=MyB210,product=B210')),
             uhd.stream_args(
@@ -129,8 +127,60 @@ class FSK_testing(gr.top_block, Qt.QWidget):
         self._rxGain_range = Range(0, 100, 1, 0, 200)
         self._rxGain_win = RangeWidget(self._rxGain_range, self.set_rxGain, "Rx Gain", "counter_slider", float, QtCore.Qt.Horizontal)
         self.top_layout.addWidget(self._rxGain_win)
+        self.qtgui_time_sink_x_0_1 = qtgui.time_sink_c(
+            8*25*txSamplesPerSymbol, #size
+            txSampleRate, #samp_rate
+            "", #name
+            1, #number of inputs
+            None # parent
+        )
+        self.qtgui_time_sink_x_0_1.set_update_time(0.10)
+        self.qtgui_time_sink_x_0_1.set_y_axis(-1, 1)
+
+        self.qtgui_time_sink_x_0_1.set_y_label('Amplitude', "")
+
+        self.qtgui_time_sink_x_0_1.enable_tags(True)
+        self.qtgui_time_sink_x_0_1.set_trigger_mode(qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, 0.0, 0, 0, "pkt_length")
+        self.qtgui_time_sink_x_0_1.enable_autoscale(False)
+        self.qtgui_time_sink_x_0_1.enable_grid(False)
+        self.qtgui_time_sink_x_0_1.enable_axis_labels(False)
+        self.qtgui_time_sink_x_0_1.enable_control_panel(False)
+        self.qtgui_time_sink_x_0_1.enable_stem_plot(False)
+
+        self.qtgui_time_sink_x_0_1.disable_legend()
+
+        labels = ['Signal 1', 'Signal 2', 'Signal 3', 'Signal 4', 'Signal 5',
+            'Signal 6', 'Signal 7', 'Signal 8', 'Signal 9', 'Signal 10']
+        widths = [1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1]
+        colors = ['blue', 'red', 'green', 'black', 'cyan',
+            'magenta', 'yellow', 'dark red', 'dark green', 'dark blue']
+        alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0, 1.0]
+        styles = [1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1]
+        markers = [-1, -1, -1, -1, -1,
+            -1, -1, -1, -1, -1]
+
+
+        for i in range(2):
+            if len(labels[i]) == 0:
+                if (i % 2 == 0):
+                    self.qtgui_time_sink_x_0_1.set_line_label(i, "Re{{Data {0}}}".format(i/2))
+                else:
+                    self.qtgui_time_sink_x_0_1.set_line_label(i, "Im{{Data {0}}}".format(i/2))
+            else:
+                self.qtgui_time_sink_x_0_1.set_line_label(i, labels[i])
+            self.qtgui_time_sink_x_0_1.set_line_width(i, widths[i])
+            self.qtgui_time_sink_x_0_1.set_line_color(i, colors[i])
+            self.qtgui_time_sink_x_0_1.set_line_style(i, styles[i])
+            self.qtgui_time_sink_x_0_1.set_line_marker(i, markers[i])
+            self.qtgui_time_sink_x_0_1.set_line_alpha(i, alphas[i])
+
+        self._qtgui_time_sink_x_0_1_win = sip.wrapinstance(self.qtgui_time_sink_x_0_1.qwidget(), Qt.QWidget)
+        self.top_layout.addWidget(self._qtgui_time_sink_x_0_1_win)
         self.qtgui_time_sink_x_0 = qtgui.time_sink_c(
-            1024, #size
+            8*25*txSamplesPerSymbol, #size
             txSampleRate, #samp_rate
             "", #name
             1, #number of inputs
@@ -142,7 +192,7 @@ class FSK_testing(gr.top_block, Qt.QWidget):
         self.qtgui_time_sink_x_0.set_y_label('Amplitude', "")
 
         self.qtgui_time_sink_x_0.enable_tags(True)
-        self.qtgui_time_sink_x_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, 0.0, 0, 0, "")
+        self.qtgui_time_sink_x_0.set_trigger_mode(qtgui.TRIG_MODE_TAG, qtgui.TRIG_SLOPE_POS, 0.0, 0, 0, "pkt_length")
         self.qtgui_time_sink_x_0.enable_autoscale(False)
         self.qtgui_time_sink_x_0.enable_grid(False)
         self.qtgui_time_sink_x_0.enable_axis_labels(True)
@@ -183,8 +233,8 @@ class FSK_testing(gr.top_block, Qt.QWidget):
         self.qtgui_sink_x_0 = qtgui.sink_c(
             1024, #fftsize
             window.WIN_BLACKMAN_hARRIS, #wintype
-            0, #fc
-            rxSampleRate, #bw
+            txBaseband, #fc
+            txSampleRate, #bw
             "Pre Demod", #name
             True, #plotfreq
             True, #plotwaterfall
@@ -195,7 +245,7 @@ class FSK_testing(gr.top_block, Qt.QWidget):
         self.qtgui_sink_x_0.set_update_time(1.0/10)
         self._qtgui_sink_x_0_win = sip.wrapinstance(self.qtgui_sink_x_0.qwidget(), Qt.QWidget)
 
-        self.qtgui_sink_x_0.enable_rf_freq(True)
+        self.qtgui_sink_x_0.enable_rf_freq(False)
 
         self.top_grid_layout.addWidget(self._qtgui_sink_x_0_win, 2, 0, 1, 1)
         for r in range(2, 3):
@@ -205,14 +255,13 @@ class FSK_testing(gr.top_block, Qt.QWidget):
         self.qtgui_edit_box_msg_0 = qtgui.edit_box_msg(qtgui.STRING, '', 'time', False, False, '', None)
         self._qtgui_edit_box_msg_0_win = sip.wrapinstance(self.qtgui_edit_box_msg_0.qwidget(), Qt.QWidget)
         self.top_layout.addWidget(self._qtgui_edit_box_msg_0_win)
-        self.blocks_not_xx_0 = blocks.not_bb()
-        self.blocks_message_debug_0 = blocks.message_debug(True)
         self.TRXVU_AX_25_Framer_0 = TRXVU_AX_25_Framer(
             destinationCallsign='RADSAT',
             destinationSsid=1,
             sourceCallsign='RADSAT',
             sourceSsid=2,
         )
+        self.TRXVU_AX_25_Framer_0.set_max_output_buffer(4160)
         self.FM_Modulator_rev1_0 = FM_Modulator_rev1(
             baudRate=txBaudRate,
             frequencyDeviation=txFrequencyDeviation,
@@ -224,18 +273,15 @@ class FSK_testing(gr.top_block, Qt.QWidget):
         # Connections
         ##################################################
         self.msg_connect((self.qtgui_edit_box_msg_0, 'msg'), (self.TRXVU_AX_25_Framer_0, 'Info in'))
-        self.msg_connect((self.qtgui_edit_box_msg_0, 'msg'), (self.blocks_message_debug_0, 'print'))
-        self.msg_connect((self.zeromq_sub_msg_source_0, 'out'), (self.TRXVU_AX_25_Framer_0, 'Info in'))
-        self.msg_connect((self.zeromq_sub_msg_source_0, 'out'), (self.blocks_message_debug_0, 'print'))
         self.connect((self.FM_Modulator_rev1_0, 0), (self.qtgui_sink_x_0, 0))
         self.connect((self.FM_Modulator_rev1_0, 0), (self.qtgui_time_sink_x_0, 0))
+        self.connect((self.FM_Modulator_rev1_0, 0), (self.qtgui_time_sink_x_0_1, 0))
         self.connect((self.FM_Modulator_rev1_0, 0), (self.uhd_usrp_sink_0, 0))
-        self.connect((self.TRXVU_AX_25_Framer_0, 0), (self.blocks_not_xx_0, 0))
-        self.connect((self.blocks_not_xx_0, 0), (self.FM_Modulator_rev1_0, 0))
+        self.connect((self.TRXVU_AX_25_Framer_0, 0), (self.FM_Modulator_rev1_0, 0))
 
 
     def closeEvent(self, event):
-        self.settings = Qt.QSettings("GNU Radio", "FSK_testing")
+        self.settings = Qt.QSettings("GNU Radio", "RRadsatRadioService")
         self.settings.setValue("geometry", self.saveGeometry())
         self.stop()
         self.wait()
@@ -257,7 +303,7 @@ class FSK_testing(gr.top_block, Qt.QWidget):
         self.set_rxFrequencyDeviation(self.rxBaudRate // 4)
         self.set_rxLowPassCutoff(self.rxBaudRate+2000)
         self.set_rxSampleRate(self.rxSamplesPerSymbol * self.rxBaudRate)
-        self.set_txLowPassCutoff(self.rxBaudRate)
+        self.set_txBaudRate(self.rxBaudRate)
 
     def get_txSamplesPerSymbol(self):
         return self.txSamplesPerSymbol
@@ -281,7 +327,6 @@ class FSK_testing(gr.top_block, Qt.QWidget):
     def set_rxSampleRate(self, rxSampleRate):
         self.rxSampleRate = rxSampleRate
         self.set_rxLowPassFilterTap(firdes.low_pass(1.0, self.rxSampleRate, self.rxLowPassCutoff, 500, window.WIN_HAMMING, 6.76))
-        self.qtgui_sink_x_0.set_frequency_range(0, self.rxSampleRate)
 
     def get_rxLowPassCutoff(self):
         return self.rxLowPassCutoff
@@ -295,14 +340,10 @@ class FSK_testing(gr.top_block, Qt.QWidget):
 
     def set_txSampleRate(self, txSampleRate):
         self.txSampleRate = txSampleRate
+        self.qtgui_sink_x_0.set_frequency_range(self.txBaseband, self.txSampleRate)
         self.qtgui_time_sink_x_0.set_samp_rate(self.txSampleRate)
+        self.qtgui_time_sink_x_0_1.set_samp_rate(self.txSampleRate)
         self.uhd_usrp_sink_0.set_samp_rate(self.txSampleRate)
-
-    def get_txLowPassCutoff(self):
-        return self.txLowPassCutoff
-
-    def set_txLowPassCutoff(self, txLowPassCutoff):
-        self.txLowPassCutoff = txLowPassCutoff
 
     def get_txGain(self):
         return self.txGain
@@ -335,6 +376,7 @@ class FSK_testing(gr.top_block, Qt.QWidget):
 
     def set_txBaseband(self, txBaseband):
         self.txBaseband = txBaseband
+        self.qtgui_sink_x_0.set_frequency_range(self.txBaseband, self.txSampleRate)
         self.uhd_usrp_sink_0.set_center_freq(self.txBaseband, 0)
 
     def get_rxLowPassFilterTap(self):
@@ -373,10 +415,16 @@ class FSK_testing(gr.top_block, Qt.QWidget):
     def set_rxBaseband(self, rxBaseband):
         self.rxBaseband = rxBaseband
 
+    def get_bufMax(self):
+        return self.bufMax
+
+    def set_bufMax(self, bufMax):
+        self.bufMax = bufMax
 
 
 
-def main(top_block_cls=FSK_testing, options=None):
+
+def main(top_block_cls=RRadsatRadioService, options=None):
 
     if StrictVersion("4.5.0") <= StrictVersion(Qt.qVersion()) < StrictVersion("5.0.0"):
         style = gr.prefs().get_string('qtgui', 'style', 'raster')

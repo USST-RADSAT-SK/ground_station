@@ -11,7 +11,7 @@ options:
     gen_linking: dynamic
     generate_options: hb
     hier_block_src_path: '~/.grc_gnuradio:'
-    id: FM_Modulator_rev1
+    id: FSKMod
     max_nouts: '0'
     output_language: python
     placement: (0,0)
@@ -22,7 +22,7 @@ options:
     run_options: prompt
     sizing_mode: fixed
     thread_safe_setters: ''
-    title: FM Modulator
+    title: SDK Mod
     window_size: (1000,1000)
   states:
     bus_sink: false
@@ -43,18 +43,6 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [416, 108.0]
-    rotation: 0
-    state: enabled
-- name: centerFrequency
-  id: variable
-  parameters:
-    comment: ''
-    value: frequencyDeviation * 8
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [296, 108.0]
     rotation: 0
     state: enabled
 - name: lowPassFilterFaps
@@ -119,7 +107,7 @@ blocks:
     bus_structure: null
     coordinate: [304, 764.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: analog_frequency_modulator_fc_0
   id: analog_frequency_modulator_fc
   parameters:
@@ -135,7 +123,7 @@ blocks:
     bus_structure: null
     coordinate: [640, 716.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: analog_sig_source_x_0_0
   id: analog_sig_source_x
   parameters:
@@ -231,7 +219,7 @@ blocks:
     bus_structure: null
     coordinate: [480, 332.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: blocks_multiply_const_vxx_0
   id: blocks_multiply_const_vxx
   parameters:
@@ -249,7 +237,7 @@ blocks:
     bus_structure: null
     coordinate: [248, 636.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: blocks_multiply_xx_0
   id: blocks_multiply_xx
   parameters:
@@ -303,7 +291,7 @@ blocks:
     bus_structure: null
     coordinate: [320, 332.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: blocks_sub_xx_0
   id: blocks_sub_xx
   parameters:
@@ -339,7 +327,28 @@ blocks:
     bus_structure: null
     coordinate: [496, 656.0]
     rotation: 0
-    state: enabled
+    state: disabled
+- name: digital_gfsk_mod_0
+  id: digital_gfsk_mod
+  parameters:
+    affinity: ''
+    alias: ''
+    bt: '1'
+    comment: ''
+    do_unpack: 'False'
+    log: 'False'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samples_per_symbol: samplesPerSymbol
+    sensitivity: 2 * pi * ( frequencyDeviation  / sampleRate )
+    verbose: 'False'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [664, 812.0]
+    rotation: 0
+    state: true
 - name: exampleUnpack
   id: blocks_unpack_k_bits_bb
   parameters:
@@ -355,7 +364,7 @@ blocks:
     bus_structure: null
     coordinate: [168, 332.0]
     rotation: 0
-    state: bypassed
+    state: disabled
 - name: freq_xlating_fir_filter_xxx_0
   id: freq_xlating_fir_filter_xxx
   parameters:
@@ -373,7 +382,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1160, 396.0]
+    coordinate: [1160, 348.0]
     rotation: 0
     state: disabled
 - name: frequencyDeviation
@@ -385,7 +394,7 @@ blocks:
     label: frequencyDeviation
     short_id: ''
     type: eng_float
-    value: '4800'
+    value: '3500'
   states:
     bus_sink: false
     bus_source: false
@@ -398,7 +407,7 @@ blocks:
   parameters:
     alias: ''
     comment: ''
-    imports: import math
+    imports: from math import pi
   states:
     bus_sink: false
     bus_source: false
@@ -429,7 +438,7 @@ blocks:
     bus_structure: null
     coordinate: [1016, 680.0]
     rotation: 0
-    state: bypassed
+    state: disabled
 - name: pad_sink_0
   id: pad_sink
   parameters:
@@ -495,7 +504,7 @@ blocks:
     label: samplesPerSymbol
     short_id: ''
     type: intx
-    value: '30'
+    value: '60'
   states:
     bus_sink: false
     bus_source: false
@@ -521,9 +530,11 @@ connections:
 - [blocks_repeat_0, '0', blocks_char_to_float_0, '0']
 - [blocks_sub_xx_0, '0', blocks_multiply_xx_0_0, '1']
 - [blocks_sub_xx_1, '0', analog_frequency_modulator_fc_0, '0']
+- [digital_gfsk_mod_0, '0', pad_sink_0, '0']
 - [exampleUnpack, '0', blocks_repeat_0, '0']
 - [freq_xlating_fir_filter_xxx_0, '0', pad_sink_0, '0']
 - [low_pass_filter_0, '0', pad_sink_0, '0']
+- [pad_source_0, '0', digital_gfsk_mod_0, '0']
 - [pad_source_0, '0', exampleUnpack, '0']
 
 metadata:

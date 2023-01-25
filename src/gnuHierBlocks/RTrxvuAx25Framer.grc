@@ -11,7 +11,7 @@ options:
     gen_linking: dynamic
     generate_options: hb
     hier_block_src_path: '.:'
-    id: TRXVU_AX_25_Framer
+    id: trxvuAx25Framer
     max_nouts: '0'
     output_language: python
     placement: (0,0)
@@ -45,33 +45,33 @@ blocks:
       \   final_xor_value=0xFFFF\n    reverse_input=True\n    reverse_output=True\n\
       \    configuration = crc.Configuration(width, poly, init_value, final_xor_value,\
       \ reverse_input, reverse_output)\n    return crc.CrcCalculator(configuration,\
-      \ True)\n\npcnt = 0\n\nprintFunc = print\n\ndef p(*args, **kwargs):\n    global\
-      \ pcnt\n    printFunc(f'Loc {pcnt}: ', *args, **kwargs)\n    pcnt += 1\n   \
-      \ \ndef end():\n    global pcnt\n    pcnt = 0\n\n#print = p\n\nxmitBuffer =\
-      \ []\n\n\nclass blk(gr.sync_block):  # other base classes are basic_block, decim_block,\
-      \ interp_block\n    \"\"\"Embedded Python Block example - a simple multiply\
-      \ const\"\"\"\n    crc_calculator = crcAugCcitt()\n    def __init__(self, destinationAddress=\"\
-      RADSAT\", destinationIndex=1, sourceAddress=\"RADSAT\", sourceIndex=10, ctl=0xF0,\
-      \ pid=0x03): # UI frame could be 0xf or 0x10\n        gr.sync_block.__init__(\n\
-      \            self,\n            name='Embedded Python Block',   # will show\
-      \ up in GRC\n            in_sig=None,\n            out_sig=[np.byte]\n     \
-      \   )\n        self.message_port_register_in(pmt.intern('msg_in'))\n       \
-      \ self.set_msg_handler(pmt.intern('msg_in'), self.handle_msg)\n        self.xmitBuffer\
-      \ = []\n\n        self.flag = [(0x7e >> i) & 1 for i in range(8)]\n        self.sendFlag\
-      \ = True\n        \n        self.head = \\\n        [ord(i)<<1 for i in destinationAddress]\
-      \ + [0b01100000 + ((destinationIndex&0xf)<<1) + 0] + \\\n        [ord(i)<<1\
-      \ for i in sourceAddress] + [0b01100000 + ((sourceIndex&0xf)<<1) + 1] + \\\n\
-      \        [ctl, pid]\n        \n        \n    def handle_msg(self, msg):\n  \
-      \      try:\n            msgstr = list(pmt.serialize_str(msg)[3:])\n       \
-      \     if len(msgstr):\n                frame = self.head + msgstr\n        \
-      \        checksum = self.crc_calculator.calculate_checksum(bytes(frame))\n \
-      \               frame += [checksum & 0xff, (checksum >> 8) & 0xff]\n       \
-      \         buff = self.flag\n                ones = 0  # number of consecutive\
+      \ True)\n\n\nprintFunc = print\n\ndef p(*args, **kwargs):\n    global pcnt\n\
+      \    printFunc(f'Loc {pcnt}: ', *args, **kwargs)\n    pcnt += 1\n    \ndef end():\n\
+      \    global pcnt\n    pcnt = 0\n\n\nclass blk(gr.sync_block):  # other base\
+      \ classes are basic_block, decim_block, interp_block\n    \"\"\"Embedded Python\
+      \ Block example - a simple multiply const\"\"\"\n    crc_calculator = crcAugCcitt()\n\
+      \    def __init__(self, destinationAddress=\"RADSAT\", destinationIndex=1, sourceAddress=\"\
+      RADSAT\", sourceIndex=10, ctl=0xF0, pid=0x03): # UI frame could be 0xf or 0x10\n\
+      \        gr.sync_block.__init__(\n            self,\n            name='Embedded\
+      \ Python Block',   # will show up in GRC\n            in_sig=None,\n       \
+      \     out_sig=[np.byte]\n        )\n        self.message_port_register_in(pmt.intern('msg_in'))\n\
+      \        self.set_msg_handler(pmt.intern('msg_in'), self.handle_msg)\n     \
+      \   self.xmitBuffer = []\n\n        self.flag = [(0x7e >> i) & 1 for i in range(8)]\n\
+      \        self.sendFlag = True\n        \n        self.head = \\\n        [ord(i)<<1\
+      \ for i in destinationAddress] + [0b01100000 + ((destinationIndex&0xf)<<1) +\
+      \ 0] + \\\n        [ord(i)<<1 for i in sourceAddress] + [0b01100000 + ((sourceIndex&0xf)<<1)\
+      \ + 1] + \\\n        [ctl, pid]\n        \n        \n    def handle_msg(self,\
+      \ msg):\n        try:\n            print(self.max_noutput_items())\n       \
+      \     msgstr = list(pmt.serialize_str(msg)[3:])\n            print(pmt.serialize_str(msg)[3:])\n\
+      \            if len(msgstr):\n                frame = self.head + msgstr\n \
+      \               checksum = self.crc_calculator.calculate_checksum(bytes(frame))\n\
+      \                frame += [checksum & 0xff, (checksum >> 8) & 0xff]\n      \
+      \          buff = self.flag[:]\n                ones = 0  # number of consecutive\
       \ ones\n                for byte in frame:\n                    for _ in range(8):\n\
       \                        # Transmit byte LSB first\n                       \
-      \ x = byte & 1\n                        buff.append(x)\n                   \
-      \     ones = ones * x + x\n                        if ones == 5:\n         \
-      \                   # Bit-stuff\n                            buff.append(0)\n\
+      \ x = byte & np.byte(1)\n                        buff.append(x)\n          \
+      \              ones = ones * x + x\n                        if ones == 5:\n\
+      \                            # Bit-stuff\n                            buff.append(0)\n\
       \                            ones = 0\n                        byte >>= 1\n\
       \                        \n                frame = buff + self.flag\n      \
       \          self.xmitBuffer.append(frame);\n                #print(len(self.xmitBuffer),\
@@ -81,20 +81,47 @@ blocks:
       \ {fname}:\")\n            printFunc(e)\n        end()\n        \n        \n\
       \    def work(self, input_items, output_items):\n        if len(self.xmitBuffer):\n\
       \            buflen = len(output_items[0])\n            _len = len(self.xmitBuffer[0])\n\
-      \            \"\"\"self.add_item_tag(0, # Write to output port 0\n         \
-      \         self.nitems_written(0) + _len, # Index of the tag in absolute terms\n\
+      \            self.add_item_tag(0, # Write to output port 0\n               \
+      \           self.nitems_written(0), # Index of the tag in absolute terms\n \
+      \                         pmt.intern(\"pkt_length\"), # Key of the tag\n   \
+      \                       pmt.to_pmt(_len) # Value of the tag\n              \
+      \  )\n            print(f\"_len = {_len}\")\n            print(self.xmitBuffer[0])\n\
+      \            print(f\"input_items _len = {_len}\")\n            print(f\"input_items\
+      \      = {len(self.xmitBuffer[0])}\")\n            print(f\"output_items   \
+      \           = {len(output_items)}\")\n            print(f\"output_items[0] buflenlen\
+      \ = {buflen}\")\n            print(f\"output_items[0]           = {len(output_items[0])}\"\
+      )\n            \"\"\"self.add_item_tag(0, # Write to output port 0\n       \
+      \           self.nitems_written(0) + _len, # Index of the tag in absolute terms\n\
       \                  pmt.intern(\"tx_sob\"),\n                  pmt.PMT_T\n  \
       \          )\n            self.add_item_tag(0, # Write to output port 0\n  \
       \                self.nitems_written(0), # Index of the tag in absolute terms\n\
       \                  pmt.intern(\"tx_eob\"),\n                  pmt.PMT_T\n  \
       \          )\"\"\"\n            for i in range(min(buflen, _len)):\n       \
       \         output_items[0][i] = self.xmitBuffer[0].pop(0)\n            if buflen\
-      \ >= _len:\n                self.xmitBuffer.pop(0)\n        else:\n        \
-      \    _len = 0#min(8*10, len(output_items[0])//8*8)\n            out = list(self.flag*20)\
-      \ * min(10, len(output_items[0])//8)\n            #output_items[0][:len(out)]\
-      \ = out\n        end()\n        return _len\n        \nif __name__ == \"__main__\"\
-      :\n    \n\n\tdata = bytes((0x52, 0x82, 0x88, 0xA6, 0x82, 0xA8, 0xF4, 0xA4, 0x82,\
-      \ 0x88, 0xA6, 0x82, 0xA8, 0x63, 0x03, 0xF0, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54,\
+      \ >= _len:\n                self.xmitBuffer.pop(0)\n            return _len\n\
+      \        elif len(output_items[0]) >= 263*8:\n            output_items[0][:8]\
+      \ = [0,1,1,1,1,1,1,0]\n            return 8\n        else:\n            return\
+      \ 0\n        \nif __name__ == \"__main__\":\n    \n\n\tdata = bytes((0x52, 0x82,\
+      \ 0x88, 0xA6, 0x82, 0xA8, 0xF4, 0xA4, 0x82, 0x88, 0xA6, 0x82, 0xA8, 0x63, 0x03,\
+      \ 0xF0, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41,\
+      \ 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41,\
+      \ 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53,\
+      \ 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52,\
+      \ 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53,\
+      \ 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D,\
+      \ 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20,\
+      \ 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44,\
+      \ 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54,\
+      \ 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B,\
+      \ 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41,\
+      \ 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41,\
+      \ 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53,\
+      \ 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52,\
+      \ 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53,\
+      \ 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20))\n\t\n\tdata2 = bytes((0xA4, 0x82, 0x88,\
+      \ 0xA6, 0x82, 0xA8, 0xF4, 0xA4, 0x82, 0x88, 0xA6, 0x82, 0xA8, 0x63, 0x03, 0xF0,\
+      \ 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44,\
+      \ 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54,\
       \ 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B,\
       \ 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41,\
       \ 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41,\
@@ -108,28 +135,9 @@ blocks:
       \ 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B,\
       \ 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41,\
       \ 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41,\
-      \ 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53,\
-      \ 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20))\n\
-      \t\n\tdata2 = bytes((0xA4, 0x82, 0x88, 0xA6, 0x82, 0xA8, 0xF4, 0xA4, 0x82, 0x88,\
-      \ 0xA6, 0x82, 0xA8, 0x63, 0x03, 0xF0, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D,\
-      \ 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20,\
-      \ 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44,\
-      \ 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54,\
-      \ 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B,\
-      \ 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41,\
-      \ 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41,\
-      \ 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53,\
-      \ 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52,\
-      \ 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53,\
-      \ 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D,\
-      \ 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20,\
-      \ 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44,\
-      \ 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54,\
-      \ 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B,\
-      \ 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20))\n\t\n\t\
-      crc_calculator = crcAugCcitt()\n\tprint(\"False\", hex(crc_calculator.calculate_checksum(data)))\n\
-      \tprint(\"True \", hex(crc_calculator.calculate_checksum(data2)))\n\t\n\t\n\t\
-      \n\t\n\t\n\t\n\t\n\t\n\t\n           \n"
+      \ 0x54, 0x2D, 0x53, 0x4B, 0x20))\n\t\n\tcrc_calculator = crcAugCcitt()\n\tprint(\"\
+      False\", hex(crc_calculator.calculate_checksum(data)))\n\tprint(\"True \", hex(crc_calculator.calculate_checksum(data2)))\n\
+      \t\n\t\n\t\n\t\n\t\n\t\n\t\n\t\n\t\n           \n"
     affinity: ''
     alias: ''
     comment: ''
@@ -161,12 +169,12 @@ blocks:
     label: Destination Callsign
     short_id: ''
     type: str
-    value: ''
+    value: NOCALL
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [192, 12.0]
+    coordinate: [232, 12.0]
     rotation: 0
     state: true
 - name: destinationSsid
@@ -183,7 +191,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [192, 108.0]
+    coordinate: [232, 108.0]
     rotation: 0
     state: true
 - name: digital_diff_encoder_bb_0
@@ -200,7 +208,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [696, 308.0]
+    coordinate: [728, 308.0]
     rotation: 0
     state: true
 - name: digital_scrambler_bb_0
@@ -218,7 +226,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [576, 292.0]
+    coordinate: [600, 292.0]
     rotation: 0
     state: enabled
 - name: pad_sink_0
@@ -236,7 +244,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [880, 308.0]
+    coordinate: [920, 308.0]
     rotation: 0
     state: true
 - name: pad_source_0
@@ -278,7 +286,7 @@ blocks:
     bus_structure: null
     coordinate: [160, 356.0]
     rotation: 0
-    state: true
+    state: disabled
 - name: sourceCallsign
   id: parameter
   parameters:
@@ -288,12 +296,12 @@ blocks:
     label: Source Callsign
     short_id: ''
     type: str
-    value: ''
+    value: NOCALL
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [352, 12.0]
+    coordinate: [392, 12.0]
     rotation: 0
     state: true
 - name: sourceSsid
@@ -310,7 +318,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [352, 108.0]
+    coordinate: [392, 108.0]
     rotation: 0
     state: true
 

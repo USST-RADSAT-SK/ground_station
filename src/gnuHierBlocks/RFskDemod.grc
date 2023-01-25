@@ -11,7 +11,7 @@ options:
     gen_linking: dynamic
     generate_options: hb
     hier_block_src_path: ~/.grc_gnuradio/
-    id: FM_Demodulator_rev1
+    id: fskDemod
     max_nouts: '0'
     output_language: python
     placement: (0,0)
@@ -22,7 +22,7 @@ options:
     run_options: prompt
     sizing_mode: fixed
     thread_safe_setters: ''
-    title: '"FM Demodulator"'
+    title: FSK Demod
     window_size: (1000,1000)
   states:
     bus_sink: false
@@ -42,7 +42,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [296, 92.0]
+    coordinate: [296, 108.0]
     rotation: 0
     state: enabled
 - name: sampleRate
@@ -54,7 +54,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [192, 92.0]
+    coordinate: [192, 108.0]
     rotation: 0
     state: enabled
 - name: analog_quadrature_demod_cf_0
@@ -70,7 +70,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [368, 220.0]
+    coordinate: [408, 284.0]
     rotation: 0
     state: enabled
 - name: baudRate
@@ -79,9 +79,9 @@ blocks:
     alias: ''
     comment: ''
     hide: none
-    label: baudRate
+    label: Baud Rate
     short_id: ''
-    type: ''
+    type: intx
     value: '9600'
   states:
     bus_sink: false
@@ -104,7 +104,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1008, 172.0]
+    coordinate: [1048, 236.0]
     rotation: 0
     state: enabled
 - name: digital_binary_slicer_fb_0
@@ -119,7 +119,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [864, 176.0]
+    coordinate: [904, 240.0]
     rotation: 0
     state: enabled
 - name: digital_symbol_sync_xx_0
@@ -146,7 +146,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [552, 164.0]
+    coordinate: [592, 228.0]
     rotation: 0
     state: true
 - name: frequencyDeviation
@@ -155,15 +155,15 @@ blocks:
     alias: ''
     comment: ''
     hide: none
-    label: frequencyDeviation
+    label: Frequency Deviation
     short_id: ''
-    type: ''
+    type: eng_float
     value: 4.8E3
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [296, 12.0]
+    coordinate: [304, 12.0]
     rotation: 0
     state: true
 - name: lowPassCutoff
@@ -172,15 +172,15 @@ blocks:
     alias: ''
     comment: ''
     hide: none
-    label: lowPassCutoff
+    label: Low Pass Cutoff Freq
     short_id: ''
-    type: ''
+    type: eng_float
     value: '10200'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [600, 12.0]
+    coordinate: [608, 12.0]
     rotation: 0
     state: true
 - name: low_pass_filter_0
@@ -204,7 +204,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [160, 172.0]
+    coordinate: [200, 236.0]
     rotation: 0
     state: enabled
 - name: pad_sink_0
@@ -222,7 +222,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1160, 172.0]
+    coordinate: [1200, 236.0]
     rotation: 0
     state: true
 - name: pad_sink_0_0
@@ -240,7 +240,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [368, 276.0]
+    coordinate: [408, 340.0]
     rotation: 0
     state: true
 - name: pad_source_0
@@ -260,7 +260,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 220.0]
+    coordinate: [48, 284.0]
     rotation: 0
     state: true
 - name: samplesPerSymbol
@@ -269,7 +269,7 @@ blocks:
     alias: ''
     comment: ''
     hide: none
-    label: samplesPerSymbol
+    label: Samples/Symbol
     short_id: ''
     type: intx
     value: '30'
@@ -277,7 +277,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [448, 12.0]
+    coordinate: [464, 12.0]
     rotation: 0
     state: true
 
