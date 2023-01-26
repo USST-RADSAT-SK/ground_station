@@ -11,7 +11,7 @@ options:
     gen_linking: dynamic
     generate_options: qt_gui
     hier_block_src_path: './gnuHierBlocks:'
-    id: radsatRadioService
+    id: RRadsatRadioService
     max_nouts: '0'
     output_language: python
     placement: (0,0)
@@ -38,7 +38,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 256*8*2+64
+    value: (256*8*2+64)*0
   states:
     bus_sink: false
     bus_source: false
@@ -285,75 +285,6 @@ blocks:
     coordinate: [968, 12.0]
     rotation: 0
     state: enabled
-- name: FM_Modulator_rev1_0
-  id: FM_Modulator_rev1
-  parameters:
-    affinity: ''
-    alias: ''
-    baudRate: txBaudRate
-    comment: ''
-    frequencyDeviation: txFrequencyDeviation
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    samplesPerSymbol: txSamplesPerSymbol
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [744, 364.0]
-    rotation: 0
-    state: enabled
-- name: GMSK_Demodulator_0
-  id: GMSK_Demodulator
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    sampleRate: rxSampleRate
-    samplesPerSymbol: rxSamplesPerSymbol
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [768, 672.0]
-    rotation: 0
-    state: disabled
-- name: TRXVU_AX25_Deframer_0
-  id: TRXVU_AX25_Deframer
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [984, 736.0]
-    rotation: 0
-    state: disabled
-- name: TRXVU_AX_25_Framer_0
-  id: TRXVU_AX_25_Framer
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    destinationCallsign: RADSAT
-    destinationSsid: '1'
-    maxoutbuf: bufMax
-    minoutbuf: '0'
-    sourceCallsign: RADSAT
-    sourceSsid: '2'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [440, 356.0]
-    rotation: 0
-    state: enabled
 - name: analog_agc2_xx_0
   id: analog_agc2_xx
   parameters:
@@ -375,6 +306,23 @@ blocks:
     coordinate: [608, 668.0]
     rotation: 0
     state: disabled
+- name: blocks_char_to_float_0
+  id: blocks_char_to_float
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    scale: '1'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [736, 476.0]
+    rotation: 0
+    state: true
 - name: blocks_file_source_1
   id: blocks_file_source
   parameters:
@@ -409,7 +357,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [464, 216.0]
+    coordinate: [472, 240.0]
     rotation: 0
     state: disabled
 - name: blocks_message_debug_0_0
@@ -424,6 +372,55 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [1264, 856.0]
+    rotation: 0
+    state: disabled
+- name: blocks_message_debug_0_0_0
+  id: blocks_message_debug
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    en_uvec: 'True'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1504, 352.0]
+    rotation: 0
+    state: enabled
+- name: fskMod_0
+  id: fskMod
+  parameters:
+    affinity: ''
+    alias: ''
+    baudRate: '9600'
+    comment: ''
+    frequencyDeviation: '3500'
+    maxoutbuf: '10000'
+    minoutbuf: '0'
+    samplesPerSymbol: '60'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [776, 348.0]
+    rotation: 0
+    state: true
+- name: gmskDemod_0
+  id: gmskDemod
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    sampleRate: '9600'
+    samplesPerSymbol: '30'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [768, 672.0]
     rotation: 0
     state: disabled
 - name: import_0
@@ -487,7 +484,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1104, 420.0]
+    coordinate: [1104, 452.0]
     rotation: 0
     state: enabled
 - name: qtgui_sink_x_1
@@ -574,7 +571,7 @@ blocks:
     marker9: '-1'
     name: '""'
     nconnections: '1'
-    size: 8*25*txSamplesPerSymbol
+    size: 8*25
     srate: txSampleRate
     stemplot: 'False'
     style1: '1'
@@ -592,7 +589,7 @@ blocks:
     tr_level: '0.0'
     tr_mode: qtgui.TRIG_MODE_TAG
     tr_slope: qtgui.TRIG_SLOPE_POS
-    tr_tag: '"pkt_length"'
+    tr_tag: '"tx_pkt_len"'
     type: complex
     update_time: '0.10'
     width1: '1'
@@ -613,7 +610,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1104, 196.0]
+    coordinate: [1104, 212.0]
     rotation: 0
     state: enabled
 - name: qtgui_time_sink_x_0_1
@@ -632,7 +629,7 @@ blocks:
     alpha8: '1.0'
     alpha9: '1.0'
     autoscale: 'False'
-    axislabels: 'False'
+    axislabels: 'True'
     color1: blue
     color10: dark blue
     color2: red
@@ -648,7 +645,7 @@ blocks:
     entags: 'True'
     grid: 'False'
     gui_hint: ''
-    label1: Signal 1
+    label1: S
     label10: Signal 10
     label2: Signal 2
     label3: Signal 3
@@ -710,9 +707,140 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1272, 196.0]
+    coordinate: [1272, 212.0]
     rotation: 0
     state: enabled
+- name: qtgui_time_sink_x_0_1_0
+  id: qtgui_time_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    axislabels: 'False'
+    color1: blue
+    color10: dark blue
+    color2: red
+    color3: green
+    color4: black
+    color5: cyan
+    color6: magenta
+    color7: yellow
+    color8: dark red
+    color9: dark green
+    comment: ''
+    ctrlpanel: 'False'
+    entags: 'True'
+    grid: 'False'
+    gui_hint: ''
+    label1: Signal 1
+    label10: Signal 10
+    label2: Signal 2
+    label3: Signal 3
+    label4: Signal 4
+    label5: Signal 5
+    label6: Signal 6
+    label7: Signal 7
+    label8: Signal 8
+    label9: Signal 9
+    legend: 'False'
+    marker1: '-1'
+    marker10: '-1'
+    marker2: '-1'
+    marker3: '-1'
+    marker4: '-1'
+    marker5: '-1'
+    marker6: '-1'
+    marker7: '-1'
+    marker8: '-1'
+    marker9: '-1'
+    name: '""'
+    nconnections: '1'
+    size: 8*25
+    srate: txSampleRate
+    stemplot: 'False'
+    style1: '1'
+    style10: '1'
+    style2: '1'
+    style3: '1'
+    style4: '1'
+    style5: '1'
+    style6: '1'
+    style7: '1'
+    style8: '1'
+    style9: '1'
+    tr_chan: '0'
+    tr_delay: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '"pkt_length"'
+    type: float
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    ylabel: Amplitude
+    ymax: '1'
+    ymin: '-1'
+    yunit: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [888, 460.0]
+    rotation: 0
+    state: enabled
+- name: trxvuAx25Deframer_0
+  id: trxvuAx25Deframer
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [968, 736.0]
+    rotation: 0
+    state: disabled
+- name: trxvuAx25Framer_0
+  id: trxvuAx25Framer
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    destinationCallsign: NOCALL
+    destinationSsid: '1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    sourceCallsign: NOCALL
+    sourceSsid: '2'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [456, 340.0]
+    rotation: 0
+    state: true
 - name: uhd_usrp_sink_0
   id: uhd_usrp_sink
   parameters:
@@ -890,7 +1018,7 @@ blocks:
     gain_type7: default
     gain_type8: default
     gain_type9: default
-    len_tag_name: '""'
+    len_tag_name: '"tx_pkt_len"'
     lo_export0: 'False'
     lo_export1: 'False'
     lo_export10: 'False'
@@ -955,7 +1083,7 @@ blocks:
     lo_source7: internal
     lo_source8: internal
     lo_source9: internal
-    maxoutbuf: '0'
+    maxoutbuf: '10000'
     minoutbuf: '0'
     nchan: '1'
     num_mboards: '1'
@@ -987,7 +1115,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1104, 276.0]
+    coordinate: [1176, 292.0]
     rotation: 0
     state: enabled
 - name: uhd_usrp_source_0
@@ -1509,30 +1637,32 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [144, 244.0]
+    coordinate: [144, 228.0]
     rotation: 0
     state: disabled
 
 connections:
-- [FM_Modulator_rev1_0, '0', qtgui_sink_x_0, '0']
-- [FM_Modulator_rev1_0, '0', qtgui_time_sink_x_0, '0']
-- [FM_Modulator_rev1_0, '0', qtgui_time_sink_x_0_1, '0']
-- [FM_Modulator_rev1_0, '0', uhd_usrp_sink_0, '0']
-- [GMSK_Demodulator_0, '2', TRXVU_AX25_Deframer_0, '0']
-- [TRXVU_AX25_Deframer_0, msg_out, blocks_message_debug_0_0, print]
-- [TRXVU_AX25_Deframer_0, msg_out, zeromq_pub_msg_sink_1, in]
-- [TRXVU_AX25_Deframer_0, msg_out, zeromq_push_msg_sink_0, in]
-- [TRXVU_AX25_Deframer_0, msg_out, zeromq_rep_msg_sink_0, in]
-- [TRXVU_AX_25_Framer_0, '0', FM_Modulator_rev1_0, '0']
-- [TRXVU_AX_25_Framer_0, '0', TRXVU_AX25_Deframer_0, '0']
-- [analog_agc2_xx_0, '0', GMSK_Demodulator_0, '0']
+- [analog_agc2_xx_0, '0', gmskDemod_0, '0']
+- [blocks_char_to_float_0, '0', qtgui_time_sink_x_0_1_0, '0']
 - [blocks_file_source_1, '0', xlatingFIRfilter, '0']
-- [qtgui_edit_box_msg_0, msg, TRXVU_AX_25_Framer_0, Info in]
+- [fskMod_0, '0', qtgui_sink_x_0, '0']
+- [fskMod_0, '0', qtgui_time_sink_x_0, '0']
+- [fskMod_0, '0', qtgui_time_sink_x_0_1, '0']
+- [fskMod_0, '0', uhd_usrp_sink_0, '0']
+- [gmskDemod_0, '2', trxvuAx25Deframer_0, '0']
+- [qtgui_edit_box_msg_0, msg, trxvuAx25Framer_0, Info in]
+- [trxvuAx25Deframer_0, msg_out, blocks_message_debug_0_0, print]
+- [trxvuAx25Deframer_0, msg_out, zeromq_pub_msg_sink_1, in]
+- [trxvuAx25Deframer_0, msg_out, zeromq_push_msg_sink_0, in]
+- [trxvuAx25Deframer_0, msg_out, zeromq_rep_msg_sink_0, in]
+- [trxvuAx25Framer_0, '0', blocks_char_to_float_0, '0']
+- [trxvuAx25Framer_0, '0', fskMod_0, '0']
+- [uhd_usrp_sink_0, async_msgs, blocks_message_debug_0_0_0, print]
 - [uhd_usrp_source_0, '0', xlatingFIRfilter, '0']
 - [xlatingFIRfilter, '0', analog_agc2_xx_0, '0']
 - [xlatingFIRfilter, '0', qtgui_sink_x_1, '0']
-- [zeromq_sub_msg_source_0, out, TRXVU_AX_25_Framer_0, Info in]
 - [zeromq_sub_msg_source_0, out, blocks_message_debug_0, print]
+- [zeromq_sub_msg_source_0, out, trxvuAx25Framer_0, Info in]
 
 metadata:
   file_format: 1

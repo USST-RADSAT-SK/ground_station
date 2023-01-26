@@ -36,35 +36,31 @@ blocks:
 - name: ax25_framer
   id: epy_block
   parameters:
-    _source_code: "\"\"\"\nEmbedded Python Blocks:\n\nEach time this file is saved,\
-      \ GRC will instantiate the first class it finds\nto get ports and parameters\
-      \ of your block. The arguments to __init__  will\nbe the parameters. All of\
-      \ them are required to have default values!\n\"\"\"\n\nimport numpy as np\n\
-      import crc\nimport os\nimport sys\nimport pmt\nfrom gnuradio import gr\n\ndef\
-      \ crcAugCcitt():\n    width = 16\n    poly=0x1021\n    init_value=0xFFFF\n \
-      \   final_xor_value=0xFFFF\n    reverse_input=True\n    reverse_output=True\n\
-      \    configuration = crc.Configuration(width, poly, init_value, final_xor_value,\
-      \ reverse_input, reverse_output)\n    return crc.CrcCalculator(configuration,\
-      \ True)\n\n\nprintFunc = print\n\ndef p(*args, **kwargs):\n    global pcnt\n\
-      \    printFunc(f'Loc {pcnt}: ', *args, **kwargs)\n    pcnt += 1\n    \ndef end():\n\
-      \    global pcnt\n    pcnt = 0\n\n\nclass blk(gr.sync_block):  # other base\
-      \ classes are basic_block, decim_block, interp_block\n    \"\"\"Embedded Python\
-      \ Block example - a simple multiply const\"\"\"\n    crc_calculator = crcAugCcitt()\n\
-      \    def __init__(self, destinationAddress=\"RADSAT\", destinationIndex=1, sourceAddress=\"\
-      RADSAT\", sourceIndex=10, ctl=0xF0, pid=0x03): # UI frame could be 0xf or 0x10\n\
-      \        gr.sync_block.__init__(\n            self,\n            name='Embedded\
-      \ Python Block',   # will show up in GRC\n            in_sig=None,\n       \
-      \     out_sig=[np.byte]\n        )\n        self.message_port_register_in(pmt.intern('msg_in'))\n\
+    _source_code: "import numpy as np\nimport crc\nimport os\nimport sys\nimport pmt\n\
+      from time import time\nfrom gnuradio import gr\n\ndef crcAugCcitt():\n    width\
+      \ = 16\n    poly=0x1021\n    init_value=0xFFFF\n    final_xor_value=0xFFFF\n\
+      \    reverse_input=True\n    reverse_output=True\n    configuration = crc.Configuration(width,\
+      \ poly, init_value, final_xor_value, reverse_input, reverse_output)\n    return\
+      \ crc.CrcCalculator(configuration, True)\n\n\nprintFunc = print\n\ndef p(*args,\
+      \ **kwargs):\n    global pcnt\n    printFunc(f'Loc {pcnt}: ', *args, **kwargs)\n\
+      \    pcnt += 1\n    \ndef end():\n    global pcnt\n    pcnt = 0\n\n\nclass blk(gr.sync_block):\
+      \  # other base classes are basic_block, decim_block, interp_block\n    \"\"\
+      \"Embedded Python Block example - a simple multiply const\"\"\"\n    crc_calculator\
+      \ = crcAugCcitt()\n    def __init__(self, destinationAddress=\"RADSAT\", destinationIndex=1,\
+      \ sourceAddress=\"RADSAT\", sourceIndex=10, ctl=0xF0, pid=0x03): # UI frame\
+      \ could be 0xf or 0x10\n        gr.sync_block.__init__(\n            self,\n\
+      \            name='Embedded Python Block',   # will show up in GRC\n       \
+      \     in_sig=None,\n            out_sig=[np.byte]\n        )\n        self.message_port_register_in(pmt.intern('msg_in'))\n\
       \        self.set_msg_handler(pmt.intern('msg_in'), self.handle_msg)\n     \
-      \   self.xmitBuffer = []\n\n        self.flag = [(0x7e >> i) & 1 for i in range(8)]\n\
-      \        self.sendFlag = True\n        \n        self.head = \\\n        [ord(i)<<1\
-      \ for i in destinationAddress] + [0b01100000 + ((destinationIndex&0xf)<<1) +\
-      \ 0] + \\\n        [ord(i)<<1 for i in sourceAddress] + [0b01100000 + ((sourceIndex&0xf)<<1)\
-      \ + 1] + \\\n        [ctl, pid]\n        \n        \n    def handle_msg(self,\
-      \ msg):\n        try:\n            print(self.max_noutput_items())\n       \
-      \     msgstr = list(pmt.serialize_str(msg)[3:])\n            print(pmt.serialize_str(msg)[3:])\n\
-      \            if len(msgstr):\n                frame = self.head + msgstr\n \
-      \               checksum = self.crc_calculator.calculate_checksum(bytes(frame))\n\
+      \   self.xmitBuffer = []\n        \n        self.timer = 0\n        self.waiting\
+      \ = 1\n\n        self.flag = [(0x7e >> i) & 1 for i in range(8)]\n        self.sendFlag\
+      \ = True\n        \n        self.head = \\\n        [ord(i)<<1 for i in destinationAddress]\
+      \ + [0b01100000 + ((destinationIndex&0xf)<<1) + 0] + \\\n        [ord(i)<<1\
+      \ for i in sourceAddress] + [0b01100000 + ((sourceIndex&0xf)<<1) + 1] + \\\n\
+      \        [ctl, pid]\n        \n        \n    def handle_msg(self, msg):\n  \
+      \      try:\n            msgstr = list(pmt.serialize_str(msg)[3:])\n       \
+      \     print(pmt.serialize_str(msg)[3:])\n            if len(msgstr):\n     \
+      \           frame = self.head + msgstr\n                checksum = self.crc_calculator.calculate_checksum(bytes(frame))\n\
       \                frame += [checksum & 0xff, (checksum >> 8) & 0xff]\n      \
       \          buff = self.flag[:]\n                ones = 0  # number of consecutive\
       \ ones\n                for byte in frame:\n                    for _ in range(8):\n\
@@ -81,11 +77,11 @@ blocks:
       \ {fname}:\")\n            printFunc(e)\n        end()\n        \n        \n\
       \    def work(self, input_items, output_items):\n        if len(self.xmitBuffer):\n\
       \            buflen = len(output_items[0])\n            _len = len(self.xmitBuffer[0])\n\
-      \            self.add_item_tag(0, # Write to output port 0\n               \
-      \           self.nitems_written(0), # Index of the tag in absolute terms\n \
-      \                         pmt.intern(\"pkt_length\"), # Key of the tag\n   \
-      \                       pmt.to_pmt(_len) # Value of the tag\n              \
-      \  )\n            print(f\"_len = {_len}\")\n            print(self.xmitBuffer[0])\n\
+      \            if self.waiting:\n                self.add_item_tag(0,\n      \
+      \                    self.nitems_written(0),\n                          pmt.intern(\"\
+      tx_pkt_len\"),\n                          pmt.to_pmt(_len*60)\n            \
+      \    )\n                timestamp = time()\n            self.waiting = 0\n \
+      \           print(f\"_len = {_len}\")\n            print(self.xmitBuffer[0])\n\
       \            print(f\"input_items _len = {_len}\")\n            print(f\"input_items\
       \      = {len(self.xmitBuffer[0])}\")\n            print(f\"output_items   \
       \           = {len(output_items)}\")\n            print(f\"output_items[0] buflenlen\
@@ -98,10 +94,15 @@ blocks:
       \                  pmt.intern(\"tx_eob\"),\n                  pmt.PMT_T\n  \
       \          )\"\"\"\n            for i in range(min(buflen, _len)):\n       \
       \         output_items[0][i] = self.xmitBuffer[0].pop(0)\n            if buflen\
-      \ >= _len:\n                self.xmitBuffer.pop(0)\n            return _len\n\
-      \        elif len(output_items[0]) >= 263*8:\n            output_items[0][:8]\
-      \ = [0,1,1,1,1,1,1,0]\n            return 8\n        else:\n            return\
-      \ 0\n        \nif __name__ == \"__main__\":\n    \n\n\tdata = bytes((0x52, 0x82,\
+      \ >= _len:\n                self.waiting = 1\n                self.xmitBuffer.pop(0)\n\
+      \            return _len\n        else:\n            timer = time() - self.timer\n\
+      \            sendNumber = int(timer//(1/9600*8))\n            if sendNumber\
+      \ > 0: self.timer = time()\n            print(timer)\n            self.add_item_tag(0,\n\
+      \                          self.nitems_written(0),\n                       \
+      \   pmt.intern(\"tx_pkt_len\"),\n                          pmt.to_pmt(8*60*sendNumber)\n\
+      \                )\n            output_items[0][:len(self.flag) * sendNumber]\
+      \ = self.flag * sendNumber\n            return len(self.flag) * sendNumber\n\
+      \        \nif __name__ == \"__main__\":\n    \n\n    data = bytes((0x52, 0x82,\
       \ 0x88, 0xA6, 0x82, 0xA8, 0xF4, 0xA4, 0x82, 0x88, 0xA6, 0x82, 0xA8, 0x63, 0x03,\
       \ 0xF0, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41,\
       \ 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41,\
@@ -118,7 +119,7 @@ blocks:
       \ 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53,\
       \ 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52,\
       \ 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53,\
-      \ 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20))\n\t\n\tdata2 = bytes((0xA4, 0x82, 0x88,\
+      \ 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20))\n\t\n    data2 = bytes((0xA4, 0x82, 0x88,\
       \ 0xA6, 0x82, 0xA8, 0xF4, 0xA4, 0x82, 0x88, 0xA6, 0x82, 0xA8, 0x63, 0x03, 0xF0,\
       \ 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44,\
       \ 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54,\
@@ -135,9 +136,10 @@ blocks:
       \ 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B,\
       \ 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41,\
       \ 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41,\
-      \ 0x54, 0x2D, 0x53, 0x4B, 0x20))\n\t\n\tcrc_calculator = crcAugCcitt()\n\tprint(\"\
-      False\", hex(crc_calculator.calculate_checksum(data)))\n\tprint(\"True \", hex(crc_calculator.calculate_checksum(data2)))\n\
-      \t\n\t\n\t\n\t\n\t\n\t\n\t\n\t\n\t\n           \n"
+      \ 0x54, 0x2D, 0x53, 0x4B, 0x20))\n\t\n    crc_calculator = crcAugCcitt()\n \
+      \   print(\"False\", hex(crc_calculator.calculate_checksum(data)))\n    print(\"\
+      True \", hex(crc_calculator.calculate_checksum(data2)))\n\t\n\t\n\t\n\t\n\t\n\
+      \t\n\t\n\t\n\t\n           \n"
     affinity: ''
     alias: ''
     comment: ''
