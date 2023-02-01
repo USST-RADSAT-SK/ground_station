@@ -1,5 +1,5 @@
 class Generator:
-    from protoPy import RRadsat_pb2 as radsat
+    from .protoPy import RRadsat_pb2 as radsat
     
     def __init__(self):
         self.processFiles()

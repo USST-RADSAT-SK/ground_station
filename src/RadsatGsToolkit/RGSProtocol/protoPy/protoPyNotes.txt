@@ -1,0 +1,7 @@
+If new protobuf pb2.py files are generated, imports for RRadsat_pb2.py must be adjusted to
+
+from . import RProtocol_pb2 as RProtocol__pb2
+from . import RTelecommands_pb2 as RTelecommands__pb2
+from . import RFileTransfer_pb2 as RFileTransfer__pb2
+
+after the new pb2.py files are created. 

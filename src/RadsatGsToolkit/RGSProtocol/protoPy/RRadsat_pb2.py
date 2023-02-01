@@ -11,9 +11,9 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-from protoPy import RProtocol_pb2 as RProtocol__pb2
-from protoPy import RTelecommands_pb2 as RTelecommands__pb2
-from protoPy import RFileTransfer_pb2 as RFileTransfer__pb2
+from . import RProtocol_pb2 as RProtocol__pb2
+from . import RTelecommands_pb2 as RTelecommands__pb2
+from . import RFileTransfer_pb2 as RFileTransfer__pb2
 
 
 DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rRRadsat.proto\x1a\x0fRProtocol.proto\x1a\x13RTelecommands.proto\x1a\x13RFileTransfer.proto\"\xb4\x01\n\x0eradsat_message\x12,\n\x0fProtocolMessage\x18\x01 \x01(\x0b\x32\x11.protocol_messageH\x00\x12\x35\n\x13\x46ileTransferMessage\x18\x02 \x01(\x0b\x32\x16.file_transfer_messageH\x00\x12\x32\n\x12TelecommandMessage\x18\x03 \x01(\x0b\x32\x14.telecommand_messageH\x00\x42\t\n\x07serviceb\x06proto3')
