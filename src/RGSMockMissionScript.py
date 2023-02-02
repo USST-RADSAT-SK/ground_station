@@ -82,8 +82,7 @@ def RxUI():
         try:
             print("\nWaiting for message ...")
             msgHeader = connect.recv()
-            if result:
-                # TODO remove ax25 + other message formatting...? 
+            if msgHeader:
                 msgIn = stripHeader(msgHeader)
                 msg.ParseFromString(msgIn)
                 print("Message:\n",msg)
@@ -91,16 +90,13 @@ def RxUI():
                 msgOut = gen.protocol(True)
                 msgHeader = addHeader(msgOut)
                 msgXor = xorCipher(msgHeader)
-                # TODO add ax25 + other message formatting...? 
                 connect.send(msgXor)
         except:
             msgOut = gen.protocol(False)
             msgHeader = addHeader(msgOut)
             msgXor = xorCipher(msgHeader)
-            # TODO add ax25 + other message formatting...?                 connect.send(msgXor)
 
 if __name__ == "__main__":  
     print("######################## RADSAT GS Message UI ########################")
     TxUI()
-    #RxUI() TODO test RxUI with OBC sending messages
         

@@ -30,7 +30,7 @@ class GSConnect:
     def recv(self):
         num = self.pullSock.poll(10)
         if num != 0:
-            data = bytearray(pmt.to_python(pmt.deserialize_str(self.pullSock.recv()))
+            data = bytearray(pmt.to_python(pmt.deserialize_str(self.pullSock.recv())))
             return data
         return
         """
