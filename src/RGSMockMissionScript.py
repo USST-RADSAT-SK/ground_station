@@ -64,7 +64,7 @@ def TxUI():
                 print("Message:\n",msg)
                 print("Encoded:\n",msgOut)
                 confirm = input("\nSend? (Y/N)\n>> ")
-                if confirm.lower() == "Y":
+                if confirm.lower() == "y":
                     msgHeader = addHeader(msgOut)
                     msgXor = xorCipher(msgHeader)
                     # TODO add ax25 + other message formatting...? 
