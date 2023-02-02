@@ -1,6 +1,7 @@
 import zmq
 from time import sleep
 import pmt
+from numpy import array, uint8
 
 class GSConnect:
     def __init__(self, addr="127.0.0.1", sendPort=15530, recvPort=15531):
@@ -12,28 +13,25 @@ class GSConnect:
         self.pubSock = pubContext.socket(zmq.PUB)
         self.pubSock.connect(f"tcp://{addr}:{sendPort}")
 
-        """
-        subContext = zmq.Context()
-        self.subSock = subContext.socket(zmq.SUB)
-        self.subSock.setsockopt(zmq.SUBSCRIBE, b"")
-        self.subSock.bind(f"tcp://{addr}:{recvPort}")
-        """
-
         pullContext = zmq.Context()
         self.pullSock = pullContext.socket(zmq.PULL)
         self.pullSock.connect(f"tcp://{addr}:{recvPort}")
 
     def send(self, data):
-        bytesData = bytes(data)
-        sizeof = len(bytesData)
-        dataSerial = bytes((0x02,(sizeof >> 8) & 0xff, sizeof & 0xff)) + bytesData
-        #dataSerial = pmt.serialize_str(pmt.intern(data))
-        self.pubSock.send(dataSerial)
+        try:
+            if isinstance(data, str):
+                bytesData = pmt.to_pmt(array(bytearray(data, "ascii"), dtype=uint8))
+            else:
+                bytesData = pmt.to_pmt(array(bytearray(data), dtype=uint8))
+        except Exception as e:
+            raise e
+        self.pubSock.send(pmt.serialize_str(bytesData))
 
     def recv(self):
         num = self.pullSock.poll(10)
         if num != 0:
-            return self.pullSock.recv()
+            data = bytearray(pmt.to_python(pmt.deserialize_str(self.pullSock.recv()))
+            return data
         return
         """
         return self.subSock.recv()
@@ -52,5 +50,7 @@ if __name__ == "__main__":
                 print(result)
         except KeyboardInterrupt as e:
             msg = input("\rEnter Message > ")
-            connection.send(bytes(msg, "ascii"))
+            connection.send(msg)
+            
+            #connection.send(bytes(msg, "ascii"))
 
