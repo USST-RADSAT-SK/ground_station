@@ -129,18 +129,19 @@ blocks:
       \        gr.sync_block.__init__(\n            self,\n            name=\"CLI\
       \ Print Sink\",\n            in_sig=[np.uint8],\n            out_sig=None,\n\
       \        )\n        self.message_port_register_out(pmt.intern('msg_out'))\n\
-      \        \n        self.output_type = output_Type\n        self.deframerObj\
-      \ = deframer(flag, maxLen, minLen, enableCrc)\n        \n    def work(self,\
-      \ input_items, output_items):\n        for i in self.deframerObj.work(input_items[0]):\n\
-      \            self.message_port_pub(pmt.intern('msg_out'), pmt.intern(bytes(i)))\n\
-      \            if self.output_type == 0:\n                pass\n            elif\
-      \ self.output_type == 1:\n                print(\n                f\"\\n\\\n\
-      From: {decodeCallsign(i[7:13])} #{i[13] >> 1 & 0xf} --- {bin(i[13])}\\n\\\n\
-      \ To : {decodeCallsign(i[0:6]) } #{i[6] >> 1 & 0xf} --- {bin(i[6])}\\n\\\nCRC\
-      \ : 0x{(i[-1] << 8) + i[-2]:04X}\\n\\\n----------------------------------\\\
-      n\\\n{bytes(i[16:-2]).decode('ascii', errors='backslashreplace')}\")\n     \
-      \       elif self.output_type == 2:\n                print(('\\n' + ' 0x{:02X}'*len(i)).format(*i))\n\
-      \            elif self.output_type == 3:\n                print(\"\\n\", limitChr(i))\n\
+      \        self.removeAx25 = True\n        \n        self.output_type = output_Type\n\
+      \        self.deframerObj = deframer(flag, maxLen, minLen, enableCrc)\n    \
+      \    \n    def work(self, input_items, output_items):\n        for i in self.deframerObj.work(input_items[0]):\n\
+      \            sendData = i[16:-2] if self.removeAx25 else i\n            self.message_port_pub(pmt.intern('msg_out'),\
+      \ pmt.to_pmt(np.array(bytearray(sendData), dtype=np.uint8)))\n            if\
+      \ self.output_type == 0:\n                pass\n            elif self.output_type\
+      \ == 1:\n                print(\n                f\"\\n\\\nFrom: {decodeCallsign(i[7:13])}\
+      \ #{i[13] >> 1 & 0xf} --- {bin(i[13])}\\n\\\n To : {decodeCallsign(i[0:6]) }\
+      \ #{i[6] >> 1 & 0xf} --- {bin(i[6])}\\n\\\nCRC : 0x{(i[-1] << 8) + i[-2]:04X}\\\
+      n\\\n----------------------------------\\n\\\n{bytes(i[16:-2]).decode('ascii',\
+      \ errors='backslashreplace')}\")\n            elif self.output_type == 2:\n\
+      \                print(('\\n' + ' 0x{:02X}'*len(i)).format(*i))\n          \
+      \  elif self.output_type == 3:\n                print(\"\\n\", limitChr(i))\n\
       \            elif self.output_type == 4:\n                print('\\n{:<.60s}'.format(''.join([f\"\
       {J:02X}\" for J in i])))\n            elif self.output_type == 5:\n        \
       \        print(\"\\n\" + bytes(i).decode('ascii', errors='backslashreplace'))\n\

@@ -52,15 +52,16 @@ blocks:
       \            name='Embedded Python Block',   # will show up in GRC\n       \
       \     in_sig=None,\n            out_sig=[np.byte]\n        )\n        self.message_port_register_in(pmt.intern('msg_in'))\n\
       \        self.set_msg_handler(pmt.intern('msg_in'), self.handle_msg)\n     \
-      \   self.xmitBuffer = []\n        \n        self.timer = 0\n        self.waiting\
+      \   self.xmitBuffer = []\n        \n        self.timer = time()\n        self.waiting\
       \ = 1\n\n        self.flag = [(0x7e >> i) & 1 for i in range(8)]\n        self.sendFlag\
       \ = True\n        \n        self.head = \\\n        [ord(i)<<1 for i in destinationAddress]\
       \ + [0b01100000 + ((destinationIndex&0xf)<<1) + 0] + \\\n        [ord(i)<<1\
       \ for i in sourceAddress] + [0b01100000 + ((sourceIndex&0xf)<<1) + 1] + \\\n\
       \        [ctl, pid]\n        \n        \n    def handle_msg(self, msg):\n  \
-      \      try:\n            msgstr = list(pmt.serialize_str(msg)[3:])\n       \
-      \     print(pmt.serialize_str(msg)[3:])\n            if len(msgstr):\n     \
-      \           frame = self.head + msgstr\n                checksum = self.crc_calculator.calculate_checksum(bytes(frame))\n\
+      \      try:\n            if pmt.is_u8vector(msg):\n                msgstr =\
+      \ list(pmt.to_python(msg))\n            elif pmt.is_string(msg):\n         \
+      \       msgstr = list(pmt.serialize_str(msg)[3:])\n            if len(msgstr):\n\
+      \                frame = self.head + msgstr\n                checksum = self.crc_calculator.calculate_checksum(bytes(frame))\n\
       \                frame += [checksum & 0xff, (checksum >> 8) & 0xff]\n      \
       \          buff = self.flag[:]\n                ones = 0  # number of consecutive\
       \ ones\n                for byte in frame:\n                    for _ in range(8):\n\
@@ -97,12 +98,12 @@ blocks:
       \ >= _len:\n                self.waiting = 1\n                self.xmitBuffer.pop(0)\n\
       \            return _len\n        else:\n            timer = time() - self.timer\n\
       \            sendNumber = int(timer//(1/9600*8))\n            if sendNumber\
-      \ > 0: self.timer = time()\n            print(timer)\n            self.add_item_tag(0,\n\
-      \                          self.nitems_written(0),\n                       \
-      \   pmt.intern(\"tx_pkt_len\"),\n                          pmt.to_pmt(8*60*sendNumber)\n\
-      \                )\n            output_items[0][:len(self.flag) * sendNumber]\
-      \ = self.flag * sendNumber\n            return len(self.flag) * sendNumber\n\
-      \        \nif __name__ == \"__main__\":\n    \n\n    data = bytes((0x52, 0x82,\
+      \ > 0: self.timer = time()\n            self.add_item_tag(0,\n             \
+      \             self.nitems_written(0),\n                          pmt.intern(\"\
+      tx_pkt_len\"),\n                          pmt.to_pmt(8*60*sendNumber)\n    \
+      \            )\n            output_items[0][:len(self.flag) * sendNumber] =\
+      \ self.flag * sendNumber\n            return len(self.flag) * sendNumber\n \
+      \       \nif __name__ == \"__main__\":\n    \n\n    data = bytes((0x52, 0x82,\
       \ 0x88, 0xA6, 0x82, 0xA8, 0xF4, 0xA4, 0x82, 0x88, 0xA6, 0x82, 0xA8, 0x63, 0x03,\
       \ 0xF0, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41,\
       \ 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41,\
