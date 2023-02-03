@@ -13,9 +13,9 @@ class Generator:
     def protocol(self, ack = True):
         msg = self.message
         if ack:
-            msg.ProtocolMessage.Ack.resp = 0
+            msg.ProtocolMessage.Ack.resp = 1
         else:
-            msg.ProtocolMessage.Nack.resp = 0
+            msg.ProtocolMessage.Nack.resp = 1
         return msg.SerializeToString()
 
     def beginPass(self, passLength):

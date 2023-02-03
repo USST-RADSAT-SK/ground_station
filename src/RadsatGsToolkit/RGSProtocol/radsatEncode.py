@@ -2,7 +2,7 @@ from time import *
 from crc import CrcCalculator, Configuration
 
 def xorCipher(msgBytes):
-    with open("./src/RadsatGsToolkit/RGSProtocol/xor_key","rb") as fk:
+    with open("./RadsatGsToolkit/RGSProtocol/xor_key","rb") as fk:
         key = fk.read()
     print(key)
     msgEncoded = []

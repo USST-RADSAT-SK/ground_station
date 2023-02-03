@@ -12,9 +12,9 @@
 
 syntax = "proto3";
 
-import "RProtocol.proto";
-import "RTelecommands.proto";
-import "RFileTransfer.proto";
+import "proto/RProtocol.proto";
+import "proto/RTelecommands.proto";
+import "proto/RFileTransfer.proto";
 
 // top level RADSAT message object
 message radsat_message {
