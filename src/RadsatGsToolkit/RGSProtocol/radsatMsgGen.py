@@ -1,6 +1,7 @@
 class Generator:
     from .protoPy import RRadsat_pb2 as radsat
-    
+    import google
+
     def __init__(self):
         self.processFiles()
 

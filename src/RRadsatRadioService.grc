@@ -305,7 +305,7 @@ blocks:
     bus_structure: null
     coordinate: [608, 668.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: blocks_char_to_float_0
   id: blocks_char_to_float
   parameters:
@@ -374,20 +374,6 @@ blocks:
     coordinate: [1264, 856.0]
     rotation: 0
     state: disabled
-- name: blocks_message_debug_0_0_0
-  id: blocks_message_debug
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    en_uvec: 'True'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1504, 352.0]
-    rotation: 0
-    state: enabled
 - name: fskMod_0
   id: fskMod
   parameters:
@@ -422,7 +408,7 @@ blocks:
     bus_structure: null
     coordinate: [768, 672.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: import_0
   id: import
   parameters:
@@ -457,7 +443,7 @@ blocks:
     bus_structure: null
     coordinate: [144, 332.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: qtgui_sink_x_0
   id: qtgui_sink_x
   parameters:
@@ -515,7 +501,7 @@ blocks:
     bus_structure: null
     coordinate: [440, 820.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: qtgui_time_sink_x_0
   id: qtgui_time_sink_x
   parameters:
@@ -821,18 +807,18 @@ blocks:
     bus_structure: null
     coordinate: [968, 736.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: trxvuAx25Framer_0
   id: trxvuAx25Framer
   parameters:
     affinity: ''
     alias: ''
     comment: ''
-    destinationCallsign: NOCALL
+    destinationCallsign: RADSAT
     destinationSsid: '1'
     maxoutbuf: '0'
     minoutbuf: '0'
-    sourceCallsign: NOCALL
+    sourceCallsign: RADSAT
     sourceSsid: '2'
   states:
     bus_sink: false
@@ -1553,7 +1539,7 @@ blocks:
     bus_structure: null
     coordinate: [136, 628.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: xlatingFIRfilter
   id: freq_xlating_fir_filter_xxx
   parameters:
@@ -1573,7 +1559,7 @@ blocks:
     bus_structure: null
     coordinate: [376, 676.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: zeromq_pub_msg_sink_1
   id: zeromq_pub_msg_sink
   parameters:
@@ -1605,7 +1591,7 @@ blocks:
     bus_structure: null
     coordinate: [1256, 724.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: zeromq_rep_msg_sink_0
   id: zeromq_rep_msg_sink
   parameters:
@@ -1639,7 +1625,7 @@ blocks:
     bus_structure: null
     coordinate: [144, 228.0]
     rotation: 0
-    state: disabled
+    state: enabled
 
 connections:
 - [analog_agc2_xx_0, '0', gmskDemod_0, '0']
@@ -1657,7 +1643,6 @@ connections:
 - [trxvuAx25Deframer_0, msg_out, zeromq_rep_msg_sink_0, in]
 - [trxvuAx25Framer_0, '0', blocks_char_to_float_0, '0']
 - [trxvuAx25Framer_0, '0', fskMod_0, '0']
-- [uhd_usrp_sink_0, async_msgs, blocks_message_debug_0_0_0, print]
 - [uhd_usrp_source_0, '0', xlatingFIRfilter, '0']
 - [xlatingFIRfilter, '0', analog_agc2_xx_0, '0']
 - [xlatingFIRfilter, '0', qtgui_sink_x_1, '0']

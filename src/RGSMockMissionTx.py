@@ -67,7 +67,6 @@ def TxUI():
                 if confirm.lower() == "y":
                     msgHeader = addHeader(msgOut)
                     msgXor = xorCipher(msgHeader)
-                    # TODO add ax25 + other message formatting...? 
                     connect.send(msgXor)
                     print("Sent!")
                 else:
@@ -77,26 +76,7 @@ def TxUI():
             print("Invalid input. Please try again!")
             pass
 
-def RxUI():
-    while True:
-        try:
-            print("\nWaiting for message ...")
-            msgHeader = connect.recv()
-            if msgHeader:
-                msgIn = stripHeader(msgHeader)
-                msg.ParseFromString(msgIn)
-                print("Message:\n",msg)
-
-                msgOut = gen.protocol(True)
-                msgHeader = addHeader(msgOut)
-                msgXor = xorCipher(msgHeader)
-                connect.send(msgXor)
-        except:
-            msgOut = gen.protocol(False)
-            msgHeader = addHeader(msgOut)
-            msgXor = xorCipher(msgHeader)
-
 if __name__ == "__main__":  
-    print("######################## RADSAT GS Message UI ########################")
+    print("######################## RADSAT Tx UI ########################")
     TxUI()
         
