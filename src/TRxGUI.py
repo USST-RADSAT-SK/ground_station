@@ -42,10 +42,11 @@ class RX_Thread(QThread):
                     self.rx_signal.emit(msgOut)
                   
             except Generator.google.protobuf.message.DecodeError:
-                print("Decode Error!!!")
+                append_text("Message: " + str(msgHeader))
                 msgOut = gen.protocol(False)
                 msgHeader = addHeader(msgOut)
                 msgXor = xorCipher(msgHeader)
+                connect.send(msgXor)
             
             self.exit()
 
@@ -68,7 +69,6 @@ def get_confirmation():
     append_text("click confirm to send!", dev=True)
 
 def post_confirmation():
-    print("Made it here!")
     msgHeader = addHeader(msgOut)
     msgXor = xorCipher(msgHeader)
     connect.send(msgXor)

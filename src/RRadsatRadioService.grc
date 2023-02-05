@@ -18,8 +18,7 @@ options:
     qt_qss_theme: ''
     realtime_scheduling: ''
     run: 'True'
-    run_command: gnome-terminal -- bash -c "{python} -u {filename}; echo type enter
-      to exit; read"
+    run_command: CloseTermOnClose
     run_options: prompt
     sizing_mode: fixed
     thread_safe_setters: ''
@@ -34,6 +33,31 @@ options:
     state: enabled
 
 blocks:
+- name: CloseTermOnClose
+  id: variable
+  parameters:
+    comment: ''
+    value: '''gnome-terminal -- bash -c \"{python} -u {filename};\"'''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 172.0]
+    rotation: 0
+    state: enabled
+- name: KeepTermUp
+  id: variable
+  parameters:
+    comment: ''
+    value: '''gnome-terminal -- bash -c \"{python} -u {filename}; echo Press Enter
+      to close the terminal; read\"'''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 108.0]
+    rotation: 0
+    state: enabled
 - name: bufMax
   id: variable
   parameters:
