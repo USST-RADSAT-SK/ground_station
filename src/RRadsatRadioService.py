@@ -108,6 +108,8 @@ class RRadsatRadioService(gr.top_block, Qt.QWidget):
         self.rxCorrection = rxCorrection = -1000
         self.rxBaseband = rxBaseband = 435.4e6
         self.bufMax = bufMax = (256*8*2+64)*0
+        self.KeepTermUp = KeepTermUp = 'gnome-terminal -- bash -c \"{python} -u {filename}; echo Press Enter to close the terminal; read\"'
+        self.CloseTermOnClose = CloseTermOnClose = 'gnome-terminal -- bash -c \"{python} -u {filename};\"'
 
         ##################################################
         # Blocks
@@ -530,6 +532,18 @@ class RRadsatRadioService(gr.top_block, Qt.QWidget):
 
     def set_bufMax(self, bufMax):
         self.bufMax = bufMax
+
+    def get_KeepTermUp(self):
+        return self.KeepTermUp
+
+    def set_KeepTermUp(self, KeepTermUp):
+        self.KeepTermUp = KeepTermUp
+
+    def get_CloseTermOnClose(self):
+        return self.CloseTermOnClose
+
+    def set_CloseTermOnClose(self, CloseTermOnClose):
+        self.CloseTermOnClose = CloseTermOnClose
 
 
 
