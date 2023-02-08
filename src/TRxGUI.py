@@ -3,11 +3,13 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QMainWindow, Q
 from PyQt5.QtCore import QThread, pyqtSignal
 import time
 import sys
-from RadsatGsToolkit import *
 
-gen = Generator()
+genTx = Generator()
+genRx = Generator()
+msgTx = genTx.message
+msgRx = genRx.message
+
 connect = GSConnect()
-msg = gen.message
 
 def append_text(text, dev=False):
     if dev:
@@ -29,31 +31,27 @@ class RX_Thread(QThread):
             try:
                 sleep(1)
                 msgHeader = connect.recv()
+
                 if msgHeader:
                     msgIn = stripHeader(msgHeader)
-                    msg.ParseFromString(msgIn)
-                    append_text("Message: " + str(msg))
+                    msgRx.ParseFromString(msgIn)
+                    append_text("Message: " + str(msgRx))
 
-                    msgOut = gen.protocol(True)
-                    msgHeader = addHeader(msgOut)
+                    msgOutRx = genRx.protocol(True)
+                    msgHeader = addHeader(msgOutRx)
                     msgXor = xorCipher(msgHeader)
                     connect.send(msgXor)
                 
-                    self.rx_signal.emit(msgOut)
+                    self.rx_signal.emit(msgOutRx)
                   
             except Generator.google.protobuf.message.DecodeError:
                 append_text("Message: " + str(msgHeader))
-                msgOut = gen.protocol(False)
-                msgHeader = addHeader(msgOut)
+                msgOutNack = genRx.protocol(False)
+                msgHeader = addHeader(msgOutNack)
                 msgXor = xorCipher(msgHeader)
                 connect.send(msgXor)
             
             self.exit()
-
-
-
-
-
 
 
 def quit_window(app):
@@ -62,9 +60,9 @@ def quit_window(app):
 def get_confirmation():
     global msgOut
     if msgOut == None:
-        raise TypeError("Error: Messaage type cannot be none!!!")
-    msg.ParseFromString(msgOut)
-    append_text("Message: " + str(msg), dev=True)
+        raise TypeError("Error: Message type cannot be none!!!")
+    msgTx.ParseFromString(msgOut)
+    append_text("Message: " + str(msgTx), dev=True)
     append_text("Encoded: " + str(msgOut), dev=True)
     append_text("click confirm to send!", dev=True)
 
@@ -78,13 +76,13 @@ def onclick_ack():
     global msgOut
     append_text("generating ack...", dev=True)
     append_text("-" * 40, dev=True)
-    msgOut = gen.protocol(True)
+    msgOut = genTx.protocol(True)
 
 def onclick_nack():
     global msgOut
     append_text("generating nack...", dev=True)
     append_text("-" * 40, dev=True)
-    msgOut = gen.protocol(False)
+    msgOut = genTx.protocol(False)
 
 def onclick_beginPass():
     global msgOut
@@ -92,14 +90,14 @@ def onclick_beginPass():
     append_text("generating begin pass...", dev=True)
     append_text("pass length: " + str(passLen), dev=True)
     append_text("-" * 40, dev=True)
-    msgOut = gen.beginPass(passLen)
+    msgOut = genTx.beginPass(passLen)
     get_confirmation()
 
 def onclick_beginFTP():
     global msgOut
     append_text("generating begin ftp...", dev=True)
     append_text("-" * 40, dev=True)
-    msgOut = gen.beginFileTransfer()
+    msgOut = genTx.beginFileTransfer()
     get_confirmation()
 
 def onclick_ceaseTransmission():
@@ -108,14 +106,14 @@ def onclick_ceaseTransmission():
     append_text("generating cease transmission...", dev=True)
     append_text("duartion: " + str(duartion), dev=True)
     append_text("-" * 40, dev=True)
-    msgOut = gen.ceaseTransmission(duartion)
+    msgOut = genTx.ceaseTransmission(duartion)
     get_confirmation()
 
 def onclick_resumeTransmission():
     global msgOut
     append_text("generating resume transmission...", dev=True)
     append_text("-" * 40, dev=True)
-    msgOut = gen.resumeTransmission()
+    msgOut = genTx.resumeTransmission()
     get_confirmation()
 
 def onclick_unixtime():
@@ -128,7 +126,7 @@ def onclick_unixtime():
         unixtime = int(time.time())
     append_text("unixtime: " + str(unixtime), dev=True)
 
-    msgOut = gen.updateTime(unixtime)
+    msgOut = genTx.updateTime(unixtime)
     get_confirmation()
 
 def onclick_reboot():
@@ -139,9 +137,8 @@ def onclick_reboot():
     append_text("device: " + str(device), dev=True)
     append_text("reset: " + str(reset), dev=True)
     append_text("-" * 40, dev=True)
-    msgOut = gen.reset(device, reset)
+    msgOut = genTx.reset(device, reset)
     get_confirmation()
-
 
 
 ##################################################################

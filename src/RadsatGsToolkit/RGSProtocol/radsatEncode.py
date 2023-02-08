@@ -4,7 +4,6 @@ from crc import CrcCalculator, Configuration
 def xorCipher(msgBytes):
     with open("./RadsatGsToolkit/RGSProtocol/xor_key","rb") as fk:
         key = fk.read()
-    print(key)
     msgEncoded = []
 
     for i in msgBytes:
