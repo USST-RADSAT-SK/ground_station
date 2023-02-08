@@ -94,7 +94,7 @@ blocks:
     resamp_type: digital.IR_MMSE_8TAP
     sps: samplesPerSymbol
     ted_gain: '1.0'
-    ted_type: digital.TED_SIGNUM_TIMES_SLOPE_ML
+    ted_type: digital.TED_MENGALI_AND_DANDREA_GMSK
     type: ff
   states:
     bus_sink: false

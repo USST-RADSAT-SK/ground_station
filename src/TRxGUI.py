@@ -1,7 +1,6 @@
 from RadsatGsToolkit import *
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QMainWindow, QVBoxLayout, QHBoxLayout, QWidget, QPushButton, QLabel, QLineEdit, QComboBox
 from PyQt5.QtCore import QThread, pyqtSignal
-import time
 import sys
 
 genTx = Generator()
@@ -37,12 +36,13 @@ class RX_Thread(QThread):
                     msgRx.ParseFromString(msgIn)
                     append_text("Message: " + str(msgRx))
 
-                    msgOutRx = genRx.protocol(True)
+                    #msgOutRx = genRx.protocol(True)
+                    """
                     msgHeader = addHeader(msgOutRx)
                     msgXor = xorCipher(msgHeader)
                     connect.send(msgXor)
-                
-                    self.rx_signal.emit(msgOutRx)
+                    """
+                    self.rx_signal.emit(msgOut)
                   
             except Generator.google.protobuf.message.DecodeError:
                 append_text("Message: " + str(msgHeader))
@@ -77,12 +77,14 @@ def onclick_ack():
     append_text("generating ack...", dev=True)
     append_text("-" * 40, dev=True)
     msgOut = genTx.protocol(True)
+    get_confirmation()
 
 def onclick_nack():
     global msgOut
     append_text("generating nack...", dev=True)
     append_text("-" * 40, dev=True)
     msgOut = genTx.protocol(False)
+    get_confirmation()
 
 def onclick_beginPass():
     global msgOut
@@ -123,7 +125,7 @@ def onclick_unixtime():
     try:
         unixtime = int(int_input.text())
     except ValueError:
-        unixtime = int(time.time())
+        unixtime = int(time())
     append_text("unixtime: " + str(unixtime), dev=True)
 
     msgOut = genTx.updateTime(unixtime)

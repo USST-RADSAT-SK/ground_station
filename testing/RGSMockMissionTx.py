@@ -68,6 +68,7 @@ def TxUI():
                     msgHeader = addHeader(msgOut)
                     msgXor = xorCipher(msgHeader)
                     connect.send(msgXor)
+                    print(' 0x'.join([hex(x) for x in msgHeader]))
                     print("Sent!")
                 else:
                      print("Not sending!")
