@@ -26,7 +26,8 @@ options:
     qt_qss_theme: ''
     realtime_scheduling: ''
     run: 'True'
-    run_command: gnome-terminal -- bash -c "{python} -u {filename};"
+    run_command: gnome-terminal -- bash -c "{python} -u {filename}; echo Press Enter
+      to close the terminal; read"
     run_options: prompt
     sizing_mode: fixed
     thread_safe_setters: ''
@@ -41,16 +42,16 @@ options:
     state: enabled
 
 blocks:
-- name: bufMax
+- name: radsatCallsign
   id: variable
   parameters:
     comment: ''
-    value: (256*8*2+64)*0
+    value: '"RADSAT"'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [464, 148.0]
+    coordinate: [8, 204.0]
     rotation: 0
     state: enabled
 - name: rxBaseband
@@ -117,7 +118,7 @@ blocks:
   id: variable_qtgui_range
   parameters:
     comment: ''
-    gui_hint: ''
+    gui_hint: tabs@1:0,0,1,1
     label: Rx Gain
     min_len: '200'
     orient: QtCore.Qt.Horizontal
@@ -151,7 +152,7 @@ blocks:
   parameters:
     beta: '6.76'
     comment: ''
-    cutoff_freq: rxLowPassCutoff / rxOverSample
+    cutoff_freq: rxLowPassCutoff
     gain: '1.0'
     samp_rate: rxSampleRate
     width: '500'
@@ -172,7 +173,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 108.0]
+    coordinate: [424, 140.0]
     rotation: 0
     state: enabled
 - name: rxSampleRate
@@ -191,7 +192,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '15'
+    value: '60'
   states:
     bus_sink: false
     bus_source: false
@@ -199,6 +200,23 @@ blocks:
     coordinate: [288, 12.0]
     rotation: 0
     state: enabled
+- name: sendFlags
+  id: variable_qtgui_check_box
+  parameters:
+    comment: ''
+    'false': 'False'
+    gui_hint: ''
+    label: Send Inter-frame Flags
+    'true': 'True'
+    type: bool
+    value: 'True'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [176, 204.0]
+    rotation: 0
+    state: true
 - name: txBaseband
   id: variable
   parameters:
@@ -263,7 +281,7 @@ blocks:
   id: variable_qtgui_range
   parameters:
     comment: ''
-    gui_hint: ''
+    gui_hint: tabs@0:0,0,1,1
     label: Tx Gain
     min_len: '200'
     orient: QtCore.Qt.Horizontal
@@ -296,7 +314,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '60'
+    value: '120'
   states:
     bus_sink: false
     bus_source: false
@@ -314,7 +332,7 @@ blocks:
     decay_rate: 1e-1
     gain: '1.0'
     max_gain: '65536'
-    maxoutbuf: '0'
+    maxoutbuf: '1024'
     minoutbuf: '0'
     reference: '0.5'
     type: complex
@@ -362,35 +380,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [64, 788.0]
-    rotation: 0
-    state: disabled
-- name: blocks_message_debug_0
-  id: blocks_message_debug
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    en_uvec: 'True'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [464, 312.0]
-    rotation: 0
-    state: disabled
-- name: blocks_message_debug_0_0
-  id: blocks_message_debug
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    en_uvec: 'True'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1312, 856.0]
+    coordinate: [88, 788.0]
     rotation: 0
     state: disabled
 - name: fskMod_0
@@ -401,7 +391,7 @@ blocks:
     baudRate: '9600'
     comment: ''
     frequencyDeviation: '3500'
-    maxoutbuf: '10000'
+    maxoutbuf: '100'
     minoutbuf: '0'
     samplesPerSymbol: txSamplesPerSymbol
   states:
@@ -419,13 +409,13 @@ blocks:
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
-    sampleRate: '9600'
-    samplesPerSymbol: '30'
+    sampleRate: rxSampleRate
+    samplesPerSymbol: rxSamplesPerSymbol
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [816, 672.0]
+    coordinate: [824, 672.0]
     rotation: 0
     state: enabled
 - name: import_0
@@ -441,28 +431,87 @@ blocks:
     coordinate: [712, 156.0]
     rotation: 0
     state: true
-- name: qtgui_edit_box_msg_0
-  id: qtgui_edit_box_msg
+- name: qtgui_freq_sink_x_0
+  id: qtgui_freq_sink_x
   parameters:
     affinity: ''
     alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    average: '1.0'
+    axislabels: 'True'
+    bw: rxSampleRate
+    color1: '"dark green"'
+    color10: '"dark blue"'
+    color2: '"dark blue"'
+    color3: '"green"'
+    color4: '"black"'
+    color5: '"cyan"'
+    color6: '"magenta"'
+    color7: '"yellow"'
+    color8: '"dark red"'
+    color9: '"dark green"'
     comment: ''
-    gui_hint: ''
-    is_pair: 'False'
-    is_static: 'False'
-    key: ''
-    label: time
+    ctrlpanel: 'False'
+    fc: rxBaseband
+    fftsize: '1024'
+    freqhalf: 'True'
+    grid: 'True'
+    gui_hint: tabs@1:1,0,1,1
+    label: Relative Gain
+    label1: Post Filtering
+    label10: ''''''
+    label2: Pre Filtering
+    label3: ''''''
+    label4: ''''''
+    label5: ''''''
+    label6: ''''''
+    label7: ''''''
+    label8: ''''''
+    label9: ''''''
+    legend: 'True'
     maxoutbuf: '0'
     minoutbuf: '0'
-    type: string
-    value: ''
+    name: '""'
+    nconnections: '2'
+    norm_window: 'False'
+    showports: 'True'
+    tr_chan: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_tag: '""'
+    type: complex
+    units: dB
+    update_time: '0.016'
+    width1: '2'
+    width10: '1'
+    width2: '2'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    wintype: window.WIN_BLACKMAN_hARRIS
+    ymax: '1'
+    ymin: '-250'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [144, 412.0]
+    coordinate: [656, 900.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: qtgui_sink_x_0
   id: qtgui_sink_x
   parameters:
@@ -472,7 +521,7 @@ blocks:
     comment: ''
     fc: txBaseband
     fftsize: '1024'
-    gui_hint: 2,0,1,1
+    gui_hint: tabs@0:3,0,1,1
     maxoutbuf: '0'
     minoutbuf: '0'
     name: '"Pre Demod"'
@@ -489,7 +538,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1104, 532.0]
+    coordinate: [1176, 532.0]
     rotation: 0
     state: enabled
 - name: qtgui_sink_x_1
@@ -501,7 +550,7 @@ blocks:
     comment: ''
     fc: rxBaseband
     fftsize: '1024'
-    gui_hint: ''
+    gui_hint: tabs@1:2,0,1,1
     maxoutbuf: '0'
     minoutbuf: '0'
     name: '""'
@@ -518,201 +567,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [656, 812.0]
-    rotation: 0
-    state: enabled
-- name: qtgui_time_sink_x_0
-  id: qtgui_time_sink_x
-  parameters:
-    affinity: ''
-    alias: ''
-    alpha1: '1.0'
-    alpha10: '1.0'
-    alpha2: '1.0'
-    alpha3: '1.0'
-    alpha4: '1.0'
-    alpha5: '1.0'
-    alpha6: '1.0'
-    alpha7: '1.0'
-    alpha8: '1.0'
-    alpha9: '1.0'
-    autoscale: 'False'
-    axislabels: 'True'
-    color1: blue
-    color10: dark blue
-    color2: red
-    color3: green
-    color4: black
-    color5: cyan
-    color6: magenta
-    color7: yellow
-    color8: dark red
-    color9: dark green
-    comment: ''
-    ctrlpanel: 'False'
-    entags: 'True'
-    grid: 'False'
-    gui_hint: ''
-    label1: Signal 1
-    label10: Signal 10
-    label2: Signal 2
-    label3: Signal 3
-    label4: Signal 4
-    label5: Signal 5
-    label6: Signal 6
-    label7: Signal 7
-    label8: Signal 8
-    label9: Signal 9
-    legend: 'True'
-    marker1: '-1'
-    marker10: '-1'
-    marker2: '-1'
-    marker3: '-1'
-    marker4: '-1'
-    marker5: '-1'
-    marker6: '-1'
-    marker7: '-1'
-    marker8: '-1'
-    marker9: '-1'
-    name: '""'
-    nconnections: '1'
-    size: 8*25
-    srate: txSampleRate
-    stemplot: 'False'
-    style1: '1'
-    style10: '1'
-    style2: '1'
-    style3: '1'
-    style4: '1'
-    style5: '1'
-    style6: '1'
-    style7: '1'
-    style8: '1'
-    style9: '1'
-    tr_chan: '0'
-    tr_delay: '0'
-    tr_level: '0.0'
-    tr_mode: qtgui.TRIG_MODE_TAG
-    tr_slope: qtgui.TRIG_SLOPE_POS
-    tr_tag: '"tx_pkt_len"'
-    type: complex
-    update_time: '0.10'
-    width1: '1'
-    width10: '1'
-    width2: '1'
-    width3: '1'
-    width4: '1'
-    width5: '1'
-    width6: '1'
-    width7: '1'
-    width8: '1'
-    width9: '1'
-    ylabel: Amplitude
-    ymax: '1'
-    ymin: '-1'
-    yunit: '""'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1176, 212.0]
-    rotation: 0
-    state: disabled
-- name: qtgui_time_sink_x_0_1
-  id: qtgui_time_sink_x
-  parameters:
-    affinity: ''
-    alias: ''
-    alpha1: '1.0'
-    alpha10: '1.0'
-    alpha2: '1.0'
-    alpha3: '1.0'
-    alpha4: '1.0'
-    alpha5: '1.0'
-    alpha6: '1.0'
-    alpha7: '1.0'
-    alpha8: '1.0'
-    alpha9: '1.0'
-    autoscale: 'False'
-    axislabels: 'True'
-    color1: blue
-    color10: dark blue
-    color2: red
-    color3: green
-    color4: black
-    color5: cyan
-    color6: magenta
-    color7: yellow
-    color8: dark red
-    color9: dark green
-    comment: ''
-    ctrlpanel: 'False'
-    entags: 'True'
-    grid: 'False'
-    gui_hint: ''
-    label1: S
-    label10: Signal 10
-    label2: Signal 2
-    label3: Signal 3
-    label4: Signal 4
-    label5: Signal 5
-    label6: Signal 6
-    label7: Signal 7
-    label8: Signal 8
-    label9: Signal 9
-    legend: 'False'
-    marker1: '-1'
-    marker10: '-1'
-    marker2: '-1'
-    marker3: '-1'
-    marker4: '-1'
-    marker5: '-1'
-    marker6: '-1'
-    marker7: '-1'
-    marker8: '-1'
-    marker9: '-1'
-    name: '""'
-    nconnections: '1'
-    size: 8*25*txSamplesPerSymbol
-    srate: txSampleRate
-    stemplot: 'False'
-    style1: '1'
-    style10: '1'
-    style2: '1'
-    style3: '1'
-    style4: '1'
-    style5: '1'
-    style6: '1'
-    style7: '1'
-    style8: '1'
-    style9: '1'
-    tr_chan: '0'
-    tr_delay: '0'
-    tr_level: '0.0'
-    tr_mode: qtgui.TRIG_MODE_FREE
-    tr_slope: qtgui.TRIG_SLOPE_POS
-    tr_tag: '"pkt_length"'
-    type: complex
-    update_time: '0.10'
-    width1: '1'
-    width10: '1'
-    width2: '1'
-    width3: '1'
-    width4: '1'
-    width5: '1'
-    width6: '1'
-    width7: '1'
-    width8: '1'
-    width9: '1'
-    ylabel: Amplitude
-    ymax: '1'
-    ymin: '-1'
-    yunit: '""'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1176, 292.0]
+    coordinate: [656, 780.0]
     rotation: 0
     state: enabled
 - name: qtgui_time_sink_x_0_1_0
@@ -746,7 +601,7 @@ blocks:
     ctrlpanel: 'False'
     entags: 'True'
     grid: 'False'
-    gui_hint: ''
+    gui_hint: tabs@0:4,0,1,1
     label1: Signal 1
     label10: Signal 10
     label2: Signal 2
@@ -770,7 +625,7 @@ blocks:
     marker9: '-1'
     name: '""'
     nconnections: '1'
-    size: 8*25
+    size: 8*32
     srate: txSampleRate
     stemplot: 'False'
     style1: '1'
@@ -790,7 +645,7 @@ blocks:
     tr_slope: qtgui.TRIG_SLOPE_POS
     tr_tag: '"pkt_length"'
     type: float
-    update_time: '0.10'
+    update_time: '0.016'
     width1: '1'
     width10: '1'
     width2: '1'
@@ -812,6 +667,40 @@ blocks:
     coordinate: [888, 540.0]
     rotation: 0
     state: enabled
+- name: tabs
+  id: qtgui_tab_widget
+  parameters:
+    alias: ''
+    comment: ''
+    gui_hint: ''
+    label0: Tx Tab
+    label1: Rx Tab
+    label10: Tab 10
+    label11: Tab 11
+    label12: Tab 12
+    label13: Tab 13
+    label14: Tab 14
+    label15: Tab 15
+    label16: Tab 16
+    label17: Tab 17
+    label18: Tab 18
+    label19: Tab 19
+    label2: Tab 2
+    label3: Tab 3
+    label4: Tab 4
+    label5: Tab 5
+    label6: Tab 6
+    label7: Tab 7
+    label8: Tab 8
+    label9: Tab 9
+    num_tabs: '2'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 108.0]
+    rotation: 0
+    state: true
 - name: trxvuAx25Deframer_0
   id: trxvuAx25Deframer
   parameters:
@@ -824,22 +713,23 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1016, 736.0]
+    coordinate: [1024, 736.0]
     rotation: 0
     state: enabled
 - name: trxvuAx25Framer_0
   id: trxvuAx25Framer
   parameters:
+    EnableInterFrameFill: sendFlags
     SamplesPerSymbol: txSamplesPerSymbol
     affinity: ''
     alias: ''
     comment: ''
-    destinationCallsign: RADSAT
+    destinationCallsign: radsatCallsign
     destinationSsid: '1'
-    maxoutbuf: '0'
+    maxoutbuf: '8192'
     minoutbuf: '0'
-    sourceCallsign: RADSAT
-    sourceSsid: '2'
+    sourceCallsign: radsatCallsign
+    sourceSsid: '10'
   states:
     bus_sink: false
     bus_source: false
@@ -1089,7 +979,7 @@ blocks:
     lo_source7: internal
     lo_source8: internal
     lo_source9: internal
-    maxoutbuf: '0'
+    maxoutbuf: '255'
     minoutbuf: '0'
     nchan: '1'
     num_mboards: '1'
@@ -1577,25 +1467,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [376, 676.0]
+    coordinate: [368, 676.0]
     rotation: 0
     state: enabled
-- name: zeromq_pub_msg_sink_1
-  id: zeromq_pub_msg_sink
-  parameters:
-    address: tcp://127.0.0.1:15531
-    affinity: ''
-    alias: ''
-    bind: 'True'
-    comment: ''
-    timeout: '100'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1304, 788.0]
-    rotation: 0
-    state: disabled
 - name: zeromq_push_msg_sink_0
   id: zeromq_push_msg_sink
   parameters:
@@ -1609,25 +1483,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1304, 724.0]
+    coordinate: [1256, 724.0]
     rotation: 0
     state: enabled
-- name: zeromq_rep_msg_sink_0
-  id: zeromq_rep_msg_sink
-  parameters:
-    address: tcp://127.0.0.1:15531
-    affinity: ''
-    alias: ''
-    bind: 'True'
-    comment: ''
-    timeout: '100'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1304, 660.0]
-    rotation: 0
-    state: disabled
 - name: zeromq_sub_msg_source_0
   id: zeromq_sub_msg_source
   parameters:
@@ -1643,7 +1501,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [144, 308.0]
+    coordinate: [200, 436.0]
     rotation: 0
     state: enabled
 
@@ -1652,21 +1510,19 @@ connections:
 - [blocks_char_to_float_0, '0', qtgui_time_sink_x_0_1_0, '0']
 - [blocks_file_source_1, '0', xlatingFIRfilter, '0']
 - [fskMod_0, '0', qtgui_sink_x_0, '0']
-- [fskMod_0, '0', qtgui_time_sink_x_0, '0']
-- [fskMod_0, '0', qtgui_time_sink_x_0_1, '0']
 - [fskMod_0, '0', uhd_usrp_sink_0, '0']
 - [gmskDemod_0, '2', trxvuAx25Deframer_0, '0']
-- [qtgui_edit_box_msg_0, msg, trxvuAx25Framer_0, Info in]
-- [trxvuAx25Deframer_0, msg_out, blocks_message_debug_0_0, print]
-- [trxvuAx25Deframer_0, msg_out, zeromq_pub_msg_sink_1, in]
+- [qtgui_freq_sink_x_0, freq, qtgui_freq_sink_x_0, freq]
+- [qtgui_freq_sink_x_0, freq, uhd_usrp_source_0, command]
+- [qtgui_freq_sink_x_0, freq, xlatingFIRfilter, freq]
 - [trxvuAx25Deframer_0, msg_out, zeromq_push_msg_sink_0, in]
-- [trxvuAx25Deframer_0, msg_out, zeromq_rep_msg_sink_0, in]
 - [trxvuAx25Framer_0, '0', blocks_char_to_float_0, '0']
 - [trxvuAx25Framer_0, '0', fskMod_0, '0']
+- [uhd_usrp_source_0, '0', qtgui_freq_sink_x_0, '1']
 - [uhd_usrp_source_0, '0', xlatingFIRfilter, '0']
 - [xlatingFIRfilter, '0', analog_agc2_xx_0, '0']
+- [xlatingFIRfilter, '0', qtgui_freq_sink_x_0, '0']
 - [xlatingFIRfilter, '0', qtgui_sink_x_1, '0']
-- [zeromq_sub_msg_source_0, out, blocks_message_debug_0, print]
 - [zeromq_sub_msg_source_0, out, trxvuAx25Framer_0, Info in]
 
 metadata:

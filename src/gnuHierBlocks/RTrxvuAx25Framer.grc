@@ -33,6 +33,23 @@ options:
     state: enabled
 
 blocks:
+- name: EnableInterFrameFill
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: part
+    label: Enable Inter-Frame Fill
+    short_id: ''
+    type: intx
+    value: 'True'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [528, 108.0]
+    rotation: 0
+    state: true
 - name: SamplesPerSymbol
   id: parameter
   parameters:
@@ -64,20 +81,21 @@ blocks:
       \  # other base classes are basic_block, decim_block, interp_block\n    \"\"\
       \"Embedded Python Block example - a simple multiply const\"\"\"\n    crc_calculator\
       \ = crcAugCcitt()\n    def __init__(self, destinationAddress=\"RADSAT\", destinationIndex=1,\
-      \ sourceAddress=\"RADSAT\", sourceIndex=10, ctl=0xF0, pid=0x03, samplesPerSymbol=None):\
-      \ # UI frame could be 0xf or 0x10\n        gr.sync_block.__init__(\n       \
-      \     self,\n            name='Embedded Python Block',   # will show up in GRC\n\
-      \            in_sig=None,\n            out_sig=[np.byte]\n        )\n      \
-      \  self.message_port_register_in(pmt.intern('msg_in'))\n        self.set_msg_handler(pmt.intern('msg_in'),\
-      \ self.handle_msg)\n        self.xmitBuffer = []\n        self.flagBuffer =\
-      \ []\n        self.flagBufferUnderFlow = 0\n        self.samplesPerSymbol =\
-      \ 0 if not samplesPerSymbol else samplesPerSymbol\n        self.timer = time()\n\
-      \        self.waiting = 1\n\n        self.flag = [(0x7e >> i) & 1 for i in range(8)]\n\
-      \        self.sendFlag = True\n        \n        self.head = \\\n        [ord(i)<<1\
-      \ for i in destinationAddress] + [0b01100000 + ((destinationIndex&0xf)<<1) +\
-      \ 0] + \\\n        [ord(i)<<1 for i in sourceAddress] + [0b01100000 + ((sourceIndex&0xf)<<1)\
-      \ + 1] + \\\n        [ctl, pid]\n        \n        \n    def handle_msg(self,\
-      \ msg):\n        try:\n            msgstr = []\n            if pmt.is_u8vector(msg):\n\
+      \ sourceAddress=\"RADSAT\", sourceIndex=10, ctl=0xF0, pid=0x03, samplesPerSymbol=None,\
+      \ sendFlag = True): # UI frame could be 0xf or 0x10\n        gr.sync_block.__init__(\n\
+      \            self,\n            name='Embedded Python Block',   # will show\
+      \ up in GRC\n            in_sig=None,\n            out_sig=[np.byte]\n     \
+      \   )\n        self.message_port_register_in(pmt.intern('msg_in'))\n       \
+      \ self.set_msg_handler(pmt.intern('msg_in'), self.handle_msg)\n        self.xmitBuffer\
+      \ = []\n        self.flagBuffer = []\n        self.flagBufferUnderFlow = 0\n\
+      \        self.samplesPerSymbol = 0 if not samplesPerSymbol else samplesPerSymbol\n\
+      \        self.timer = time()\n        self.waiting = 1\n\n        self.flag\
+      \ = [(0x7e >> i) & 1 for i in range(8)]\n        self.sendFlag = sendFlag\n\
+      \        \n        self.head = \\\n        [ord(i)<<1 for i in destinationAddress]\
+      \ + [0b01100000 + ((destinationIndex&0xf)<<1) + 0] + \\\n        [ord(i)<<1\
+      \ for i in sourceAddress] + [0b01100000 + ((sourceIndex&0xf)<<1) + 1] + \\\n\
+      \        [ctl, pid]\n        \n        \n    def handle_msg(self, msg):\n  \
+      \      try:\n            msgstr = []\n            if pmt.is_u8vector(msg):\n\
       \                msgstr = list(pmt.to_python(msg))\n            elif pmt.is_string(msg):\n\
       \                msgstr = list(pmt.serialize_str(msg)[3:])\n            print(\"\
       Adding message to xmitBuffer: b'\" +\"\".join([f\"\\\\x{i:02x}\" for i in bytes(msgstr)])\
@@ -106,40 +124,28 @@ blocks:
       \ i in range(min(buflen, _len)):\n                    output_items[0][i] = self.xmitBuffer[0].pop(0)\n\
       \                if buflen >= _len:\n                    self.timer += _len\
       \ * 1/9600\n                    self.waiting = 1\n                    self.xmitBuffer.pop(0)\n\
-      \                return _len\n            else:\n                timer = time()\
-      \ - self.timer\n                sendNumber = min(len(output_items[0])//8, int(timer//(8/9600)))\n\
-      \                if sendNumber > 0: \n                    self.timer = time()\n\
-      \                else:\n                    return 0\n                self.add_item_tag(0,\n\
-      \                            self.nitems_written(0),\n                     \
-      \       pmt.intern(\"tx_pkt_len\"),\n                            pmt.to_pmt(8*self.samplesPerSymbol*sendNumber)\n\
-      \                    )\n                output_items[0][:len(self.flag) * sendNumber]\
-      \ = self.flag * sendNumber\n                return len(self.flag) * sendNumber\n\
-      \        except Exception as e:\n            print(f\"\"\"Error here\n     \
-      \       flag = {self.flag}\n            int(timer//(8/9600)) = {int(timer//(8/9600))}\n\
-      \            timer = {timer}\n            sendNumber = {sendNumber}\n      \
-      \      len(output_items[0]) = {len(output_items[0])}\nDone\"\"\")\n        \
-      \    exc_type, exc_obj, exc_tb = sys.exc_info()\n            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]\n\
-      \            printFunc(f\"Exception {exc_type} on Line {exc_tb.tb_lineno} in\
-      \ {fname}:\")\n            printFunc(e)\n        \nif __name__ == \"__main__\"\
-      :\n    \n\n    data = bytes((0x52, 0x82, 0x88, 0xA6, 0x82, 0xA8, 0xF4, 0xA4,\
-      \ 0x82, 0x88, 0xA6, 0x82, 0xA8, 0x63, 0x03, 0xF0, 0x52, 0x41, 0x44, 0x53, 0x41,\
-      \ 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53,\
-      \ 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52,\
-      \ 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53,\
-      \ 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D,\
+      \                return _len\n            elif (self.sendFlag):\n          \
+      \      timer = time() - self.timer\n                sendNumber = min(len(output_items[0])//8,\
+      \ int(timer//(8/9600)))\n                if sendNumber > 0: \n             \
+      \       self.timer = time()\n                else:\n                    return\
+      \ 0\n                self.add_item_tag(0,\n                            self.nitems_written(0),\n\
+      \                            pmt.intern(\"tx_pkt_len\"),\n                 \
+      \           pmt.to_pmt(8*self.samplesPerSymbol*sendNumber)\n               \
+      \     )\n                output_items[0][:len(self.flag) * sendNumber] = self.flag\
+      \ * sendNumber\n                return len(self.flag) * sendNumber\n       \
+      \     else:\n                return 0\n        except Exception as e:\n    \
+      \        print(f\"\"\"Error here\n            flag = {self.flag}\n         \
+      \   int(timer//(8/9600)) = {int(timer//(8/9600))}\n            timer = {timer}\n\
+      \            sendNumber = {sendNumber}\n            len(output_items[0]) = {len(output_items[0])}\n\
+      Done\"\"\")\n            exc_type, exc_obj, exc_tb = sys.exc_info()\n      \
+      \      fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]\n      \
+      \      printFunc(f\"Exception {exc_type} on Line {exc_tb.tb_lineno} in {fname}:\"\
+      )\n            printFunc(e)\n        \nif __name__ == \"__main__\":\n    \n\n\
+      \    data = bytes((0x52, 0x82, 0x88, 0xA6, 0x82, 0xA8, 0xF4, 0xA4, 0x82, 0x88,\
+      \ 0xA6, 0x82, 0xA8, 0x63, 0x03, 0xF0, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D,\
       \ 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20,\
       \ 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44,\
       \ 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54,\
-      \ 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B,\
-      \ 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41,\
-      \ 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41,\
-      \ 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53,\
-      \ 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52,\
-      \ 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53,\
-      \ 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D,\
-      \ 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20))\n\
-      \t\n    data2 = bytes((0xA4, 0x82, 0x88, 0xA6, 0x82, 0xA8, 0xF4, 0xA4, 0x82,\
-      \ 0x88, 0xA6, 0x82, 0xA8, 0x63, 0x03, 0xF0, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54,\
       \ 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B,\
       \ 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41,\
       \ 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41,\
@@ -151,11 +157,25 @@ blocks:
       \ 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44,\
       \ 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54,\
       \ 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B,\
+      \ 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20))\n\t\n \
+      \   data2 = bytes((0xA4, 0x82, 0x88, 0xA6, 0x82, 0xA8, 0xF4, 0xA4, 0x82, 0x88,\
+      \ 0xA6, 0x82, 0xA8, 0x63, 0x03, 0xF0, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D,\
+      \ 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20,\
+      \ 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44,\
+      \ 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54,\
+      \ 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B,\
       \ 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41,\
       \ 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41,\
       \ 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53,\
-      \ 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20))\n\
-      \t\n    crc_calculator = crcAugCcitt()\n    print(\"False\", hex(crc_calculator.calculate_checksum(data)))\n\
+      \ 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52,\
+      \ 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53,\
+      \ 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D,\
+      \ 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20,\
+      \ 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44,\
+      \ 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54,\
+      \ 0x2D, 0x53, 0x4B, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B,\
+      \ 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2D, 0x53, 0x4B, 0x20))\n\t\n \
+      \   crc_calculator = crcAugCcitt()\n    print(\"False\", hex(crc_calculator.calculate_checksum(data)))\n\
       \    print(\"True \", hex(crc_calculator.calculate_checksum(data2)))\n\t\n\t\
       \n\t\n\t\n\t\n\t\n\t\n\t\n\t\n           \n"
     affinity: ''
@@ -168,18 +188,19 @@ blocks:
     minoutbuf: '0'
     pid: '0xf0'
     samplesPerSymbol: SamplesPerSymbol
+    sendFlag: EnableInterFrameFill
     sourceAddress: sourceCallsign
     sourceIndex: sourceSsid
   states:
     _io_cache: ('Embedded Python Block', 'blk', [('destinationAddress', "'RADSAT'"),
       ('destinationIndex', '1'), ('sourceAddress', "'RADSAT'"), ('sourceIndex', '10'),
-      ('ctl', '240'), ('pid', '3'), ('samplesPerSymbol', 'None')], [('msg_in', 'message',
-      1)], [('0', 'byte', 1)], 'Embedded Python Block example - a simple multiply
-      const', ['samplesPerSymbol'])
+      ('ctl', '240'), ('pid', '3'), ('samplesPerSymbol', 'None'), ('sendFlag', 'True')],
+      [('msg_in', 'message', 1)], [('0', 'byte', 1)], 'Embedded Python Block example
+      - a simple multiply const', ['samplesPerSymbol', 'sendFlag'])
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [368, 260.0]
+    coordinate: [368, 252.0]
     rotation: 0
     state: enabled
 - name: destinationCallsign

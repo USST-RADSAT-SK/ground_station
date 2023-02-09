@@ -72,63 +72,68 @@ blocks:
   id: epy_block
   parameters:
     _source_code: "import numpy as np\nfrom gnuradio import gr\nfrom time import sleep\n\
-      import pmt\n\nimport crc\n\ndef crcAugCcitt():\n    width = 16\n    poly=0x1021\n\
-      \    init_value=0xFFFF\n    final_xor_value=0xFFFF\n    reverse_input=True\n\
-      \    reverse_output=True\n    configuration = crc.Configuration(width, poly,\
-      \ init_value, final_xor_value, reverse_input, reverse_output)\n    return crc.CrcCalculator(configuration,\
-      \ True)\n\n\ndef limitChr(chars, returnIllegalChars=True):\n    \"\"\"\n   \
-      \ Routine to convert a intiger to a ASCII character but exclude non-visual ASCII\
-      \ codes.\n\n        chars: a integer or a list of integers representing a ASCII\
-      \ code.\n\n       return: a string of converted ASCII characters.\n    \"\"\"\
-      \n    if not isinstance(chars, (list, np.ndarray)):\n        chars = [chars]\n\
-      \    output = \"\"\n    for i in chars:\n        if ((0x1F < i < 0x7F) and i\
-      \ != 0x8D) or i == 10 or (0xA0 < i <= 0xFF):\n            output += chr(i)\n\
-      \        elif returnIllegalChars:\n            output += f\"\\\\x{i:02x}\"\n\
-      \    return output\n\n\n\ndef insertBit(val, boolVal):\n    #return (val <<\
-      \ type(val)(1)) + boolVal\n    return (val >> type(val)(1)) + (boolVal << type(val)(7))\n\
-      \    \ndef decodeCallsign(chars):\n    return bytes([i >> 1 for i in chars]).decode('ascii',\
-      \ errors='backslashreplace')\n\n\nclass deframer:\n    def __init__(self, flag=0x7e,\
-      \ maxLen=255, minLen=0, enableCrc=True):\n        self._flag = flag\n      \
-      \  self._max = maxLen*8  # subtract flag lengths\n        self._min = minLen*8\n\
-      \        self.__startFlag = np.uint8(0)\n        self.__endFlag = np.uint8(0)\n\
-      \        self.__body = [i for i in range(maxLen)] # np.zeros((maxLen,), dtype=np.uint8)\n\
-      \        self.__bodyLen = -7\n        self.__stuffingCounter = 0\n        self.crc_calculator\
-      \ = crcAugCcitt()\n        self.enableCrc = enableCrc\n\n\n    def work(self,\
-      \ input_items):\n        \"\"\"\n        This is where the work is done in the\
-      \ GNURadio block.\n\n        algorith: double slidding window searching for\
-      \ start/end flag with both windows\n        encapsulating the message body implemented\
-      \ as state mechine.\n        \"\"\"\n        inputLength = len(input_items)\n\
-      \        \n        output = []\n        pos = 0\n        while pos < inputLength:\
-      \  # Recursive like algorithm.\n            if self.__bodyLen >= self._max:\
-      \                                             # Reset window message body to\
-      \ bigger them max.\n                self.__startFlag = np.uint8(0)\n       \
-      \         self.__endFlag = np.uint8(0)\n                self.__bodyLen = -7\n\
-      \                \n            if self.__startFlag != self._flag:          \
-      \                                # Case: first flag search.\n              \
-      \  self.__startFlag = insertBit(self.__startFlag, input_items[pos])\n      \
-      \          \n            elif self.__endFlag != self._flag:                \
-      \                          # Case: last flag search.\n                if self.__bodyLen\
-      \ >= 0:\n                    nextBit = self.__endFlag & np.uint8(1)\n      \
-      \              if nextBit == 0 and self.__stuffingCounter == 5:\n          \
-      \              self.__stuffingCounter = 0\n                        self.__bodyLen\
-      \ -= 1\n                    else:\n                        self.__body[self.__bodyLen\
-      \ // 8] = insertBit(self.__body[self.__bodyLen // 8], nextBit)\n           \
-      \         self.__stuffingCounter = self.__stuffingCounter * nextBit + nextBit\n\
-      \                self.__endFlag = insertBit(self.__endFlag, input_items[pos])\n\
-      \                self.__bodyLen += 1\n                \n            elif (self.__startFlag\
-      \ == self._flag and self.__endFlag == self._flag):     # Case: message found\
-      \ and validation.\n                crcCalc = self.crc_calculator.calculate_checksum(bytes(self.__body[0:(self.__bodyLen//8)-2]))\n\
+      from random import randint\nimport pmt\n\nimport crc\n\ndef crcAugCcitt():\n\
+      \    width = 16\n    poly=0x1021\n    init_value=0xFFFF\n    final_xor_value=0xFFFF\n\
+      \    reverse_input=True\n    reverse_output=True\n    configuration = crc.Configuration(width,\
+      \ poly, init_value, final_xor_value, reverse_input, reverse_output)\n    return\
+      \ crc.CrcCalculator(configuration, True)\n\n\ndef limitChr(chars, returnIllegalChars=True):\n\
+      \    \"\"\"\n    Routine to convert a intiger to a ASCII character but exclude\
+      \ non-visual ASCII codes.\n\n        chars: a integer or a list of integers\
+      \ representing a ASCII code.\n\n       return: a string of converted ASCII characters.\n\
+      \    \"\"\"\n    if not isinstance(chars, (list, np.ndarray)):\n        chars\
+      \ = [chars]\n    output = \"\"\n    for i in chars:\n        if ((0x1F < i <\
+      \ 0x7F) and i != 0x8D) or i == 10 or (0xA0 < i <= 0xFF):\n            output\
+      \ += chr(i)\n        elif returnIllegalChars:\n            output += f\"\\\\\
+      x{i:02x}\"\n    return output\n\n\n\ndef insertBit(val, boolVal):\n    #return\
+      \ (val << type(val)(1)) + boolVal\n    return (val >> type(val)(1)) + (boolVal\
+      \ << type(val)(7))\n    \ndef decodeCallsign(chars):\n    return bytes([i >>\
+      \ 1 for i in chars]).decode('ascii', errors='backslashreplace')\n\n\nclass deframer:\n\
+      \    def __init__(self, flag=0x7e, maxLen=255, minLen=0, enableCrc=True):\n\
+      \        self._flag = flag\n        self._max = maxLen*8  # subtract flag lengths\n\
+      \        self._min = minLen*8\n        self.__startFlag = np.uint8(0)\n    \
+      \    self.__endFlag = np.uint8(0)\n        self.__body = [i for i in range(maxLen)]\
+      \ # np.zeros((maxLen,), dtype=np.uint8)\n        self.__bodyLen = -7\n     \
+      \   self.__stuffingCounter = 0\n        self.crc_calculator = crcAugCcitt()\n\
+      \        self.enableCrc = enableCrc\n\n\n    def work(self, input_items):\n\
+      \        \"\"\"\n        This is where the work is done in the GNURadio block.\n\
+      \n        algorith: double slidding window searching for start/end flag with\
+      \ both windows\n        encapsulating the message body implemented as state\
+      \ mechine.\n        \"\"\"\n        inputLength = len(input_items)\n       \
+      \ \n        output = []\n        pos = 0\n        while pos < inputLength: \
+      \ # Recursive like algorithm.\n            if self.__bodyLen >= self._max: \
+      \                                            # Reset window message body to\
+      \ bigger them max.\n                #print(\"OVERSIZE RESET\")\n           \
+      \     self.__startFlag = self.__endFlag\n                self.__endFlag = np.uint8(0)\n\
+      \                self.__bodyLen = -7\n                \n            if self.__startFlag\
+      \ != self._flag:                                          # Case: first flag\
+      \ search.\n                #print(\"finding start flag\")\n                self.__startFlag\
+      \ = insertBit(self.__startFlag, input_items[pos])\n                \n      \
+      \      elif self.__endFlag != self._flag:                                  \
+      \        # Case: last flag search.\n                #print(\"finding end flag\"\
+      )\n                if self.__bodyLen >= 0:\n                    nextBit = self.__endFlag\
+      \ & np.uint8(1)\n                    if nextBit == 0 and self.__stuffingCounter\
+      \ == 5:\n                        self.__stuffingCounter = 0\n              \
+      \          self.__bodyLen -= 1\n                    else:\n                \
+      \        self.__body[self.__bodyLen // 8] = insertBit(self.__body[self.__bodyLen\
+      \ // 8], nextBit)\n                    self.__stuffingCounter = self.__stuffingCounter\
+      \ * nextBit + nextBit\n                self.__endFlag = insertBit(self.__endFlag,\
+      \ input_items[pos])\n                self.__bodyLen += 1\n                \n\
+      \            elif (not self.__bodyLen % 8 and self.__bodyLen >= self._min ):\
+      \             # Case: message found and validation.\n                #print(\"\
+      both flags found\")\n                crcCalc = self.crc_calculator.calculate_checksum(bytes(self.__body[:(self.__bodyLen//8)-2]))\n\
       \                crcRx = (self.__body[self.__bodyLen//8-1] << 8) + self.__body[self.__bodyLen//8-2]\n\
       \                crcRes = crcCalc == crcRx\n                if not self.enableCrc:\n\
-      \                \tcrcRes = True\n                if not self.__bodyLen % 8\
-      \ and self.__bodyLen >= self._min and crcRes:\n                    output.append(self.__body[0:self.__bodyLen//8])\n\
-      \                    self.__startFlag = np.uint8(0)\n                self.__endFlag\
-      \ = np.uint8(0)\n                self.__bodyLen = -7\n            pos += 1\n\
-      \        return output\n        \n        \nclass blk(gr.sync_block):\n    def\
-      \ __init__(self, flag=0b01111110, maxLen=255, minLen=0, output_Type=0, enableCrc=True):\n\
-      \        gr.sync_block.__init__(\n            self,\n            name=\"CLI\
-      \ Print Sink\",\n            in_sig=[np.uint8],\n            out_sig=None,\n\
-      \        )\n        self.message_port_register_out(pmt.intern('msg_out'))\n\
+      \                    crcRes = True\n                if crcRes:\n           \
+      \         #print(\"CRC FOUND RESET\")\n                    output.append(self.__body[:self.__bodyLen//8])\n\
+      \                self.__startFlag = self.__endFlag\n                self.__endFlag\
+      \ = np.uint8(0)\n                self.__bodyLen = -7\n            else:\n  \
+      \              self.__startFlag = self.__endFlag\n                self.__endFlag\
+      \ = np.uint8(0)\n                self.__bodyLen = -7\n\n            pos += 1\n\
+      \        return output\n\n\n        \n        \nclass blk(gr.sync_block):\n\
+      \    def __init__(self, flag=0b01111110, maxLen=255, minLen=1, output_Type=0,\
+      \ enableCrc=True):\n        assert minLen >= 1\n        gr.sync_block.__init__(\n\
+      \            self,\n            name=\"CLI Print Sink\",\n            in_sig=[np.uint8],\n\
+      \            out_sig=None,\n        )\n        self.message_port_register_out(pmt.intern('msg_out'))\n\
       \        self.removeAx25 = True\n        \n        self.output_type = output_Type\n\
       \        self.deframerObj = deframer(flag, maxLen, minLen, enableCrc)\n    \
       \    \n    def work(self, input_items, output_items):\n        for i in self.deframerObj.work(input_items[0]):\n\
@@ -148,33 +153,40 @@ blocks:
       \            elif self.output_type == 6:\n                print(\"\\n\", i)\n\
       \            elif self.output_type == 7:\n                print(('\\n'+'{:02X}'*len(i)).format(*i))\n\
       \            \t\n        self.consume(0, len(input_items[0]))  # empty input.\
-      \ fixes overflow\n        return 0\n\nif __name__ == \"__main__\":\n    testobj\
-      \ = deframer() \n    \n    flag = f'{0x7e:08b}'\n    body = \"000000000000000\"\
-      +flag\n    bodyText = [0x86, 0xA2, 0x40, 0x40, 0x40, 0x40, 0x60, 0xAE, 0x64,\
-      \ 0x8C, 0xA6,\n0x40, 0x40, 0x68, 0xA4,0x8A, 0x98, 0x82, 0xB2, 0x40, 0x61, 0x3F,\n\
-      0xF0, 0x54, 0x65, 0x73,0x74]\n    bodyText2 = [\n    0xa4, 0x82, 0x88, \n  \
-      \  0xa6, 0x82, 0xa8, 0xf4, \n    \n    0xa4, 0x82, 0x88, \n    0xa6, 0x82, 0xa8,\
-      \ 0x63, \n    0x03, 0xf0, \n    0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2d, 0x53,\
-      \ 0x4b, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2d, 0x53, 0x4b, 0x20, 0x52,\
-      \ 0x41, 0x44, 0x53, 0x41, 0x54, 0x2d, 0x53, 0x4b, 0x20, 0x52, 0x41, 0x44, 0x53,\
-      \ 0x41, 0x54, 0x2d, 0x53, 0x4b, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2d,\
-      \ 0x53, 0x4b, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2d, 0x53, 0x4b, 0x20,\
-      \ 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2d, 0x53, 0x4b, 0x20, 0x52, 0x41, 0x44,\
-      \ 0x53, 0x41, 0x54, 0x2d, 0x53, 0x4b, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54,\
-      \ 0x2d, 0x53, 0x4b, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2d, 0x53, 0x4b,\
-      \ 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2d, 0x53, 0x4b, 0x20, 0x52, 0x41,\
-      \ 0x44, 0x53, 0x41, 0x54, 0x2d, 0x53, 0x4b, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41,\
-      \ 0x54, 0x2d, 0x53, 0x4b, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2d, 0x53,\
-      \ 0x4b, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2d, 0x53, 0x4b, 0x20, 0x52,\
-      \ 0x41, 0x44, 0x53, 0x41, 0x54, 0x2d, 0x53, 0x4b, 0x20, 0x52, 0x41, 0x44, 0x53,\
-      \ 0x41, 0x54, 0x2d, 0x53, 0x4b, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2d,\
-      \ 0x53, 0x4b, 0x20, 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2d, 0x53, 0x4b, 0x20,\
-      \ 0x52, 0x41, 0x44, 0x53, 0x41, 0x54, 0x2d, 0x53, 0x4b, 0x20]\n    #bodyText\
-      \ = \"test text 1234\"\n    hexBody =  ''\n    for i in bodyText:\n        hexBody\
-      \ += f'{i:02X}'\n        body += f'{i:08b}'\n    body += flag+\"00000000000000000\"\
-      \n    data = []\n    for i in body:\n        data.append(np.uint8(int(i)))\n\
-      \    #print(bodyText)\n    #print(hexBody)\n    #print(f\"\\n{bytes(testobj.work(data)[0]).decode('ascii',\
-      \ errors='backslashreplace')}\")\n    #print()\n    \n    \n"
+      \ fixes overflow\n        return 0\n\nif __name__ == \"__main__\":\n    #if\
+      \ self.__bodyLen > self._max: print(f\"({self.__startFlag:08b}) pos={pos}, bodyLen={self.__bodyLen},\
+      \ ({self.__endFlag:08b})\")\n    import timeit, functools\n    crc_calculator\
+      \ = crcAugCcitt()\n    testobj = deframer(minLen=30) \n    \n    flag = [0,1,1,1,1,1,1,0]\n\
+      \    message = b'\\x82\\x88\\xa6\\x82\\xa8\\xf4\\xa4\\x82\\x88\\xa6\\x82\\xa8c\\\
+      x03\\xf0RADSAT-SK RADSAT-SK RADSAT-SK RADSAT-SK RADSAT-SK RADSAT-SK RADSAT-SK\
+      \ RADSAT-SK RADSAT-SK RADSAT-SK RADSAT-SK RADSAT-SK RADSAT-SK RADSAT-SK RADSAT-SK\
+      \ RADSAT-SK RADSAT-SK RADSAT-SK RADSAT-SK RADSAT-SK '\n    crcCalc = crc_calculator.calculate_checksum(message)\n\
+      \    crcFixed = bytearray((crcCalc & 0xff, crcCalc >> 8))\n    message += crcFixed\n\
+      \n    buff = []\n\n    #print(message)\n    ones = 0  # number of consecutive\
+      \ ones\n    for byte in message:\n        for _ in range(8):\n            #\
+      \ Transmit byte LSB first\n            x = byte & np.byte(1)\n            buff.append(x)\n\
+      \            ones = ones * x + x\n            if ones == 5:\n              \
+      \  # Bit-stuff\n                buff.append(0)\n                ones = 0\n \
+      \           byte >>= 1\n    #print(message)\n    \n    data = {\\\n        \"\
+      flag data flag random test\":[np.array(flag * 10 + buff + flag * 10 + [randint(0,1)\
+      \ for i in range(3000)], dtype=np.uint8), 50],\n        \"big flag data flag\
+      \ test   \":[np.array(flag * 100 + buff + flag * 100, dtype=np.uint8), 25],\n\
+      \        \"flag one second baud test \":[np.array(flag * 1200, dtype=np.uint8),\
+      \ 10],\n        \"flag data rand simple test\":[np.array(flag * 10 + buff +\
+      \ flag * 10 + [randint(0,1) for i in range(64)], dtype=np.uint8), 50],\n   \
+      \ }\n    baselineData = data[\"flag data flag random test\"][0].copy()\n   \
+      \ originalData = baselineData.copy()\n\n    for i in data:\n        #break\n\
+      \        print(f\"\\ntest: {i} run {data[i][1]} times\")\n        new = timeit.Timer(functools.partial(testobj.work,\
+      \ data[i][0].copy()))  \n        #old = timeit.Timer(functools.partial(testobj.oldWork,\
+      \ data[i][0]))\n        print(f\"\\tnew method time average = {new.timeit(data[i][1])/data[i][1]}s\"\
+      )\n        #print(f\"\\told method time average = {old.timeit(data[i][1])/data[i][1]}s\"\
+      )\n\n    #print(message)\n    print(*baselineData)\n    testobj.work(baselineData)\n\
+      \    calcReturn = testobj.work(baselineData)\n    print(f\"\\n{calcReturn}\"\
+      )\n    print(f\"\\nInput Data change?   ->  {True in (originalData != baselineData)}\"\
+      )\n    verdict = calcReturn == np.array(bytearray(message), dtype=np.uint8)\n\
+      \    print(f\"\\nFunction functional? ->  {not (False in (verdict))}\")\n  \
+      \  if False in (verdict):\n        print(calcReturn)\n        print(np.array(bytearray(message),\
+      \ dtype=np.uint8))\n    #print()\n    \n    \n"
     affinity: ''
     alias: ''
     comment: ''
@@ -182,12 +194,12 @@ blocks:
     flag: '0x7e'
     maxLen: '255'
     maxoutbuf: '0'
-    minLen: '5'
+    minLen: '1'
     minoutbuf: '0'
     output_Type: '1'
   states:
     _io_cache: ('CLI Print Sink', 'blk', [('flag', '126'), ('maxLen', '255'), ('minLen',
-      '0'), ('output_Type', '0'), ('enableCrc', 'True')], [('0', 'byte', 1)], [('msg_out',
+      '1'), ('output_Type', '0'), ('enableCrc', 'True')], [('0', 'byte', 1)], [('msg_out',
       'message', 1)], '', [])
     bus_sink: false
     bus_source: false

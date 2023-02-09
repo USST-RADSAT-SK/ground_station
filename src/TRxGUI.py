@@ -35,9 +35,8 @@ class RX_Thread(QThread):
                     msgIn = stripHeader(msgHeader)
                     msgRx.ParseFromString(msgIn)
                     append_text("Message: " + str(msgRx))
-
-                    #msgOutRx = genRx.protocol(True)
                     """
+                    msgOutRx = genRx.protocol(True)
                     msgHeader = addHeader(msgOutRx)
                     msgXor = xorCipher(msgHeader)
                     connect.send(msgXor)
@@ -46,11 +45,12 @@ class RX_Thread(QThread):
                   
             except Generator.google.protobuf.message.DecodeError:
                 append_text("Message: " + str(msgHeader))
+                """
                 msgOutNack = genRx.protocol(False)
                 msgHeader = addHeader(msgOutNack)
                 msgXor = xorCipher(msgHeader)
                 connect.send(msgXor)
-            
+                """
             self.exit()
 
 
