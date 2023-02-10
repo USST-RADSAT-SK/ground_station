@@ -37,14 +37,25 @@ class RX_Thread(QThread):
                     stopTime = time()
                     
                     msgType = genRx.whichType()
+
                     if msgType == 1:
                         append_text("Received Protocol")
+
                     if msgType == 2:
                         append_text("Received Telecommand")
+
                     if msgType == 3:
                         append_text("Received File Transfer")
+                        # TODO - Process FT msg and send them... somewhere..? 
+                        msgResp = genTx.protocol(True)
+                        msgHeader = addHeader(msgResp)
+                        msgXor = xorCipher(msgHeader)
+                        connect.send(msgXor)
+                        append_text("Ack sent!", dev=True)
+
                     if msgType not in [1,2,3]:
                         append_text("Received Unknown")
+                        # Send nack? 
 
                     append_text("Message: " + str(msgRx) + "Time: " + str(stopTime-startTime) + "s")
         
@@ -148,26 +159,23 @@ def onclick_reboot():
 ##################################################################
 #                             GUI
 ##################################################################
-textLabel = ""
 global msgOut
 msgOut = None
 
 app = QApplication(sys.argv)
 win = QMainWindow()
 win.setGeometry(1000, 1000, 1500, 1500)
-win.setWindowTitle("Telecomm GUI")
+win.setWindowTitle("RADSAT-SK - Ground Station GUI")
 
 layout = QHBoxLayout()
 btnlayout = QVBoxLayout()
 btnlayout.setSpacing(1)
 
-add_btn = QPushButton("Add")
-btnlayout.addWidget(add_btn)
-add_btn.clicked.connect(lambda: append_text("hello"))
 
 ##################################################################
-#                        Ack and Nack 
+#                           Protocol
 ##################################################################
+
 sendcmd_label = QLabel("Send Command")
 sendcmd_label.setContentsMargins(0, 0, 0, 0)
 btnlayout.addWidget(sendcmd_label)
@@ -181,6 +189,7 @@ nack_btn = QPushButton("Nack")
 btnlayout.addWidget(nack_btn)
 nack_btn.clicked.connect(lambda: onclick_nack())
 
+
 ##################################################################
 #                         Telecommands
 ##################################################################
@@ -189,7 +198,6 @@ telecmd_label = QLabel("Telecommands")
 telecmd_label.setContentsMargins(0, 0, 0, 0)
 btnlayout.addWidget(telecmd_label)
 telecmd_label.show()
-
 
 passlen_label = QLabel("Input")
 passlen_label.setContentsMargins(0, 0, 0, 0)
@@ -221,6 +229,7 @@ unixtime_btn = QPushButton("Set Unixtime")
 btnlayout.addWidget(unixtime_btn)
 unixtime_btn.clicked.connect(lambda: onclick_unixtime())
 
+
 ##################################################################
 #                         Reboot
 ##################################################################
@@ -243,8 +252,6 @@ btnlayout.addWidget(reboot_btn)
 reboot_btn.clicked.connect(lambda: onclick_reboot())
 
 
-
-
 ##################################################################
 #                         Others
 ##################################################################
@@ -264,12 +271,12 @@ quit_btn.clicked.connect(lambda: quit_window(app))
 
 outconsole = QTextEdit()
 outconsole.setReadOnly(True)
-outconsole.append(textLabel)
+outconsole.append("------------------------ Rx Thread ------------------------")
 outconsole.ensureCursorVisible()
 
 devconsole = QTextEdit()
 devconsole.setReadOnly(True)
-devconsole.append("Dev Console")
+devconsole.append("------------------------ Tx Thread ------------------------")
 devconsole.ensureCursorVisible()
 
 layout.addLayout(btnlayout)
@@ -280,6 +287,8 @@ central_widget = QWidget()
 central_widget.setLayout(layout)
 win.setCentralWidget(central_widget)
 win.move(0,0)
+win.resize(940,450)
+
 
 ##################################################################
 #                         Threads
