@@ -11,6 +11,14 @@ class Generator:
     def processFiles(self):
         self.message = self.radsat.radsat_message()
 
+    def whichType(self):
+        if self.message.HasField("ProtocolMessage"):
+            return(1)
+        elif self.message.HasField("TelecommandMessage"):
+            return(2)
+        elif self.message.HasField("FileTransferMessage"):
+            return(3)
+
     def protocol(self, ack = True):
         msg = self.message
         if ack:

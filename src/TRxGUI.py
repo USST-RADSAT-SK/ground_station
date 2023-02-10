@@ -34,23 +34,23 @@ class RX_Thread(QThread):
                 if msgHeader:
                     msgIn = stripHeader(msgHeader)
                     msgRx.ParseFromString(msgIn)
-                    append_text("Message: " + str(msgRx))
-                    """
-                    msgOutRx = genRx.protocol(True)
-                    msgHeader = addHeader(msgOutRx)
-                    msgXor = xorCipher(msgHeader)
-                    connect.send(msgXor)
-                    """
-                    self.rx_signal.emit(msgOut)
-                  
+                    stopTime = time()
+                    
+                    msgType = genRx.whichType()
+                    if msgType == 1:
+                        append_text("Received Protocol")
+                    if msgType == 2:
+                        append_text("Received Telecommand")
+                    if msgType == 3:
+                        append_text("Received File Transfer")
+                    if msgType not in [1,2,3]:
+                        append_text("Received Unknown")
+
+                    append_text("Message: " + str(msgRx) + "Time: " + str(stopTime-startTime) + "s")
+        
             except Generator.google.protobuf.message.DecodeError:
                 append_text("Message: " + str(msgHeader))
-                """
-                msgOutNack = genRx.protocol(False)
-                msgHeader = addHeader(msgOutNack)
-                msgXor = xorCipher(msgHeader)
-                connect.send(msgXor)
-                """
+            
             self.exit()
 
 
@@ -67,9 +67,11 @@ def get_confirmation():
     append_text("click confirm to send!", dev=True)
 
 def post_confirmation():
+    global startTime 
     msgHeader = addHeader(msgOut)
     msgXor = xorCipher(msgHeader)
     connect.send(msgXor)
+    startTime = time()
     append_text("Tx message sent!", dev=True)
 
 def onclick_ack():
