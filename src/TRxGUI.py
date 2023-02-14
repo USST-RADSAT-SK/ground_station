@@ -15,7 +15,6 @@ def append_text(text, dev=False):
         devconsole.append(str(text))
         devconsole.ensureCursorVisible()
     else:
-        outconsole.append("-----")
         outconsole.append(str(text))
         outconsole.ensureCursorVisible()
 
@@ -32,20 +31,20 @@ class RX_Thread(QThread):
                 msgHeader = connect.recv()
 
                 if msgHeader:
-                    msgIn = stripHeader(msgHeader)
+                    msgIn,timeStamp = stripHeader(msgHeader)
                     msgRx.ParseFromString(msgIn)
                     stopTime = time()
                     
                     msgType = genRx.whichType()
 
                     if msgType == 1:
-                        append_text("Received Protocol")
+                        append_text("Received Protocol at time = " + str(timeStamp))
 
                     if msgType == 2:
-                        append_text("Received Telecommand")
+                        append_text("Received Telecommand at time = " + str(timeStamp))
 
                     if msgType == 3:
-                        append_text("Received File Transfer")
+                        append_text("Received File Transfer at time = " + str(timeStamp))
                         # TODO - Process FT msg and send them... somewhere..? 
                         msgResp = genTx.protocol(True)
                         msgHeader = addHeader(msgResp)
@@ -57,8 +56,9 @@ class RX_Thread(QThread):
                         append_text("Received Unknown")
                         # Send nack? 
 
-                    append_text("Message: " + str(msgRx) + "Time: " + str(stopTime-startTime) + "s")
-        
+                    append_text("Message: " + str(msgRx) + "Duration: " + str(stopTime-startTime) + "s")
+                    append_text("---------------------------------------")
+
             except Generator.google.protobuf.message.DecodeError:
                 append_text("Message: " + str(msgHeader))
             

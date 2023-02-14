@@ -30,7 +30,9 @@ def addHeader(msg, manualTime = 0):
     return(bytes(preamble + checksum + header))
 
 def stripHeader(msg):
-    return(msg[9:])
+    timeStamp_bytes = msg[5:9]
+    timeStamp = int.from_bytes(timeStamp_bytes,byteorder="little")
+    return(msg[9:],timeStamp)
 
 if __name__ == "__main__":
     xorCipher(bytes([0,1,0,1,0,1,0,1]))
