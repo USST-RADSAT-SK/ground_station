@@ -74,7 +74,7 @@ def get_confirmation():
         raise TypeError("Error: Message type cannot be none!!!")
     msgTx.ParseFromString(msgOut)
     append_text("Message: " + str(msgTx), dev=True)
-    append_text("Encoded: " + str(msgOut), dev=True)
+    append_text("Encoded: " + str(msgOut.hex()), dev=True)
     append_text("click confirm to send!", dev=True)
 
 def post_confirmation():
@@ -83,6 +83,7 @@ def post_confirmation():
     msgXor = xorCipher(msgHeader)
     connect.send(msgXor)
     startTime = time()
+    append_text("Ciphered: " + str(msgXor.hex()), dev=True)
     append_text("Tx message sent!", dev=True)
 
 def onclick_ack():
