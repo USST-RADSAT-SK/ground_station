@@ -25,17 +25,21 @@ class RX_Thread(QThread):
         super(RX_Thread, self).__init__(parent)
 
     def run(self):
+        startTime = time()
         while True:
             try:
                 sleep(1)
-                msgHeader = connect.recv()
+                msgHeader = connect.recv()                
+                #msgn = genTx.protocol(True)
+                #msgHeader = addHeader(msgn)
 
                 if msgHeader:
-                    msgIn,timeStamp = stripHeader(msgHeader)
+                    msgIn,preamble,checkSum,length,timeStamp = stripHeader(msgHeader)
                     msgRx.ParseFromString(msgIn)
                     stopTime = time()
                     
                     msgType = genRx.whichType()
+                    sendToFile("logger\RADSAT-SK-" + getDateString() + ".csv",msgHeader,msgIn,preamble,checkSum,length,timeStamp)
 
                     if msgType == 1:
                         append_text("Received Protocol at time = " + str(timeStamp))

@@ -1,4 +1,6 @@
+import os
 from time import *
+from datetime import date
 from crc import CrcCalculator, Configuration
 
 def xorCipher(msgBytes):
@@ -30,9 +32,24 @@ def addHeader(msg, manualTime = 0):
     return(bytes(preamble + checksum + header))
 
 def stripHeader(msg):
-    timeStamp_bytes = msg[5:9]
-    timeStamp = int.from_bytes(timeStamp_bytes,byteorder="little")
-    return(msg[9:],timeStamp)
+    message = msg[9:]
+    preamble = msg[0:2].hex()
+    checkSum = msg[2:4].hex()
+    length = int.from_bytes(msg[4:5],byteorder="little")
+    timeStamp = int.from_bytes(msg[5:9],byteorder="little")
+    return(message,preamble,checkSum,length,timeStamp)
 
-if __name__ == "__main__":
-    xorCipher(bytes([0,1,0,1,0,1,0,1]))
+def sendToFile(fileName,msg_header,msg_stripped,preamble,checkSum,length,timeStamp):
+    msg_header = msg_header.hex()
+    msg_stripped = msg_stripped.hex()
+    
+    if os.path.isfile(fileName) == False:
+        with open(fileName,"w") as f:
+            f.write("RADSAT-SK Data Log : " + getDateString() + "\nReceive Time,Preamble,Checksum,Length,Time Stamp, Message, Recv Data\n")
+    
+    with open(fileName,"a") as f:
+        f.write('"' + str(int(time())) + '","' + str(preamble) + '","' + str(checkSum) + '","' + str(length) + '","' + str(timeStamp) + '","' + str(msg_stripped) + '","' + str(msg_header) + '",\n')
+
+def getDateString():
+    now = date.today().strftime("%Y_%m_%d")
+    return(now)
