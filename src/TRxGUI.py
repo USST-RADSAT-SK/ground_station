@@ -53,7 +53,7 @@ class RX_Thread(QThread):
                         msgIn,preamble,checkSum,length,timeStamp = stripHeader(msgHeader)
                         msgRx = generator(msgIn)
 
-                        if msgRx != -1:
+                        if isinstance(msgRx, Nack):
                             append_text("Message: " + str(msgRx))
                             ack.resp = 0
                             append_text("FT Received! Sending Ack")
@@ -83,6 +83,7 @@ class RX_Thread(QThread):
                             append_text("Message: " + str(msgRx))
                         else:
                             append_text("Decode Error!")
+
             except Exception as e:
                 print(e)
                 append_text("Message: " + str(msgHeader))

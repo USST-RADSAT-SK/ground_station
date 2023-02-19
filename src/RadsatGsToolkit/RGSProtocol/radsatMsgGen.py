@@ -976,7 +976,7 @@ class CeaseTransmission(RadsatMessage):
         return f"{self.duration}"
     
 class UpdateTime(RadsatMessage):
-    recipe = "H"
+    recipe = "I"
     name = "Update Time"
     size = struct.calcsize(recipe)
 
@@ -997,7 +997,7 @@ class UpdateTime(RadsatMessage):
 
     def __str__(self):
         return f"""UpdateTime = {{
-        Unix Time = {self.unixTime},
+        Unix Time = {self.unixTime}
         }}"""
     
     def log(self):
@@ -1057,8 +1057,3 @@ if __name__ == "__main__":
     updateTime = UpdateTime()
     reset = Reset()
     
-    nack.resp = 0
-    out = nack.encoder()
-
-    msgRx = generator(out)
-    print(msgRx.ID)
