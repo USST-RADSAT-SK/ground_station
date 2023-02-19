@@ -43,7 +43,7 @@ class RX_Thread(QThread):
         super(RX_Thread, self).__init__(parent)
 
     def run(self):
-        global ftMode
+        global ftMode,startTime
         while True:
             try:
                 msgHeader = connect.recv()
@@ -62,14 +62,16 @@ class RX_Thread(QThread):
                         
                         elif msgRx.ID == 13:
                             ftMode = False
+                            append_text("Nack received. Disabling FT mode!")
                             
                         else:
                             append_text("Decode Error!")
                     
                     else:
-                        if time()-startTime > 3:
-                            append_text("No FT received in > 5s. Sending Ack!")
+                        if time() - startTime > 5:
+                            append_text("No FT received in > 5s. Sending Ack!",dev=True)
                             connect.send(xorCipher(addHeader(ack.encoder())))
+                            startTime = time()
                         sleep(0.001)
 
                 else:

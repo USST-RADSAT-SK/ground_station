@@ -1057,7 +1057,7 @@ if __name__ == "__main__":
     updateTime = UpdateTime()
     reset = Reset()
     
-    nack.resp = 1
+    nack.resp = 0
     out = nack.encoder()
 
     msgRx = generator(out)
