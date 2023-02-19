@@ -43,13 +43,13 @@ class RX_Thread(QThread):
         super(RX_Thread, self).__init__(parent)
 
     def run(self):
+        global ftMode
         while True:
             try:
-                msgHeader = connect.recv()                
+                msgHeader = connect.recv()
                 #msgHeader = b'\x18 3<\x02\x04\x03\x02\x01\x0c\x00'
-                print(ftMode)
                 if ftMode:
-                    if msgHeader:
+                    if msgHeader != None:
                         msgIn,preamble,checkSum,length,timeStamp = stripHeader(msgHeader)
                         msgRx = generator(msgIn)
 
@@ -73,7 +73,7 @@ class RX_Thread(QThread):
                         sleep(0.001)
 
                 else:
-                    if msgHeader:
+                    if msgHeader != None:
                         msgIn,preamble,checkSum,length,timeStamp = stripHeader(msgHeader)
                         msgRx = generator(msgIn)
 
@@ -81,7 +81,8 @@ class RX_Thread(QThread):
                             append_text("Message: " + str(msgRx))
                         else:
                             append_text("Decode Error!")
-            except:
+            except Exception as e:
+                print(e)
                 append_text("Message: " + str(msgHeader))
             
             self.exit()
