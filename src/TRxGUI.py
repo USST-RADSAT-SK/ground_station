@@ -42,8 +42,8 @@ class RX_Thread(QThread):
         while True:
             try:
                 sleep(1)
-                msgHeader = connect.recv()                
-                #msgHeader = b"\030 \276NA\004\003\002\001\aV\325\033E\262\"\034EV\325\033EaI\034E\037\357\033E\333\247,DFV\034EH\b\247A\262\"\034E\004\374\033EV\325\033E\262\"\034E\227/\034EFe$DaI\034EPt\250A"
+                #msgHeader = connect.recv()                
+                msgHeader = b'\x18 3<\x02\x04\x03\x02\x01\x0c\x00'
 
                 if msgHeader:
                     msgIn,preamble,checkSum,length,timeStamp = stripHeader(msgHeader)
@@ -82,14 +82,14 @@ def post_confirmation(toSend):
 def onclick_ack():
     append_text("generating ack...", dev=True)
     append_text("-" * 40, dev=True)
-    ack.resp = 1
+    ack.resp = 0
     msgOut = ack.encoder()
     get_confirmation(msgOut)
 
 def onclick_nack():
     append_text("generating nack...", dev=True)
     append_text("-" * 40, dev=True)
-    nack.resp = 1
+    nack.resp = 0
     msgOut = nack.encoder()
     get_confirmation(msgOut)
 

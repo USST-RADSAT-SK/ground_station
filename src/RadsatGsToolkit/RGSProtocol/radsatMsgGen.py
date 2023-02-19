@@ -44,10 +44,12 @@ def generator(bytes):
         messageObject = recipes[messageType]
         try:
             return messageObject(bytes[1:messageObject.size + 1])
-        except:
+        except Exception as e:
+            print(e)
             return -1
         
     else:
+        print("message type not in recipes")
         return -1
 
 ###############################################
@@ -830,7 +832,7 @@ class ErrorReportSummary(RadsatMessage):
 ###############################################
 
 class Ack(RadsatMessage):
-    recipe = "H"
+    recipe = "B"
     name = "Acknowledge"
     size = struct.calcsize(recipe)
 
@@ -858,7 +860,7 @@ class Ack(RadsatMessage):
         return f"{self.resp}"
     
 class Nack(RadsatMessage):
-    recipe = "H"
+    recipe = "B"
     name = "Not Acknowledge"
     size = struct.calcsize(recipe)
 
@@ -1055,10 +1057,6 @@ if __name__ == "__main__":
     updateTime = UpdateTime()
     reset = Reset()
     
-    encodedBytes = b"\030 \276NA\004\003\002\001\aV\325\033E\262\"\034EV\325\033EaI\034E\037\357\033E\333\247,DFV\034EH\b\247A\262\"\034E\004\374\033EV\325\033E\262\"\034E\227/\034EFe$DaI\034EPt\250A"
+    encodedBytes = b'\x18 3<\x02\x04\x03\x02\x01\x0c\x00'
 
-    #print(generator(encodedBytes[9:]))
-
-    ack.resp = 1
-    msgOut = ack.encoder()
-    print(generator(msgOut))
+    print(generator(encodedBytes[9:]))
