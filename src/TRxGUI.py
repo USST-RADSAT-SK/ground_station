@@ -42,8 +42,8 @@ class RX_Thread(QThread):
         while True:
             try:
                 sleep(1)
-                #msgHeader = connect.recv()                
-                msgHeader = b'\x18 3<\x02\x04\x03\x02\x01\x0c\x00'
+                msgHeader = connect.recv()                
+                #msgHeader = b'\x18 3<\x02\x04\x03\x02\x01\x0c\x00'
 
                 if msgHeader:
                     msgIn,preamble,checkSum,length,timeStamp = stripHeader(msgHeader)
