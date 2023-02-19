@@ -52,21 +52,18 @@ class RX_Thread(QThread):
                     if msgHeader != None:
                         msgIn,preamble,checkSum,length,timeStamp = stripHeader(msgHeader)
                         msgRx = generator(msgIn)
-
+                        
                         if isinstance(msgRx, Nack):
+                            ftMode = False
+                            append_text("Nack received. Disabling FT mode!")
+
+                        else:
                             append_text("Message: " + str(msgRx))
                             ack.resp = 0
                             append_text("FT Received! Sending Ack")
                             connect.send(xorCipher(addHeader(ack.encoder())))
                             startTime = time()
-                        
-                        elif msgRx.ID == 13:
-                            ftMode = False
-                            append_text("Nack received. Disabling FT mode!")
                             
-                        else:
-                            append_text("Decode Error!")
-                    
                     else:
                         if time() - startTime > 5:
                             append_text("No FT received in > 5s. Sending Ack!",dev=True)
