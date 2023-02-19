@@ -24,6 +24,10 @@ ceaseTransmission = CeaseTransmission()
 updateTime = UpdateTime()
 rst = Reset()
 
+ftMode = False
+startTime = 0
+FT = False
+
 def append_text(text, dev=False):
     if dev:
         devconsole.append(str(text))
@@ -41,18 +45,42 @@ class RX_Thread(QThread):
     def run(self):
         while True:
             try:
-                sleep(1)
                 msgHeader = connect.recv()                
                 #msgHeader = b'\x18 3<\x02\x04\x03\x02\x01\x0c\x00'
+                print(ftMode)
+                if ftMode:
+                    if msgHeader:
+                        msgIn,preamble,checkSum,length,timeStamp = stripHeader(msgHeader)
+                        msgRx = generator(msgIn)
 
-                if msgHeader:
-                    msgIn,preamble,checkSum,length,timeStamp = stripHeader(msgHeader)
-                    msgRx = generator(msgIn)
-
-                    if msgRx != -1:
-                        append_text("Message: " + str(msgRx))
+                        if msgRx != -1:
+                            append_text("Message: " + str(msgRx))
+                            ack.resp = 0
+                            append_text("FT Received! Sending Ack")
+                            connect.send(xorCipher(addHeader(ack.encoder())))
+                            startTime = time()
+                        
+                        elif msgRx.ID == 13:
+                            ftMode = False
+                            
+                        else:
+                            append_text("Decode Error!")
+                    
                     else:
-                        append_text("Decode Error!")
+                        if time()-startTime > 3:
+                            append_text("No FT received in > 5s. Sending Ack!")
+                            connect.send(xorCipher(addHeader(ack.encoder())))
+                        sleep(0.001)
+
+                else:
+                    if msgHeader:
+                        msgIn,preamble,checkSum,length,timeStamp = stripHeader(msgHeader)
+                        msgRx = generator(msgIn)
+
+                        if msgRx != -1:
+                            append_text("Message: " + str(msgRx))
+                        else:
+                            append_text("Decode Error!")
             except:
                 append_text("Message: " + str(msgHeader))
             
@@ -70,7 +98,6 @@ def get_confirmation(msgOut):
     append_text("Encoded: " + str(msgOut.hex()), dev=True)
     append_text("click confirm to send!", dev=True)
     confirmMessage = msgOut
-    
 
 def post_confirmation(toSend):
     msgHeader = addHeader(toSend)
@@ -78,6 +105,12 @@ def post_confirmation(toSend):
     connect.send(msgXor)
     append_text("Ciphered: " + str(msgXor.hex()), dev=True)
     append_text("Tx message sent!", dev=True)
+    global FT
+    if FT:
+        global ftMode,startTime
+        ftMode = True
+        startTime = time()
+        FT = False
 
 def onclick_ack():
     append_text("generating ack...", dev=True)
@@ -102,7 +135,9 @@ def onclick_beginPass():
     msgOut = beginPass.encoder()
     get_confirmation(msgOut)
 
-def onclick_beginFTP():
+def onclick_beginFileTransfer():
+    global FT 
+    FT = True
     append_text("generating begin ftp...", dev=True)
     append_text("-" * 40, dev=True)
     beginFileTransfer.resp = 1
@@ -201,7 +236,7 @@ beginPass_btn.clicked.connect(lambda: onclick_beginPass())
 
 beginftp_btn = QPushButton("Begin File Transfer")
 btnlayout.addWidget(beginftp_btn)
-beginftp_btn.clicked.connect(lambda: onclick_beginFTP())
+beginftp_btn.clicked.connect(lambda: onclick_beginFileTransfer())
 
 ceasetrans_btn = QPushButton("Cease Transmission")
 btnlayout.addWidget(ceasetrans_btn)

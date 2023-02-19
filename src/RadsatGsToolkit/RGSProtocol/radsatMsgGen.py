@@ -1057,6 +1057,8 @@ if __name__ == "__main__":
     updateTime = UpdateTime()
     reset = Reset()
     
-    encodedBytes = b'\x18 3<\x02\x04\x03\x02\x01\x0c\x00'
+    nack.resp = 1
+    out = nack.encoder()
 
-    print(generator(encodedBytes[9:]))
+    msgRx = generator(out)
+    print(msgRx.ID)
