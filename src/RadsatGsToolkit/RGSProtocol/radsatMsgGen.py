@@ -42,15 +42,13 @@ def generator(bytes):
     messageType = bytes[0]
     if messageType in recipes:
         messageObject = recipes[messageType]
-        print(messageObject)
         try:
             return messageObject(bytes[1:messageObject.size + 1])
         except:
-            print("Decode Error")
-            pass
+            return -1
         
     else:
-        print("<",messageType,"> not in recipes")
+        return -1
 
 ###############################################
 #                File Transfer                #
@@ -844,16 +842,16 @@ class Ack(RadsatMessage):
             self.decoder(convert)
 
     def decoder(self, value):
-            self.resp = struct.unpack(Ack.recipe, value)
+        self.resp = struct.unpack(Ack.recipe, value)[0]
         
     def encoder(self):
         return(bytes([self.ID]) + struct.pack(Ack.recipe,
-            self.resp
-            ))
+        self.resp
+        ))
 
     def __str__(self):
         return f"""Ack = {{
-            Response = {self.resp},
+        Response = {self.resp}
         }}"""
     
     def log(self):
@@ -872,16 +870,16 @@ class Nack(RadsatMessage):
             self.decoder(convert)
 
     def decoder(self, value):
-            self.resp = struct.unpack(Nack.recipe, value)
+        self.resp = struct.unpack(Nack.recipe, value)[0]
         
     def encoder(self):
         return(bytes([self.ID]) + struct.pack(Nack.recipe,
-            self.resp
-            ))
+        self.resp
+        ))
 
     def __str__(self):
         return f"""Nack = {{
-            Response = {self.resp},
+        Response = {self.resp}
         }}"""
     
     def log(self):
@@ -904,7 +902,7 @@ class BeginPass(RadsatMessage):
             self.decoder(convert)
 
     def decoder(self, value):
-        self.passLength = struct.unpack(BeginPass.recipe, value)
+        self.passLength = struct.unpack(BeginPass.recipe, value)[0]
         
     def encoder(self):
         return(bytes([self.ID]) + struct.pack(BeginPass.recipe,
@@ -913,7 +911,7 @@ class BeginPass(RadsatMessage):
 
     def __str__(self):
         return f"""BeginPass = {{
-            Pass Length = {self.passLength},
+        Pass Length = {self.passLength},
         }}"""
     
     def log(self):
@@ -932,7 +930,7 @@ class BeginFileTransfer(RadsatMessage):
             self.decoder(convert)
 
     def decoder(self, value):
-        self.resp = struct.unpack(BeginFileTransfer.recipe, value)
+        self.resp = struct.unpack(BeginFileTransfer.recipe, value)[0]
         
     def encoder(self):
         return(bytes([self.ID]) + struct.pack(BeginFileTransfer.recipe,
@@ -941,7 +939,7 @@ class BeginFileTransfer(RadsatMessage):
 
     def __str__(self):
         return f"""BeginFileTransfer = {{
-            Response = {self.resp},
+        Response = {self.resp},
         }}"""
     
     def log(self):
@@ -960,46 +958,20 @@ class CeaseTransmission(RadsatMessage):
             self.decoder(convert)
 
     def decoder(self, value):
-            self.duration = struct.unpack(CeaseTransmission.recipe, value)
+        self.duration = struct.unpack(CeaseTransmission.recipe, value)[0]
         
     def encoder(self):
         return(bytes([self.ID]) + struct.pack(CeaseTransmission.recipe,
-            self.duration
-            ))
+        self.duration
+        ))
 
     def __str__(self):
         return f"""CeaseTransmission = {{
-            Response = {self.duration},
+        Response = {self.duration},
         }}"""
     
     def log(self):
         return f"{self.duration}"
-    
-    recipe = "ffffffffffffffff"
-    name = "Resume Transmission"
-    size = struct.calcsize(recipe)
-
-    def __init__(self, convert=None):
-        self.resp = 0
-
-        if convert:
-            self.decoder(convert)
-
-    def decoder(self, value):
-            self.resp = struct.unpack(ResumeTransmission.recipe, value)
-        
-    def encoder(self):
-        return(bytes([self.ID]) + struct.pack(ResumeTransmission.recipe,
-            self.resp
-            ))
-
-    def __str__(self):
-        return f"""ResumeTransmission = {{
-            Response = {self.resp},
-        }}"""
-    
-    def log(self):
-        return f"{self.resp}"
     
 class UpdateTime(RadsatMessage):
     recipe = "H"
@@ -1014,16 +986,16 @@ class UpdateTime(RadsatMessage):
             self.decoder(convert)
 
     def decoder(self, value):
-            self.unixTime = struct.unpack(UpdateTime.recipe, value)
+        self.unixTime = struct.unpack(UpdateTime.recipe, value)[0]
         
     def encoder(self):
         return(bytes([self.ID]) + struct.pack(UpdateTime.recipe,
-            self.unixTime
-            ))
+        self.unixTime
+        ))
 
     def __str__(self):
         return f"""UpdateTime = {{
-            Unix Time = {self.unixTime},
+        Unix Time = {self.unixTime},
         }}"""
     
     def log(self):
@@ -1054,8 +1026,8 @@ class Reset(RadsatMessage):
 
     def __str__(self):
         return f"""Reset = {{
-            Reset Device = {self.device},
-            Hard Reset  = {self.hard}
+        Reset Device = {self.device},
+        Hard Reset  = {self.hard}
         }}"""
     
     def log(self):
@@ -1064,28 +1036,29 @@ class Reset(RadsatMessage):
 if __name__ == "__main__":
     import random
     radsatMsg = RadsatMessage()
-    dosData = DosimeterData()
-
-    dosData.boardOneChannelZero = 100*random.random()
-    dosData.boardOneChannelOne = 100*random.random()
-    dosData.boardOneChannelTwo = 100*random.random()
-    dosData.boardOneChannelThree = 100*random.random()
-    dosData.boardOneChannelFour = 100*random.random()
-    dosData.boardOneChannelFive = 100*random.random()
-    dosData.boardOneChannelSix = 100*random.random()
-    dosData.boardOneChannelSeven = 100*random.random()
-    dosData.boardTwoChannelZero = 100*random.random()
-    dosData.boardTwoChannelOne = 100*random.random()
-    dosData.boardTwoChannelTwo = 100*random.random()
-    dosData.boardTwoChannelThree = 100*random.random()
-    dosData.boardTwoChannelFour = 100*random.random()
-    dosData.boardTwoChannelFive = 100*random.random()
-    dosData.boardTwoChannelSix = 100*random.random()
-    dosData.boardTwoChannelSeven = 100*random.random()
-
-    print(dosData)
-
-    encodedBytes = dosData.encoder()
-    print(encodedBytes)
+    obcTelem = ObcTelemetry()
+    trxvuTelem = TransceiverTelemetry()
+    cameraTelem = CameraTelemetry()
+    epsTelem = EpsTelemetry()
+    batteryTelem = BatteryTelemetry()
+    antennaTelem = AntennaTelemetry()
+    dosimeterData = DosimeterData()
+    imgPacket = ImagePacket()
+    modError = ModuleErrorReport()
+    compError = ComponentErrorReport()
+    errSummary = ErrorReportSummary()
+    ack = Ack()
+    nack = Nack()
+    beginPass = BeginPass()
+    beginFileTransfer = BeginFileTransfer()
+    ceaseTransmission = CeaseTransmission()
+    updateTime = UpdateTime()
+    reset = Reset()
     
-    print(generator(encodedBytes))
+    encodedBytes = b"\030 \276NA\004\003\002\001\aV\325\033E\262\"\034EV\325\033EaI\034E\037\357\033E\333\247,DFV\034EH\b\247A\262\"\034E\004\374\033EV\325\033E\262\"\034E\227/\034EFe$DaI\034EPt\250A"
+
+    #print(generator(encodedBytes[9:]))
+
+    ack.resp = 1
+    msgOut = ack.encoder()
+    print(generator(msgOut))

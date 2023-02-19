@@ -3,12 +3,26 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QMainWindow, Q
 from PyQt5.QtCore import QThread, pyqtSignal
 import sys
 
-genTx = Generator()
-genRx = Generator()
-msgTx = genTx.message
-msgRx = genRx.message
-
 connect = GSConnect()
+
+obcTelem = ObcTelemetry()
+trxvuTelem = TransceiverTelemetry()
+cameraTelem = CameraTelemetry()
+epsTelem = EpsTelemetry()
+batteryTelem = BatteryTelemetry()
+antennaTelem = AntennaTelemetry()
+dosimeterData = DosimeterData()
+imgPacket = ImagePacket()
+modError = ModuleErrorReport()
+compError = ComponentErrorReport()
+errSummary = ErrorReportSummary()
+ack = Ack()
+nack = Nack()
+beginPass = BeginPass()
+beginFileTransfer = BeginFileTransfer()
+ceaseTransmission = CeaseTransmission()
+updateTime = UpdateTime()
+rst = Reset()
 
 def append_text(text, dev=False):
     if dev:
@@ -25,45 +39,21 @@ class RX_Thread(QThread):
         super(RX_Thread, self).__init__(parent)
 
     def run(self):
-        startTime = time()
         while True:
             try:
                 sleep(1)
                 msgHeader = connect.recv()                
-                #msgn = genTx.protocol(True)
-                #msgHeader = addHeader(msgn)
+                #msgHeader = b"\030 \276NA\004\003\002\001\aV\325\033E\262\"\034EV\325\033EaI\034E\037\357\033E\333\247,DFV\034EH\b\247A\262\"\034E\004\374\033EV\325\033E\262\"\034E\227/\034EFe$DaI\034EPt\250A"
 
                 if msgHeader:
                     msgIn,preamble,checkSum,length,timeStamp = stripHeader(msgHeader)
-                    msgRx.ParseFromString(msgIn)
-                    stopTime = time()
-                    
-                    msgType = genRx.whichType()
-                    sendToFile("logger\RADSAT-SK-" + getDateString() + ".csv",msgHeader,msgIn,preamble,checkSum,length,timeStamp)
+                    msgRx = generator(msgIn)
 
-                    if msgType == 1:
-                        append_text("Received Protocol at time = " + str(timeStamp))
-
-                    if msgType == 2:
-                        append_text("Received Telecommand at time = " + str(timeStamp))
-
-                    if msgType == 3:
-                        append_text("Received File Transfer at time = " + str(timeStamp))
-                        # TODO - Process FT msg and send them... somewhere..? 
-                        msgResp = genTx.protocol(True)
-                        msgHeader = addHeader(msgResp)
-                        msgXor = xorCipher(msgHeader)
-                        connect.send(msgXor)
-                        append_text("Ack sent!", dev=True)
-
-                    if msgType not in [1,2,3]:
-                        append_text("Received Unknown")
-                        # Send nack? 
-
-                    append_text("Message: " + str(msgRx) + "Duration: " + str(stopTime-startTime) + "s")
-                    append_text("---------------------------------------")
-
-            except Generator.google.protobuf.message.DecodeError:
+                    if msgRx != -1:
+                        append_text("Message: " + str(msgRx))
+                    else:
+                        append_text("Decode Error!")
+            except:
                 append_text("Message: " + str(msgHeader))
             
             self.exit()
@@ -72,72 +62,63 @@ class RX_Thread(QThread):
 def quit_window(app):
     sys.exit(app.exec_())
 
-def get_confirmation():
-    global msgOut
+def get_confirmation(msgOut):
+    global confirmMessage
     if msgOut == None:
         raise TypeError("Error: Message type cannot be none!!!")
-    msgTx.ParseFromString(msgOut)
-    append_text("Message: " + str(msgTx), dev=True)
+    append_text("Message: " + str(generator(msgOut)), dev=True)
     append_text("Encoded: " + str(msgOut.hex()), dev=True)
     append_text("click confirm to send!", dev=True)
+    confirmMessage = msgOut
+    
 
-def post_confirmation():
-    global startTime 
-    msgHeader = addHeader(msgOut)
+def post_confirmation(toSend):
+    msgHeader = addHeader(toSend)
     msgXor = xorCipher(msgHeader)
     connect.send(msgXor)
-    startTime = time()
     append_text("Ciphered: " + str(msgXor.hex()), dev=True)
     append_text("Tx message sent!", dev=True)
 
 def onclick_ack():
-    global msgOut
     append_text("generating ack...", dev=True)
     append_text("-" * 40, dev=True)
-    msgOut = genTx.protocol(True)
-    get_confirmation()
+    ack.resp = 1
+    msgOut = ack.encoder()
+    get_confirmation(msgOut)
 
 def onclick_nack():
-    global msgOut
     append_text("generating nack...", dev=True)
     append_text("-" * 40, dev=True)
-    msgOut = genTx.protocol(False)
-    get_confirmation()
+    nack.resp = 1
+    msgOut = nack.encoder()
+    get_confirmation(msgOut)
 
 def onclick_beginPass():
-    global msgOut
     passLen = int(int_input.text())
     append_text("generating begin pass...", dev=True)
     append_text("pass length: " + str(passLen), dev=True)
     append_text("-" * 40, dev=True)
-    msgOut = genTx.beginPass(passLen)
-    get_confirmation()
+    beginPass.passLength = passLen
+    msgOut = beginPass.encoder()
+    get_confirmation(msgOut)
 
 def onclick_beginFTP():
-    global msgOut
     append_text("generating begin ftp...", dev=True)
     append_text("-" * 40, dev=True)
-    msgOut = genTx.beginFileTransfer()
-    get_confirmation()
+    beginFileTransfer.resp = 1
+    msgOut = beginFileTransfer.encoder()
+    get_confirmation(msgOut)
 
 def onclick_ceaseTransmission():
-    global msgOut
     duartion = int(int_input.text())
     append_text("generating cease transmission...", dev=True)
     append_text("duartion: " + str(duartion), dev=True)
     append_text("-" * 40, dev=True)
-    msgOut = genTx.ceaseTransmission(duartion)
-    get_confirmation()
-
-def onclick_resumeTransmission():
-    global msgOut
-    append_text("generating resume transmission...", dev=True)
-    append_text("-" * 40, dev=True)
-    msgOut = genTx.resumeTransmission()
-    get_confirmation()
+    ceaseTransmission.duration = duartion
+    msgOut = ceaseTransmission.encoder()    
+    get_confirmation(msgOut)
 
 def onclick_unixtime():
-    global msgOut
     append_text("setting unixtime...", dev=True)
     append_text("-" * 40, dev=True)
     try:
@@ -145,26 +126,26 @@ def onclick_unixtime():
     except ValueError:
         unixtime = int(time())
     append_text("unixtime: " + str(unixtime), dev=True)
-
-    msgOut = genTx.updateTime(unixtime)
-    get_confirmation()
+    updateTime.unixTime = unixtime
+    msgOut = updateTime.encoder()
+    get_confirmation(msgOut)
 
 def onclick_reboot():
-    global msgOut
     device = device_dropdown.currentIndex()
     reset = reset_dropdown.currentIndex()
     append_text("rebooting...", dev=True)
     append_text("device: " + str(device), dev=True)
     append_text("reset: " + str(reset), dev=True)
     append_text("-" * 40, dev=True)
-    msgOut = genTx.reset(device, reset)
-    get_confirmation()
+    rst.device = device
+    rst.hard = reset
+    msgOut = rst.encoder()
+    get_confirmation(msgOut)
 
 
 ##################################################################
 #                             GUI
 ##################################################################
-global msgOut
 msgOut = None
 
 app = QApplication(sys.argv)
@@ -226,10 +207,6 @@ ceasetrans_btn = QPushButton("Cease Transmission")
 btnlayout.addWidget(ceasetrans_btn)
 ceasetrans_btn.clicked.connect(lambda: onclick_ceaseTransmission())
 
-resumetrans_btn = QPushButton("Resume Transmission")
-btnlayout.addWidget(resumetrans_btn)
-resumetrans_btn.clicked.connect(lambda: onclick_resumeTransmission())
-
 unixtime_btn = QPushButton("Set Unixtime")
 btnlayout.addWidget(unixtime_btn)
 unixtime_btn.clicked.connect(lambda: onclick_unixtime())
@@ -261,6 +238,8 @@ reboot_btn.clicked.connect(lambda: onclick_reboot())
 #                         Others
 ##################################################################
 
+confirmMessage = None
+
 other_label = QLabel("Others")
 other_label.setContentsMargins(0, 0, 0, 0)
 btnlayout.addWidget(other_label)
@@ -268,7 +247,7 @@ other_label.show()
 
 confirm_btn = QPushButton("Confirm")
 btnlayout.addWidget(confirm_btn)
-confirm_btn.clicked.connect(lambda: post_confirmation())
+confirm_btn.clicked.connect(lambda: post_confirmation(confirmMessage))
 
 quit_btn = QPushButton("Quit")
 btnlayout.addWidget(quit_btn)
