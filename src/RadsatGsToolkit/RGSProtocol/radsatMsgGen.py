@@ -376,6 +376,15 @@ class EpsTelemetry(RadsatMessage):
         self.outputCurrent5VBus = 0
         self.outputCurrent3V3Bus = 0
         self.PdbTemperature = 0
+        self.sunSensorBCR1Voltage = 0
+        self.sunSensorSA1ACurrent = 0
+        self.sunSensorSA1BCurrent = 0
+        self.sunSensorBCR2Voltage = 0
+        self.sunSensorSA2ACurrent = 0
+        self.sunSensorSA2BCurrent = 0
+        self.sunSensorBCR3Voltage = 0
+        self.sunSensorSA3ACurrent = 0
+        self.sunSensorSA3BCurrent = 0
 
         if convert:
             self.decoder(convert)
@@ -395,7 +404,16 @@ class EpsTelemetry(RadsatMessage):
         self.outputCurrentBatteryBus,\
         self.outputCurrent5VBus,\
         self.outputCurrent3V3Bus,\
-        self.PdbTemperature = struct.unpack(EpsTelemetry.recipe, value)
+        self.PdbTemperature,\
+        self.sunSensorBCR1Voltage,\
+        self.sunSensorSA1ACurrent,\
+        self.sunSensorSA1BCurrent,\
+        self.sunSensorBCR2Voltage,\
+        self.sunSensorSA2ACurrent,\
+        self.sunSensorSA2BCurrent,\
+        self.sunSensorBCR3Voltage,\
+        self.sunSensorSA3ACurrent,\
+        self.sunSensorSA3BCurrent = struct.unpack(EpsTelemetry.recipe, value)
         
     def encoder(self):
         return(bytes([self.ID]) + struct.pack(EpsTelemetry.recipe,
@@ -413,7 +431,16 @@ class EpsTelemetry(RadsatMessage):
         self.outputCurrentBatteryBus,
         self.outputCurrent5VBus,
         self.outputCurrent3V3Bus,
-        self.PdbTemperature))
+        self.PdbTemperature,
+        self.sunSensorBCR1Voltage,
+        self.sunSensorSA1ACurrent,
+        self.sunSensorSA1BCurrent,
+        self.sunSensorBCR2Voltage,
+        self.sunSensorSA2ACurrent,
+        self.sunSensorSA2BCurrent,
+        self.sunSensorBCR3Voltage,
+        self.sunSensorSA3ACurrent,
+        self.sunSensorSA3BCurrent))
 
     def __str__(self):
         return f"""EpsTelemetry = {{
@@ -431,14 +458,26 @@ class EpsTelemetry(RadsatMessage):
         Battery Bus Current = {self.outputCurrentBatteryBus},
         5V Bus Current = {self.outputCurrent5VBus},
         3V3 Bus Current = {self.outputCurrent3V3Bus},
-        PDB Temperature = {self.PdbTemperature}
+        PDB Temperature = {self.PdbTemperature},
+        Sun Sensor BCR1 Voltage = {self.sunSensorBCR1Voltage},
+        Sun Sensor SA1A Current = {self.sunSensorSA1ACurrent},
+        Sun Sensor SA1B Current = {self.sunSensorSA1BCurrent},
+        Sun Sensor BCR2 Voltage = {self.sunSensorBCR2Voltage},
+        Sun Sensor SA2A Current = {self.sunSensorSA2ACurrent},
+        Sun Sensor SA2B Current = {self.sunSensorSA2BCurrent},
+        Sun Sensor BCR3 Voltage = {self.sunSensorBCR3Voltage},
+        Sun Sensor SA3A Current = {self.sunSensorSA3ACurrent},
+        Sun Sensor SA3B Current = {self.sunSensorSA3BCurrent}
         }}"""
     
     def log(self):
         return f"{self.xPos},{self.xNeg},{self.yPos},{self.yNeg},{self.zPos},{self.zNeg},\
 {self.outputVoltageBCR},{self.outputVoltageBatteryBus},{self.outputVoltage5VBus},\
 {self.outputVoltage3V3Bus},{self.outputCurrentBCR_mA},{self.outputCurrentBatteryBus},\
-{self.outputCurrent5VBus},{self.outputCurrent3V3Bus},{self.PdbTemperature}"
+{self.outputCurrent5VBus},{self.outputCurrent3V3Bus},{self.PdbTemperature},{self.sunSensorBCR1Voltage},\
+{self.sunSensorSA1ACurrent},{self.sunSensorSA1BCurrent},{self.sunSensorBCR2Voltage},\
+{self.sunSensorSA2ACurrent},{self.sunSensorSA2BCurrent},{self.sunSensorBCR3Voltage},\
+{self.sunSensorSA3ACurrent},{self.sunSensorSA3BCurrent}"
 
 class BatteryTelemetry(RadsatMessage):
     recipe = "fffffffffff"
