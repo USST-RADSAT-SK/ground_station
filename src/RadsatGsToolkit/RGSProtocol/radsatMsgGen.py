@@ -355,7 +355,7 @@ class CameraTelemetry(RadsatMessage):
 {self.camera2AutoGainControl},{self.camera2BlueGain},{self.camera2RedGain}"
 
 class EpsTelemetry(RadsatMessage):
-    recipe = "fffffffffffffff"
+    recipe = "ffffffffffffffffffffffff"
     name = "EPS Telemetry"
     size = struct.calcsize(recipe)
 
