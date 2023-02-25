@@ -248,7 +248,7 @@ class TransceiverTelemetry(RadsatMessage):
 {self.txverTxCurrent},{self.txverRxCurrent},{self.txverPowerAmplifierCurrent},{self.txverPowerAmplifierTemperature},\
 {self.txverBoardTemperature},{self.txverUptime},{self.txverFrames},{self.rxverReflectedPower},{self.rxverForwardPower},\
 {self.rxverBusVoltage},{self.rxverTotalCurrent},{self.rxverTxCurrent},{self.rxverRxCurrent},{self.rxverPowerAmplifierCurrent},\
-{self.rxverPowerAmplifierCurrent},{self.rxverBoardTemperature},{self.uptime}"
+{self.rxverPowerAmplifierCurrent},{self.rxverBoardTemperature},{self.rxverUptime}"
 
 class CameraTelemetry(RadsatMessage):
     recipe = "Iffff" # TODO
@@ -427,7 +427,7 @@ class EpsTelemetry(RadsatMessage):
     def __str__(self):
         return f"""EpsTelemetry = {{
         BCR Output Voltage = {self.outputVoltageBCR},
-        Battery Bus Voltage{self.outputVoltageBatteryBus},
+        Battery Bus Voltage = {self.outputVoltageBatteryBus},
         5V Bus Voltage = {self.outputVoltage5VBus},
         3V3 Bus Voltage = {self.outputVoltage3V3Bus},
         BCR Output Current = {self.outputCurrentBCR_mA},

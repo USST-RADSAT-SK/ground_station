@@ -3,24 +3,27 @@ from time import *
 from datetime import date
 from crc import CrcCalculator, Configuration
 
-rxHeader = ["recvTime","preamble","checkSum","length","timestamp","msgClass","dataType",
-            "mode","uptime","rtcTime","rtcTemperature",
-            "rxDoppler","rxRssi","busVoltage","totalCurrent","txCurrent","rxCurrent","powerAmplifierCurrent","powerAmplifierTemperature","boardTemperature","uptime","frames",
-            "reflectedPower","forwardPower","busVoltage","totalCurrent","txCurrent","rxCurrent","powerAmplifierCurrent","powerAmplifierTemperature","boardTemperature","uptime",
-            "current_3V3","current_5V","current_SRAM_1","current_SRAM_2","overcurrent_SRAM_1","overcurrent_SRAM_2",
-            "detectionThreshold","autoAdjustMode","exposure","autoGainControl","blueGain","redGain",
-            "detectionThreshold","autoAdjustMode","exposure","autoGainControl","blueGain","redGain",
-            "xPos","xNeg","yPos","yNeg","zPos","zNeg",
-            "outputVoltageBCR","outputVoltageBatteryBus","outputVoltage5VBus","outputVoltage3V3Bus","outputCurrentBCR_mA","outputCurrentBatteryBus","outputCurrent5VBus","outputCurrent3V3Bus","PdbTemperature",
-            "outputVoltageBatteryBus","outputVoltage5VBus","outputVoltage3V3Bus","outputCurrentBatteryBus","outputCurrent5VBus","outputCurrent3V3Bus","batteryCurrentDirection","motherboardTemp","daughterboardTemp1","daughterboardTemp2","daughterboardTemp3",
-            "deployedAntenna1","deployedAntenna2","deployedAntenna3","deployedAntenna4","armed","boardTemp","uptime",
-            "deployedAntenna1","deployedAntenna2","deployedAntenna3","deployedAntenna4","armed","boardTemp","uptime",
-            "channelZero","channelOne","channelTwo","channelThree","channelFour","channelFive","channelSix","channelSeven",
-            "channelZero","channelOne","channelTwo","channelThree","channelFour","channelFive","channelSix","channelSeven",
-            "id","type","data",
-            "module","error",
-            "component","error",
-            "timeRecorded","count"]
+rxHeader = [["recvTime","preamble","checkSum","length","timestamp","msgID"],
+            ["supervisorUptime","obcUptime","obcResetCount","adcUpdateFlag","adcsTemperature","adcsVoltage_3v3in","adcsVoltage_3v3","adcsVoltage_2v5","adcsVoltage_1v8","adcsVoltage_1v0","adcsCurrent_3v3","adcsCurrent_1v8","adcsCurrent_1v0","adcsVoltage_rtc"],
+            ["rxDoppler","rxRssi","busVoltage","totalCurrent","txCurrent","rxCurrent","powerAmplifierCurrent","powerAmplifierTemperature","boardTemperature","uptime","frames",
+             "reflectedPower","forwardPower","busVoltage","totalCurrent","txCurrent","rxCurrent","powerAmplifierCurrent","powerAmplifierTemperature","boardTemperature","uptime"],
+            ["uptime","current_3V3","current_5V","current_SRAM_1","current_SRAM_2","overcurrent_SRAM_1","overcurrent_SRAM_2",
+             "camera1DetectionThreshold","camera1AutoAdjustMode","camera1Exposure","camera1AutoGainControl","camera1BlueGain","camera1RedGain",
+             "camera2DetectionThreshold","camera2AutoAdjustMode","camera2Exposure","camera2AutoGainControl","camera2BlueGain","camera2RedGain"],
+            ["outputVoltageBCR","outputVoltageBatteryBus","outputVoltage5VBus","outputVoltage3V3Bus","outputCurrentBCR_mA","outputCurrentBatteryBus","outputCurrent5VBus","outputCurrent3V3Bus","PdbTemperature","sunSensorBCR1Voltage",\
+             "sunSensorSA1ACurrent","sunSensorSA1BCurrent","sunSensorBCR2Voltage",
+             "sunSensorSA2ACurrent","sunSensorSA2BCurrent","sunSensorBCR3Voltage",
+             "sunSensorSA3ACurrent","sunSensorSA3BCurrent"],
+            ["outputVoltageBatteryBus","outputVoltage5VBus","outputVoltage3V3Bus","outputCurrentBatteryBus","outputCurrent5VBus","outputCurrent3V3Bus","batteryCurrentDirection","motherboardTemp","daughterboardTemp1","daughterboardTemp2","daughterboardTemp3"],
+            ["deployedAntenna1","deployedAntenna2","deployedAntenna3","deployedAntenna4","armed","boardTemp","uptime",
+             "deployedAntenna1","deployedAntenna2","deployedAntenna3","deployedAntenna4","armed","boardTemp","uptime"],
+            ["channelZero","channelOne","channelTwo","channelThree","channelFour","channelFive","channelSix","channelSeven",
+             "channelZero","channelOne","channelTwo","channelThree","channelFour","channelFive","channelSix","channelSeven"],
+            ["moduleId","moduleError","moduleTimeRecorded","moduleCount"],
+            ["componentId","componentError","componentTimeRecorded","componentCount"],
+            ["moduleCount","componentCount"],
+            ["timeRecorded","count"],
+            [""]] # TODO - IFix ADCS stuff
 
 def xorCipher(msgBytes):
     with open("./RadsatGsToolkit/RGSProtocol/xor_key","rb") as fk:
@@ -58,32 +61,31 @@ def stripHeader(msg):
     timeStamp = int.from_bytes(msg[5:9],byteorder="little")
     return(message,preamble,checkSum,length,timeStamp)
 
-def sendToFile(fileName,msgList,preamble,checkSum,length,timeStamp):
+def sendToFile(fileName,msgGenerated,preamble,checkSum,length,timeStamp):
     if os.path.isfile(fileName) == False:
         with open(fileName,"w") as f:
             f.write("RADSAT-SK Data Log : " + getDateString() + "\n")
-            for i in rxHeader:
-                f.write(i + ",")
+            for i in range(0,len(rxHeader)):
+                for j in range(0,len(rxHeader[i])):
+                    f.write(rxHeader[i][j] + ",")
             f.write("\n")
 
-    rowWrite = [str(int(time())),str(preamble),str(checkSum),str(length),str(timeStamp),msgList[0],msgList[1]]
-
-    print(msgList)
-
-    for i in range(0,len(rxHeader)):
-        for j in range(0,len(msgList)):
-            if rxHeader[i] in msgList[j]:
-                rowWrite.append("10000")
-            else:
-                rowWrite.append(" ")
+    rowWrite = [str(int(time())),str(preamble),str(checkSum),str(length),str(timeStamp),str(msgGenerated.ID)]
     
-    print(rowWrite)
+    msgDataList = (msgGenerated.log()).split(",")
+
+    for i in range(1,len(rxHeader)):
+        for j in range(0,len(rxHeader[i])):
+            if i == msgGenerated.ID:
+                msgDataList[j]
+                rowWrite.append(str(msgDataList[j]))
+            else:
+                rowWrite.append("")
 
     with open(fileName,"a") as f:
         for i in rowWrite:
             f.write(i + ",")
         f.write("\n")
-
 
 def getDateString():
     now = date.today().strftime("%Y_%m_%d")

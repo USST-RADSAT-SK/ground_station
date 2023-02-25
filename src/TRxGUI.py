@@ -47,12 +47,15 @@ class RX_Thread(QThread):
         while True:
             try:
                 msgHeader = connect.recv()
-                #msgHeader = b'\x18 3<\x02\x04\x03\x02\x01\x0c\x00'
+                #msgHeader = b"\x18 \x9a\xa7I\x13]\xf9c\x04u\xb2@DQU\xb9C\xe7\xec\xb7C/6\xdfCkl'C)\xe4\x82C\xd3R?D\xb4\x12)D5\xe4\xdc?\xedD\xdcC\x1a\x95KDwf\xf1C\xaa\x82\xcaC\r\xf4#D\xf8J\rC\xf8 \x13Dg\x8b`D\x0f\rLD"
+                #sleep(2)
                 if ftMode:
                     if msgHeader != None:
                         msgIn,preamble,checkSum,length,timeStamp = stripHeader(msgHeader)
                         msgRx = generator(msgIn)
                         
+                        sendToFile("logger\RADSAT-" + getDateString() + ".csv",msgRx,preamble,checkSum,length,timeStamp)
+
                         if isinstance(msgRx, Nack):
                             ftMode = False
                             append_text("Nack received. Disabling FT mode!")
@@ -75,6 +78,8 @@ class RX_Thread(QThread):
                     if msgHeader != None:
                         msgIn,preamble,checkSum,length,timeStamp = stripHeader(msgHeader)
                         msgRx = generator(msgIn)
+                        
+                        sendToFile("logger\RADSAT-" + getDateString() + ".csv",msgRx,preamble,checkSum,length,timeStamp)
 
                         if msgRx != -1:
                             append_text("Message: " + str(msgRx))
