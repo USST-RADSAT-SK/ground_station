@@ -36,7 +36,8 @@ def generator(bytes):
         15 : BeginFileTransfer,
         16 : CeaseTransmission,
         17 : UpdateTime,
-        18 : Reset
+        18 : Reset,
+        19 : AdcsDetection
     }
     
     messageType = bytes[0]
@@ -827,6 +828,55 @@ class ErrorReportSummary(RadsatMessage):
     def log(self):
         return f"{self.moduleErrorCount},{self.componentErrorCount}"
 
+
+class AdcsDetection(RadsatMessage):
+    recipe = "IHHIHH"
+    name = "ADCD Detection Data"
+    size = struct.calcsize(recipe)
+
+    def __init__(self, convert=None):
+        self.ID = 19
+        self.sunTimeStamp = 0
+        self.sunAlphaAngle = 0
+        self.sunBetaAngle = 0
+        self.nadirTimeStamp = 0
+        self.nadirAlphaAngle = 0
+        self.nadirBetaAngle = 0
+
+        if convert:
+            self.decoder(convert)
+
+    def decoder(self, value):
+        self.sunTimeStamp,\
+        self.sunAlphaAngle,\
+        self.sunBetaAngle,\
+        self.nadirTimeStamp,\
+        self.nadirAlphaAngle,\
+        self.nadirBetaAngle = struct.unpack(AdcsDetection.recipe, value)
+        
+    def encoder(self):
+        return(bytes([self.ID]) + struct.pack(AdcsDetection.recipe,
+        self.sunTimeStamp,
+        self.sunAlphaAngle,
+        self.sunBetaAngle,
+        self.nadirTimeStamp,
+        self.nadirAlphaAngle,
+        self.nadirBetaAngle
+        ))
+
+    def __str__(self):
+        return f"""AdcsDetection = {{
+        Sun Time Stamp = {self.sunTimeStamp},
+        Sun Alpha Angle = {self.sunAlphaAngle},
+        Sun Beta Angle = {self.sunBetaAngle},
+        Nadir Time Stamp = {self.nadirTimeStamp},
+        Nadir Alpha Angle = {self.nadirAlphaAngle},
+        Nadir Beta Angle = {self.nadirBetaAngle}
+        }}"""
+    
+    def log(self):
+        return f"{self.sunTimeStamp},{self.sunAlphaAngle},{self.sunBetaAngle},{self.nadirTimeStamp},{self.nadirAlphaAngle},{self.nadirBetaAngle}"
+    
 ###############################################
 #                  Protocol                   #
 ###############################################
@@ -1057,3 +1107,8 @@ if __name__ == "__main__":
     updateTime = UpdateTime()
     reset = Reset()
     
+    msgHeader = b'\030 \276NA\004\003\002\001\aV\325\033E\262\"\034EV\325\033EaI\034E\037\357\033E\333\247,DFV\034EH\b\247A\262\"\034E\004\374\033EV\325\033E\262\"\034E\227/\034EFe$DaI\034EPt\250A'
+    msgIn = msgHeader[9:]
+
+    msgRx = generator(msgIn)
+    print(msgRx.log())
