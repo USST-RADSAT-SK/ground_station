@@ -355,18 +355,12 @@ class CameraTelemetry(RadsatMessage):
 {self.camera2AutoGainControl},{self.camera2BlueGain},{self.camera2RedGain}"
 
 class EpsTelemetry(RadsatMessage):
-    recipe = "ffffffffffffffffffffffff"
+    recipe = "ffffffffffffffffff"
     name = "EPS Telemetry"
     size = struct.calcsize(recipe)
 
     def __init__(self, convert=None):
         self.ID = 4
-        self.xPos = 0
-        self.xNeg = 0
-        self.yPos = 0
-        self.yNeg = 0
-        self.zPos = 0
-        self.zNeg = 0
         self.outputVoltageBCR = 0
         self.outputVoltageBatteryBus = 0
         self.outputVoltage5VBus = 0
@@ -390,12 +384,6 @@ class EpsTelemetry(RadsatMessage):
             self.decoder(convert)
 
     def decoder(self, value):
-        self.xPos,\
-        self.xNeg,\
-        self.yPos,\
-        self.yNeg,\
-        self.zPos,\
-        self.zNeg,\
         self.outputVoltageBCR,\
         self.outputVoltageBatteryBus,\
         self.outputVoltage5VBus,\
@@ -417,12 +405,6 @@ class EpsTelemetry(RadsatMessage):
         
     def encoder(self):
         return(bytes([self.ID]) + struct.pack(EpsTelemetry.recipe,
-        self.xPos,
-        self.xNeg,
-        self.yPos,
-        self.yNeg,
-        self.zPos,
-        self.zNeg,
         self.outputVoltageBCR,
         self.outputVoltageBatteryBus,
         self.outputVoltage5VBus,
@@ -444,12 +426,6 @@ class EpsTelemetry(RadsatMessage):
 
     def __str__(self):
         return f"""EpsTelemetry = {{
-        xPos = {self.xPos},
-        xNeg = {self.xNeg},
-        yPos = {self.yPos},
-        yNeg = {self.yNeg},
-        zPos = {self.zPos},
-        zNeg = {self.zNeg},
         BCR Output Voltage = {self.outputVoltageBCR},
         Battery Bus Voltage{self.outputVoltageBatteryBus},
         5V Bus Voltage = {self.outputVoltage5VBus},
@@ -471,8 +447,7 @@ class EpsTelemetry(RadsatMessage):
         }}"""
     
     def log(self):
-        return f"{self.xPos},{self.xNeg},{self.yPos},{self.yNeg},{self.zPos},{self.zNeg},\
-{self.outputVoltageBCR},{self.outputVoltageBatteryBus},{self.outputVoltage5VBus},\
+        return f"{self.outputVoltageBCR},{self.outputVoltageBatteryBus},{self.outputVoltage5VBus},\
 {self.outputVoltage3V3Bus},{self.outputCurrentBCR_mA},{self.outputCurrentBatteryBus},\
 {self.outputCurrent5VBus},{self.outputCurrent3V3Bus},{self.PdbTemperature},{self.sunSensorBCR1Voltage},\
 {self.sunSensorSA1ACurrent},{self.sunSensorSA1BCurrent},{self.sunSensorBCR2Voltage},\
