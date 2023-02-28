@@ -22,10 +22,10 @@ def generator(bytes):
         1 : ObcTelemetry,
         2 : TransceiverTelemetry,
         3 : CameraTelemetry,
-        4 : EpsTelemetry,
-        5 : BatteryTelemetry,
+        4 : EpsTelemetry, ###
+        5 : BatteryTelemetry, ###
         6 : AntennaTelemetry,
-        7 : DosimeterData,
+        7 : DosimeterData, ###
         8 : ImagePacket,
         9 : ModuleErrorReport,
         10 : ComponentErrorReport,
@@ -140,12 +140,22 @@ class ObcTelemetry(RadsatMessage):
 {self.adcsCurrent_1v8},{self.adcsCurrent_1v0},{self.adcsVoltage_rtc}"
     
 class TransceiverTelemetry(RadsatMessage):
-    recipe = "ffffffffffIIfffffffffI"
+    recipe = ""
     name = "Transceiver Telemetry"
     size = struct.calcsize(recipe)
 
     def __init__(self, convert=None):
         self.ID = 2
+        self.rxverReflectedPower = 0
+        self.rxverForwardPower = 0
+        self.rxverBusVoltage = 0
+        self.rxverTotalCurrent = 0
+        self.rxverTxCurrent = 0
+        self.rxverRxCurrent = 0
+        self.rxverPowerAmplifierCurrent = 0
+        self.rxverPowerAmplifierTemperature = 0
+        self.rxverBoardTemperature = 0
+        self.rxverUptime = 0
         self.txverRxDoppler = 0
         self.txverRxRssi = 0
         self.txverBusVoltage = 0
@@ -157,21 +167,21 @@ class TransceiverTelemetry(RadsatMessage):
         self.txverBoardTemperature = 0
         self.txverUptime = 0
         self.txverFrames = 0
-        self.rxverReflectedPower = 0
-        self.rxverForwardPower = 0
-        self.rxverBusVoltage = 0
-        self.rxverTotalCurrent = 0
-        self.rxverTxCurrent = 0
-        self.rxverRxCurrent = 0
-        self.rxverPowerAmplifierCurrent = 0
-        self.rxverPowerAmplifierTemperature = 0
-        self.rxverBoardTemperature = 0
-        self.rxverUptime = 0
 
         if convert:
             self.decoder(convert)
 
     def decoder(self, value):
+            self.rxverReflectedPower,\
+            self.rxverForwardPower,\
+            self.rxverBusVoltage,\
+            self.rxverTotalCurrent,\
+            self.rxverTxCurrent,\
+            self.rxverRxCurrent,\
+            self.rxverPowerAmplifierCurrent,\
+            self.rxverPowerAmplifierTemperature,\
+            self.rxverBoardTemperature,\
+            self.rxverUptime,\
             self.txverRxDoppler,\
             self.txverRxRssi,\
             self.txverBusVoltage,\
@@ -182,20 +192,20 @@ class TransceiverTelemetry(RadsatMessage):
             self.txverPowerAmplifierTemperature,\
             self.txverBoardTemperature,\
             self.txverUptime,\
-            self.txverFrames,\
-            self.rxverReflectedPower,\
-            self.rxverForwardPower,\
-            self.rxverBusVoltage,\
-            self.rxverTotalCurrent,\
-            self.rxverTxCurrent,\
-            self.rxverRxCurrent,\
-            self.rxverPowerAmplifierCurrent,\
-            self.rxverPowerAmplifierTemperature,\
-            self.rxverBoardTemperature,\
-            self.rxverUptime = struct.unpack(TransceiverTelemetry.recipe, value)
+            self.txverFrames = struct.unpack(TransceiverTelemetry.recipe, value)
 
     def encoder(self):
         return(bytes([self.ID]) + struct.pack(TransceiverTelemetry.recipe,
+            self.rxverReflectedPower,
+            self.rxverForwardPower,
+            self.rxverBusVoltage,
+            self.rxverTotalCurrent,
+            self.rxverTxCurrent,
+            self.rxverRxCurrent,
+            self.rxverPowerAmplifierCurrent,
+            self.rxverPowerAmplifierTemperature,
+            self.rxverBoardTemperature,
+            self.rxverUptime,            
             self.txverRxDoppler,
             self.txverRxRssi,
             self.txverBusVoltage,
@@ -206,20 +216,20 @@ class TransceiverTelemetry(RadsatMessage):
             self.txverPowerAmplifierTemperature,
             self.txverBoardTemperature,
             self.txverUptime,
-            self.txverFrames,
-            self.rxverReflectedPower,
-            self.rxverForwardPower,
-            self.rxverBusVoltage,
-            self.rxverTotalCurrent,
-            self.rxverTxCurrent,
-            self.rxverRxCurrent,
-            self.rxverPowerAmplifierCurrent,
-            self.rxverPowerAmplifierTemperature,
-            self.rxverBoardTemperature,
-            self.rxverUptime))
+            self.txverFrames))
             
     def __str__(self):
         return f"""TransceiverTelemetry = {{
+            Rxver Reflected Power = {self.rxverReflectedPower},
+            Rxver FWD Power = {self.rxverForwardPower},
+            Rxver Bus Voltage = {self.rxverBusVoltage},
+            Rxver Total Current = {self.rxverTotalCurrent},
+            Rxver Tx Current = {self.rxverTxCurrent},
+            Rxver Rx Current = {self.rxverRxCurrent},
+            Rxver Power Amp Current = {self.rxverPowerAmplifierCurrent},
+            Rxver Power Amp Temp = {self.rxverPowerAmplifierTemperature},
+            Rxver Board Temp = {self.rxverBoardTemperature},
+            Rxver Uptime = {self.rxverUptime},
             Txver Rx Doppler = {self.txverRxDoppler},
             Txver Rssi = {self.txverRxRssi},
             Txver Bus Voltage = {self.txverBusVoltage},
@@ -230,25 +240,15 @@ class TransceiverTelemetry(RadsatMessage):
             Txver Power Amp Temp = {self.txverPowerAmplifierTemperature},
             Txver Board Temp = {self.txverBoardTemperature},
             Txver Uptime = {self.txverUptime},
-            Txver Frames = {self.txverFrames},
-            Rxver Reflected Power = {self.rxverReflectedPower},
-            Rxver FWD Power = {self.rxverForwardPower},
-            Rxver Bus Voltage = {self.rxverBusVoltage},
-            Rxver Total Current = {self.rxverTotalCurrent},
-            Rxver Tx Current = {self.rxverTxCurrent},
-            Rxver Rx Current = {self.rxverRxCurrent},
-            Rxver Power Amp Current = {self.rxverPowerAmplifierCurrent},
-            Rxver Power Amp Temp = {self.rxverPowerAmplifierTemperature},
-            Rxver Board Temp = {self.rxverBoardTemperature},
-            Rxver Uptime = {self.rxverUptime}
+            Txver Frames = {self.txverFrames}
             }}"""
     
     def log(self):
-        return f"{self.txverRxDoppler},{self.txverRxRssi},{self.txverBusVoltage},{self.txverTotalCurrent},\
-{self.txverTxCurrent},{self.txverRxCurrent},{self.txverPowerAmplifierCurrent},{self.txverPowerAmplifierTemperature},\
-{self.txverBoardTemperature},{self.txverUptime},{self.txverFrames},{self.rxverReflectedPower},{self.rxverForwardPower},\
+        return f"{self.rxverReflectedPower},{self.rxverForwardPower},\
 {self.rxverBusVoltage},{self.rxverTotalCurrent},{self.rxverTxCurrent},{self.rxverRxCurrent},{self.rxverPowerAmplifierCurrent},\
-{self.rxverPowerAmplifierCurrent},{self.rxverBoardTemperature},{self.rxverUptime}"
+{self.rxverPowerAmplifierCurrent},{self.rxverBoardTemperature},{self.rxverUptime},{self.txverRxDoppler},{self.txverRxRssi},\
+{self.txverBusVoltage},{self.txverTotalCurrent},{self.txverTxCurrent},{self.txverRxCurrent},{self.txverPowerAmplifierCurrent},\
+{self.txverPowerAmplifierTemperature},{self.txverBoardTemperature},{self.txverUptime},{self.txverFrames}"
 
 class CameraTelemetry(RadsatMessage):
     recipe = "Iffff" # TODO
