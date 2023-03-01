@@ -28,14 +28,39 @@ ftMode = False
 startTime = 0
 FT = False
 
-def append_text(text, dev=False):
+def append_text(text, dev=False, timeStamp = False):
+    stamp = ""
+    if timeStamp:
+        stamp = getDateString(time=True) + " : "
+    
     if dev:
-        devconsole.append(str(text))
+        devconsole.append(stamp + str(text))
         devconsole.ensureCursorVisible()
     else:
-        outconsole.append(str(text))
+        outconsole.append(stamp + str(text))
         outconsole.ensureCursorVisible()
 
+def printRxMessage(msgIn):
+    msg,preamble,checkSum,length,timeStamp = stripHeader(msgIn)
+    try:
+        msgObj = generator(msg)
+        append_text("Message Time : " + getDateString(time=True))
+        append_text("Raw : " + str(msg))
+        append_text("CRC : " + str(checkSum))
+        append_text("Size : " + str(length))
+        append_text("Time Stamp : " + str(timeStamp))
+        append_text("Msg Type : " + str(msgObj.ID))
+        append_text("Message : " + str(msgObj))
+        append_text("")
+
+        sendToFile("logger\RADSAT-" + getDateString() + ".csv",msgObj,preamble,checkSum,length,timeStamp)
+
+    except Exception as e:
+        append_text("")
+        append_text("Decode Error : " + str(msgIn),dev=True,timeStamp=True)
+        append_text("Error Print : " + str(e),dev=True)
+        append_text("",dev=True)
+    
 class RX_Thread(QThread):
     rx_signal = pyqtSignal(bytes)
 
@@ -47,23 +72,24 @@ class RX_Thread(QThread):
         while True:
             try:
                 msgHeader = connect.recv()
-                #msgHeader = b"\x18 \x9a\xa7I\x13]\xf9c\x04u\xb2@DQU\xb9C\xe7\xec\xb7C/6\xdfCkl'C)\xe4\x82C\xd3R?D\xb4\x12)D5\xe4\xdc?\xedD\xdcC\x1a\x95KDwf\xf1C\xaa\x82\xcaC\r\xf4#D\xf8J\rC\xf8 \x13Dg\x8b`D\x0f\rLD"
-                #sleep(2)
-                if ftMode:
-                    if msgHeader != None:
-                        msgIn,preamble,checkSum,length,timeStamp = stripHeader(msgHeader)
-                        msgRx = generator(msgIn)
-                        
-                        sendToFile("logger\RADSAT-" + getDateString() + ".csv",msgRx,preamble,checkSum,length,timeStamp)
 
-                        if isinstance(msgRx, Nack):
+                if not ftMode:
+                    if msgHeader != None:
+                        msg,_,_,_,_ = stripHeader(msgHeader)
+                        printRxMessage(msgHeader)
+
+                else:
+                    if msgHeader != None:
+                        msg,_,_,_,_ = stripHeader(msgHeader)
+                        if isinstance(generator(msg), Nack):
                             ftMode = False
-                            append_text("Nack received. Disabling FT mode!")
+                            append_text("Nack received. Disabling FT mode!", dev=True)
 
                         else:
-                            append_text("Message: " + str(msgRx))
+                            printRxMessage(msgHeader)
+                            
                             ack.resp = 0
-                            append_text("FT Received! Sending Ack")
+                            append_text("FT Received! Sending Ack", dev=True)
                             connect.send(xorCipher(addHeader(ack.encoder())))
                             startTime = time()
                             
@@ -73,22 +99,9 @@ class RX_Thread(QThread):
                             connect.send(xorCipher(addHeader(ack.encoder())))
                             startTime = time()
                         sleep(0.001)
-
-                else:
-                    if msgHeader != None:
-                        msgIn,preamble,checkSum,length,timeStamp = stripHeader(msgHeader)
-                        msgRx = generator(msgIn)
-                        
-                        sendToFile("logger\RADSAT-" + getDateString() + ".csv",msgRx,preamble,checkSum,length,timeStamp)
-
-                        if msgRx != -1:
-                            append_text("Message: " + str(msgRx))
-                        else:
-                            append_text("Decode Error!")
-
+            
             except Exception as e:
-                print(e)
-                append_text("Message: " + str(msgHeader))
+                append_text("Receive Error: " + str(e), dev=True)
             
             self.exit()
 
@@ -296,12 +309,12 @@ quit_btn.clicked.connect(lambda: quit_window(app))
 
 outconsole = QTextEdit()
 outconsole.setReadOnly(True)
-outconsole.append("------------------------ Rx Thread ------------------------")
+outconsole.append("------------------------ Message Thread ------------------------")
 outconsole.ensureCursorVisible()
 
 devconsole = QTextEdit()
 devconsole.setReadOnly(True)
-devconsole.append("------------------------ Tx Thread ------------------------")
+devconsole.append("---------------------- Debug/Error Thread ----------------------")
 devconsole.ensureCursorVisible()
 
 layout.addLayout(btnlayout)

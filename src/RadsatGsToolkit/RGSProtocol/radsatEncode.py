@@ -1,6 +1,6 @@
 import os
 from time import *
-from datetime import date
+from datetime import datetime
 from crc import CrcCalculator, Configuration
 
 rxHeader = [["recvTime","preamble","checkSum","length","timestamp","msgID"],
@@ -23,7 +23,7 @@ rxHeader = [["recvTime","preamble","checkSum","length","timestamp","msgID"],
             ["componentId","componentError","componentTimeRecorded","componentCount"],
             ["moduleCount","componentCount"],
             ["timeRecorded","count"],
-            [""]] # TODO - IFix ADCS stuff
+            [""]] # TODO - Fix ADCS stuff and impliment finalized versions of messages
 
 def xorCipher(msgBytes):
     with open("./RadsatGsToolkit/RGSProtocol/xor_key","rb") as fk:
@@ -87,6 +87,11 @@ def sendToFile(fileName,msgGenerated,preamble,checkSum,length,timeStamp):
             f.write(i + ",")
         f.write("\n")
 
-def getDateString():
-    now = date.today().strftime("%Y_%m_%d")
-    return(now)
+def getDateString(time = False):
+    now = datetime.now()
+    
+    if time:
+        timeString = now.strftime("%m/%d/%Y %H:%M:%S")
+    else:
+        timeString = now.strftime("%Y_%m_%d")
+    return(timeString)

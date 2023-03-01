@@ -22,10 +22,10 @@ def generator(bytes):
         1 : ObcTelemetry,
         2 : TransceiverTelemetry,
         3 : CameraTelemetry,
-        4 : EpsTelemetry, ###
-        5 : BatteryTelemetry, ###
+        4 : EpsTelemetry,
+        5 : BatteryTelemetry,
         6 : AntennaTelemetry,
-        7 : DosimeterData, ###
+        7 : DosimeterData,
         8 : ImagePacket,
         9 : ModuleErrorReport,
         10 : ComponentErrorReport,
@@ -47,11 +47,9 @@ def generator(bytes):
             return messageObject(bytes[1:messageObject.size + 1])
         except Exception as e:
             print(e)
-            return -1
         
     else:
-        print("message type not in recipes")
-        return -1
+        print("Error : Message type not in recipes")
 
 ###############################################
 #                File Transfer                #
@@ -251,7 +249,7 @@ class TransceiverTelemetry(RadsatMessage):
 {self.txverPowerAmplifierTemperature},{self.txverBoardTemperature},{self.txverUptime},{self.txverFrames}"
 
 class CameraTelemetry(RadsatMessage):
-    recipe = "Iffff" # TODO
+    recipe = "IffffIIIIIIIIIIIIII" # TODO
     name = "Camera Telemetry"
     size = struct.calcsize(recipe)
 
