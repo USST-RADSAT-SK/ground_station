@@ -44,6 +44,7 @@ def printRxMessage(msgIn):
     msg,preamble,checkSum,length,timeStamp = stripHeader(msgIn)
     try:
         msgObj = generator(msg)
+        append_text("From : RADSAT-SK")
         append_text("Message Time : " + getDateString(time=True))
         append_text("Raw : " + str(msg))
         append_text("CRC : " + str(checkSum))
@@ -89,19 +90,19 @@ class RX_Thread(QThread):
                             printRxMessage(msgHeader)
                             
                             ack.resp = 0
-                            append_text("FT Received! Sending Ack", dev=True)
+                            append_text("FT Received! Sending Ack", dev=True,timeStamp=True)
                             connect.send(xorCipher(addHeader(ack.encoder())))
                             startTime = time()
                             
                     else:
                         if time() - startTime > 5:
-                            append_text("No FT received in > 5s. Sending Ack!",dev=True)
+                            append_text("No FT received in > 5s. Sending Ack!",dev=True,timeStamp=True)
                             connect.send(xorCipher(addHeader(ack.encoder())))
                             startTime = time()
                         sleep(0.001)
             
             except Exception as e:
-                append_text("Receive Error: " + str(e), dev=True)
+                append_text("Receive Error: " + str(e), dev=True,timeStamp=True)
             
             self.exit()
 
@@ -116,65 +117,74 @@ def get_confirmation(msgOut):
     append_text("Message: " + str(generator(msgOut)), dev=True)
     append_text("Encoded: " + str(msgOut.hex()), dev=True)
     append_text("click confirm to send!", dev=True)
+    append_text("",dev=True)
     confirmMessage = msgOut
 
 def post_confirmation(toSend):
     msgHeader = addHeader(toSend)
+    msg,preamble,checkSum,length,timeStamp = stripHeader(msgHeader)
     msgXor = xorCipher(msgHeader)
+    msgObj = generator(msg)
+    append_text("Message sent!",dev=True,timeStamp=True)
+    append_text("From : Ground Station")
+    append_text("Message Time : " + getDateString(time=True))
+    append_text("Raw : " + str(msg))
+    append_text("CRC : " + str(checkSum))
+    append_text("Size : " + str(length))
+    append_text("Time Stamp : " + str(timeStamp))
+    append_text("Msg Type : " + str(msgObj.ID))
+    append_text("Message : " + str(msgObj))
+    append_text("")
     connect.send(msgXor)
-    append_text("Ciphered: " + str(msgXor.hex()), dev=True)
-    append_text("Tx message sent!", dev=True)
-    global FT
-    if FT:
+    sendToFile("logger\RADSAT-" + getDateString() + ".csv",msgObj,preamble,checkSum,length,timeStamp)
+
+    if isinstance(msgObj, BeginFileTransfer):
         global ftMode,startTime
         ftMode = True
         startTime = time()
-        FT = False
 
 def onclick_ack():
-    append_text("generating ack...", dev=True)
-    append_text("-" * 40, dev=True)
+    append_text("Generating Ack...", dev=True,timeStamp=True)
     ack.resp = 0
     msgOut = ack.encoder()
     get_confirmation(msgOut)
 
 def onclick_nack():
-    append_text("generating nack...", dev=True)
-    append_text("-" * 40, dev=True)
+    append_text("Generating Nack...", dev=True,timeStamp=True)
     nack.resp = 0
     msgOut = nack.encoder()
     get_confirmation(msgOut)
 
 def onclick_beginPass():
-    passLen = int(int_input.text())
-    append_text("generating begin pass...", dev=True)
+    append_text("Generating BeginPass...", dev=True,timeStamp=True)
+    try:
+        passLen = int(int_input.text())
+    except ValueError:
+        passLen = 0
     append_text("pass length: " + str(passLen), dev=True)
-    append_text("-" * 40, dev=True)
     beginPass.passLength = passLen
     msgOut = beginPass.encoder()
     get_confirmation(msgOut)
 
 def onclick_beginFileTransfer():
-    global FT 
-    FT = True
-    append_text("generating begin ftp...", dev=True)
-    append_text("-" * 40, dev=True)
+    append_text("Generating BeginFileTransfer...", dev=True,timeStamp=True)
     beginFileTransfer.resp = 1
     msgOut = beginFileTransfer.encoder()
     get_confirmation(msgOut)
 
 def onclick_ceaseTransmission():
-    duartion = int(int_input.text())
-    append_text("generating cease transmission...", dev=True)
-    append_text("duartion: " + str(duartion), dev=True)
-    append_text("-" * 40, dev=True)
-    ceaseTransmission.duration = duartion
+    append_text("Generating CeaseTransmission...", dev=True,timeStamp=True)
+    try:
+        duration = int(int_input.text())
+    except ValueError:
+        duration = 0
+    append_text("duration: " + str(duration), dev=True)
+    ceaseTransmission.duration = duration
     msgOut = ceaseTransmission.encoder()    
     get_confirmation(msgOut)
 
 def onclick_unixtime():
-    append_text("setting unixtime...", dev=True)
-    append_text("-" * 40, dev=True)
+    append_text("Generating SetUnixtime...", dev=True,timeStamp=True)
     try:
         unixtime = int(int_input.text())
     except ValueError:
@@ -187,15 +197,18 @@ def onclick_unixtime():
 def onclick_reboot():
     device = device_dropdown.currentIndex()
     reset = reset_dropdown.currentIndex()
-    append_text("rebooting...", dev=True)
+    append_text("Generating Reset...", dev=True,timeStamp=True)
     append_text("device: " + str(device), dev=True)
     append_text("reset: " + str(reset), dev=True)
-    append_text("-" * 40, dev=True)
     rst.device = device
     rst.hard = reset
     msgOut = rst.encoder()
     get_confirmation(msgOut)
 
+def onclick_restartFileTransfer():
+    global ftMode
+    ftMode = False
+    append_text("FT mode reset",dev=True,timeStamp=True)
 
 ##################################################################
 #                             GUI
@@ -302,6 +315,10 @@ other_label.show()
 confirm_btn = QPushButton("Confirm")
 btnlayout.addWidget(confirm_btn)
 confirm_btn.clicked.connect(lambda: post_confirmation(confirmMessage))
+
+rstFt_btn = QPushButton("Reset FT Mode")
+btnlayout.addWidget(rstFt_btn)
+rstFt_btn.clicked.connect(lambda: onclick_restartFileTransfer())
 
 quit_btn = QPushButton("Quit")
 btnlayout.addWidget(quit_btn)
