@@ -138,7 +138,7 @@ class ObcTelemetry(RadsatMessage):
 {self.adcsCurrent_1v8},{self.adcsCurrent_1v0},{self.adcsVoltage_rtc}"
     
 class TransceiverTelemetry(RadsatMessage):
-    recipe = ""
+    recipe = "fffffffffIIfffffffffI"
     name = "Transceiver Telemetry"
     size = struct.calcsize(recipe)
 
@@ -249,7 +249,7 @@ class TransceiverTelemetry(RadsatMessage):
 {self.txverPowerAmplifierTemperature},{self.txverBoardTemperature},{self.txverUptime},{self.txverFrames}"
 
 class CameraTelemetry(RadsatMessage):
-    recipe = "IffffIIIIIIIIIIIIII" # TODO
+    recipe = "IffffIIIIIIIIIIIIII"
     name = "Camera Telemetry"
     size = struct.calcsize(recipe)
 
@@ -276,7 +276,7 @@ class CameraTelemetry(RadsatMessage):
         self.camera2RedGain = 0
 
         if convert:
-            self.decode(convert)
+            self.decoder(convert)
 
     def decoder(self, value):
             self.uptime,\

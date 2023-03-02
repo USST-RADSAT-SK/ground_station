@@ -31,7 +31,7 @@ rxHeader = [["recvTime","preamble","checkSum","length","timestamp","msgID"],
             ["updateTime"],
             ["device","hard"],
             ["sunTimeStamp","sunAlphaAngle","sunBetaAngle","nadirTimeStamp","nadirAlphaAngle","nadirBetaAngle"]
-            ] # TODO - Fix ADCS stuff and impliment finalized versions of messages
+            ]
 
 def xorCipher(msgBytes):
     with open("./RadsatGsToolkit/RGSProtocol/xor_key","rb") as fk:
