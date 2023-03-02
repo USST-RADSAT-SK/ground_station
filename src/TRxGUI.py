@@ -83,6 +83,7 @@ class RX_Thread(QThread):
                     if msgHeader != None:
                         msg,_,_,_,_ = stripHeader(msgHeader)
                         if isinstance(generator(msg), Nack):
+                            printRxMessage(msgHeader)
                             ftMode = False
                             append_text("Nack received. Disabling FT mode!", dev=True)
 
