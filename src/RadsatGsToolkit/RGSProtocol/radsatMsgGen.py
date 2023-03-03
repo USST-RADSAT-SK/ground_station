@@ -359,15 +359,6 @@ class EpsTelemetry(RadsatMessage):
 
     def __init__(self, convert=None):
         self.ID = 4
-        self.outputVoltageBCR = 0
-        self.outputVoltageBatteryBus = 0
-        self.outputVoltage5VBus = 0
-        self.outputVoltage3V3Bus = 0
-        self.outputCurrentBCR_mA = 0
-        self.outputCurrentBatteryBus = 0
-        self.outputCurrent5VBus = 0
-        self.outputCurrent3V3Bus = 0
-        self.PdbTemperature = 0
         self.sunSensorBCR1Voltage = 0
         self.sunSensorSA1ACurrent = 0
         self.sunSensorSA1BCurrent = 0
@@ -377,20 +368,21 @@ class EpsTelemetry(RadsatMessage):
         self.sunSensorBCR3Voltage = 0
         self.sunSensorSA3ACurrent = 0
         self.sunSensorSA3BCurrent = 0
+        self.outputVoltageBCR = 0
+        self.outputVoltageBatteryBus = 0
+        self.outputVoltage5VBus = 0
+        self.outputVoltage3V3Bus = 0
+        self.outputCurrentBCR_mA = 0
+        self.outputCurrentBatteryBus = 0
+        self.outputCurrent5VBus = 0
+        self.outputCurrent3V3Bus = 0
+        self.PdbTemperature = 0
+
 
         if convert:
             self.decoder(convert)
 
     def decoder(self, value):
-        self.outputVoltageBCR,\
-        self.outputVoltageBatteryBus,\
-        self.outputVoltage5VBus,\
-        self.outputVoltage3V3Bus,\
-        self.outputCurrentBCR_mA,\
-        self.outputCurrentBatteryBus,\
-        self.outputCurrent5VBus,\
-        self.outputCurrent3V3Bus,\
-        self.PdbTemperature,\
         self.sunSensorBCR1Voltage,\
         self.sunSensorSA1ACurrent,\
         self.sunSensorSA1BCurrent,\
@@ -399,19 +391,19 @@ class EpsTelemetry(RadsatMessage):
         self.sunSensorSA2BCurrent,\
         self.sunSensorBCR3Voltage,\
         self.sunSensorSA3ACurrent,\
-        self.sunSensorSA3BCurrent = struct.unpack(EpsTelemetry.recipe, value)
+        self.sunSensorSA3BCurrent,\
+        self.outputVoltageBCR,\
+        self.outputVoltageBatteryBus,\
+        self.outputVoltage5VBus,\
+        self.outputVoltage3V3Bus,\
+        self.outputCurrentBCR_mA,\
+        self.outputCurrentBatteryBus,\
+        self.outputCurrent5VBus,\
+        self.outputCurrent3V3Bus,\
+        self.PdbTemperature = struct.unpack(EpsTelemetry.recipe, value)
         
     def encoder(self):
         return(bytes([self.ID]) + struct.pack(EpsTelemetry.recipe,
-        self.outputVoltageBCR,
-        self.outputVoltageBatteryBus,
-        self.outputVoltage5VBus,
-        self.outputVoltage3V3Bus,
-        self.outputCurrentBCR_mA,
-        self.outputCurrentBatteryBus,
-        self.outputCurrent5VBus,
-        self.outputCurrent3V3Bus,
-        self.PdbTemperature,
         self.sunSensorBCR1Voltage,
         self.sunSensorSA1ACurrent,
         self.sunSensorSA1BCurrent,
@@ -420,19 +412,20 @@ class EpsTelemetry(RadsatMessage):
         self.sunSensorSA2BCurrent,
         self.sunSensorBCR3Voltage,
         self.sunSensorSA3ACurrent,
-        self.sunSensorSA3BCurrent))
+        self.sunSensorSA3BCurrent,        
+        self.outputVoltageBCR,
+        self.outputVoltageBatteryBus,
+        self.outputVoltage5VBus,
+        self.outputVoltage3V3Bus,
+        self.outputCurrentBCR_mA,
+        self.outputCurrentBatteryBus,
+        self.outputCurrent5VBus,
+        self.outputCurrent3V3Bus,
+        self.PdbTemperature
+        ))
 
     def __str__(self):
         return f"""EpsTelemetry = {{
-        BCR Output Voltage = {self.outputVoltageBCR},
-        Battery Bus Voltage = {self.outputVoltageBatteryBus},
-        5V Bus Voltage = {self.outputVoltage5VBus},
-        3V3 Bus Voltage = {self.outputVoltage3V3Bus},
-        BCR Output Current = {self.outputCurrentBCR_mA},
-        Battery Bus Current = {self.outputCurrentBatteryBus},
-        5V Bus Current = {self.outputCurrent5VBus},
-        3V3 Bus Current = {self.outputCurrent3V3Bus},
-        PDB Temperature = {self.PdbTemperature},
         Sun Sensor BCR1 Voltage = {self.sunSensorBCR1Voltage},
         Sun Sensor SA1A Current = {self.sunSensorSA1ACurrent},
         Sun Sensor SA1B Current = {self.sunSensorSA1BCurrent},
@@ -441,16 +434,24 @@ class EpsTelemetry(RadsatMessage):
         Sun Sensor SA2B Current = {self.sunSensorSA2BCurrent},
         Sun Sensor BCR3 Voltage = {self.sunSensorBCR3Voltage},
         Sun Sensor SA3A Current = {self.sunSensorSA3ACurrent},
-        Sun Sensor SA3B Current = {self.sunSensorSA3BCurrent}
+        Sun Sensor SA3B Current = {self.sunSensorSA3BCurrent},        
+        BCR Output Voltage = {self.outputVoltageBCR},
+        Battery Bus Voltage = {self.outputVoltageBatteryBus},
+        5V Bus Voltage = {self.outputVoltage5VBus},
+        3V3 Bus Voltage = {self.outputVoltage3V3Bus},
+        BCR Output Current = {self.outputCurrentBCR_mA},
+        Battery Bus Current = {self.outputCurrentBatteryBus},
+        5V Bus Current = {self.outputCurrent5VBus},
+        3V3 Bus Current = {self.outputCurrent3V3Bus},
+        PDB Temperature = {self.PdbTemperature}
         }}"""
     
     def log(self):
-        return f"{self.outputVoltageBCR},{self.outputVoltageBatteryBus},{self.outputVoltage5VBus},\
-{self.outputVoltage3V3Bus},{self.outputCurrentBCR_mA},{self.outputCurrentBatteryBus},\
-{self.outputCurrent5VBus},{self.outputCurrent3V3Bus},{self.PdbTemperature},{self.sunSensorBCR1Voltage},\
-{self.sunSensorSA1ACurrent},{self.sunSensorSA1BCurrent},{self.sunSensorBCR2Voltage},\
+        return f"{self.sunSensorBCR1Voltage},{self.sunSensorSA1ACurrent},{self.sunSensorSA1BCurrent},{self.sunSensorBCR2Voltage},\
 {self.sunSensorSA2ACurrent},{self.sunSensorSA2BCurrent},{self.sunSensorBCR3Voltage},\
-{self.sunSensorSA3ACurrent},{self.sunSensorSA3BCurrent}"
+{self.sunSensorSA3ACurrent},{self.sunSensorSA3BCurrent}{self.outputVoltageBCR},{self.outputVoltageBatteryBus},{self.outputVoltage5VBus},\
+{self.outputVoltage3V3Bus},{self.outputCurrentBCR_mA},{self.outputCurrentBatteryBus},\
+{self.outputCurrent5VBus},{self.outputCurrent3V3Bus},{self.PdbTemperature}"
 
 class BatteryTelemetry(RadsatMessage):
     recipe = "fffffffffff"
@@ -696,7 +697,7 @@ class DosimeterData(RadsatMessage):
 {self.boardTwoChannelSeven}"
 
 class ImagePacket(RadsatMessage):
-    recipe = "ffffffffffffffff" # TODO
+    recipe = "IBBB"
     name = "Image Packet"
     size = struct.calcsize(recipe)
 
@@ -732,7 +733,7 @@ class ImagePacket(RadsatMessage):
         return f"{self.id},{self.type},{self.data}"
 
 class ModuleErrorReport(RadsatMessage):
-    recipe = "ffffffffffffffff" # TODO
+    recipe = "BBBB"
     name = "Module Error Report"
     size = struct.calcsize(recipe)
 
@@ -772,7 +773,7 @@ class ModuleErrorReport(RadsatMessage):
         return f"{self.moduleId},{self.moduleError},{self.moduleTimeRecorded},{self.moduleCount}"
 
 class ComponentErrorReport(RadsatMessage):
-    recipe = "ffffffffffffffff" # TODO
+    recipe = "BBBB"
     name = "Component Error Report"
     size = struct.calcsize(recipe)
 
@@ -812,7 +813,7 @@ class ComponentErrorReport(RadsatMessage):
         return f"{self.componentId},{self.componentError},{self.componentTimeRecorded},{self.componentCount}"
     
 class ErrorReportSummary(RadsatMessage):
-    recipe = "ffffffffffffffff" # TODO
+    recipe = "BB"
     name = "Error Report Summary"
     size = struct.calcsize(recipe)
 
