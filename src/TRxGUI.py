@@ -54,7 +54,7 @@ def printRxMessage(msgIn):
         append_text("Message : " + str(msgObj))
         append_text("")
 
-        sendToFile("rawDataLogger\RADSAT-" + getDateString() + ".csv",msgObj,preamble,checkSum,length,timeStamp)
+        sendToFile("rawDataLogger/RADSAT-" + getDateString() + ".csv",msgObj,preamble,checkSum,length,timeStamp)
 
     except Exception as e:
         append_text("")
@@ -137,7 +137,7 @@ def post_confirmation(toSend):
     append_text("Message : " + str(msgObj))
     append_text("")
     connect.send(msgXor)
-    sendToFile("rawDataLogger\RADSAT-" + getDateString() + ".csv",msgObj,preamble,checkSum,length,timeStamp)
+    sendToFile("rawDataLogger/RADSAT-" + getDateString() + ".csv",msgObj,preamble,checkSum,length,timeStamp)
 
     if isinstance(msgObj, BeginFileTransfer):
         global ftMode,startTime

@@ -56,7 +56,7 @@ def generator(bytes):
 ###############################################
 
 class ObcTelemetry(RadsatMessage):
-    recipe = "IIIBHHHHHHHHHH"
+    recipe = "<IIIBHHHHHHHHHH"
     name = "OBC Telemetry"
     size = struct.calcsize(recipe)
 
@@ -523,24 +523,16 @@ class BatteryTelemetry(RadsatMessage):
 {self.motherboardTemp},{self.daughterboardTemp1},{self.daughterboardTemp2},{self.daughterboardTemp3}"
 
 class AntennaTelemetry(RadsatMessage):
-    recipe = "HHHHHfIHHHHHfI" # Nothing in it, wrong size
+    recipe = "<HfIHfI"
     name = "Antenna Telemetry"
     size = struct.calcsize(recipe)
 
     def __init__(self, convert=None):
         self.ID = 6
-        self.antennaADeployedAntenna1 = 0
-        self.antennaADeployedAntenna2 = 0
-        self.antennaADeployedAntenna3 = 0
-        self.antennaADeployedAntenna4 = 0
-        self.antennaAArmed = 0
+        self.antennaAStatus = 0
         self.antennaABoardTemp = 0
         self.antennaAUptime = 0
-        self.antennaBDeployedAntenna1 = 0
-        self.antennaBDeployedAntenna2 = 0
-        self.antennaBDeployedAntenna3 = 0
-        self.antennaBDeployedAntenna4 = 0
-        self.antennaBArmed = 0
+        self.antennaBStatus = 0
         self.antennaBBoardTemp = 0
         self.antennaBUptime = 0
 
@@ -548,61 +540,66 @@ class AntennaTelemetry(RadsatMessage):
             self.decoder(convert)
 
     def decoder(self, value):
-        self.antennaADeployedAntenna1,
-        self.antennaADeployedAntenna2,
-        self.antennaADeployedAntenna3,
-        self.antennaADeployedAntenna4,
-        self.antennaAArmed,
-        self.antennaABoardTemp,
-        self.antennaAUptime,
-        self.antennaBDeployedAntenna1,
-        self.antennaBDeployedAntenna2,
-        self.antennaBDeployedAntenna3,
-        self.antennaBDeployedAntenna4,
-        self.antennaBArmed,
-        self.antennaBBoardTemp,
+        self.antennaAStatus,\
+        self.antennaABoardTemp,\
+        self.antennaAUptime,\
+        self.antennaBStatus,\
+        self.antennaBBoardTemp,\
         self.antennaBUptime = struct.unpack(AntennaTelemetry.recipe, value)
         
     def encoder(self):
         return(bytes([self.ID]) + struct.pack(AntennaTelemetry.recipe,
-        self.antennaADeployedAntenna1,
-        self.antennaADeployedAntenna2,
-        self.antennaADeployedAntenna3,
-        self.antennaADeployedAntenna4,
-        self.antennaAArmed,
+        self.antennaAStatus,
         self.antennaABoardTemp,
         self.antennaAUptime,
-        self.antennaBDeployedAntenna1,
-        self.antennaBDeployedAntenna2,
-        self.antennaBDeployedAntenna3,
-        self.antennaBDeployedAntenna4,
-        self.antennaBArmed,
+        self.antennaBStatus,
         self.antennaBBoardTemp,
-        self.antennaBUptime))
+        self.antennaBUptime
+        ))
 
     def __str__(self):
         return f"""AntennaTelemetry = {{
-        Side A Deployed Antenna1 = {self.antennaADeployedAntenna1}
-        Side A Deployed Antenna2 = {self.antennaADeployedAntenna2}
-        Side A Deployed Antenna3 = {self.antennaADeployedAntenna3}
-        Side A Deployed Antenna4 = {self.antennaADeployedAntenna4}
-        Side A Armed = {self.antennaAArmed}
+        Side A Armed = {self.antennaAStatus & 0b1}
+	    Side A Ant4Deploying = {self.antennaAStatus & 0b10}
+	    Side A Ant4Timeout = {self.antennaAStatus & 0b100}
+	    Side A Ant4Undeployed = {self.antennaAStatus & 0b1000}
+	    Side A Ant3Deploying = {self.antennaAStatus & 0b100000}
+	    Side A Ant3Timeout = {self.antennaAStatus & 0b1000000}
+	    Side A Ant3Undeployed = {self.antennaAStatus & 0b10000000}
+	    Side A AgnoreFlag = {self.antennaAStatus & 0b10000000}
+	    Side A Ant2Deploying = {self.antennaAStatus & 0b100000000}
+	    Side A Ant2Timeout = {self.antennaAStatus & 0b1000000000}
+	    Side A Ant2Undeployed = {self.antennaAStatus & 0b10000000000}
+	    Side A Ant1Deploying = {self.antennaAStatus & 0b1000000000000}
+	    Side A Ant1Timeout = {self.antennaAStatus & 0b10000000000000}
+	    Side A Ant1Undeployed = {self.antennaAStatus & 0b100000000000000}
         Side A Board Temp = {self.antennaABoardTemp}
         Side A Uptime = {self.antennaAUptime}
-        Side B Deployed Antenna1 ={self.antennaBDeployedAntenna1}
-        Side B Deployed Antenna2 ={self.antennaBDeployedAntenna2}
-        Side B Deployed Antenna3 ={self.antennaBDeployedAntenna3}
-        Side B Deployed Antenna4 ={self.antennaBDeployedAntenna4}
-        Side B Armed = {self.antennaBArmed}
+        Side B Armed = {self.antennaBStatus & 0b1}
+	    Side B Ant4Deploying = {self.antennaBStatus & 0b10}
+	    Side B Ant4Timeout = {self.antennaBStatus & 0b100}
+	    Side B Ant4Undeployed = {self.antennaBStatus & 0b1000}
+	    Side B Ant3Deploying = {self.antennaBStatus & 0b100000}
+	    Side B Ant3Timeout = {self.antennaBStatus & 0b1000000}
+	    Side B Ant3Undeployed = {self.antennaBStatus & 0b10000000}
+	    Side B AgnoreFlag = {self.antennaBStatus & 0b100000000}
+	    Side B Ant2Deploying = {self.antennaBStatus & 0b1000000000}
+	    Side B Ant2Timeout = {self.antennaBStatus & 0b10000000000}
+	    Side B Ant2Undeployed = {self.antennaBStatus & 0b100000000000}
+	    Side B Ant1Deploying = {self.antennaBStatus & 0b10000000000000}
+	    Side B Ant1Timeout = {self.antennaBStatus & 0b100000000000000}
+	    Side B Ant1Undeployed = {self.antennaBStatus & 0b1000000000000000}
         Side B Board Temp = {self.antennaBBoardTemp}
         Side B Uptime = {self.antennaBUptime}
         }}"""
     
     def log(self):
-        return f"{self.antennaADeployedAntenna1},{self.antennaADeployedAntenna2},{self.antennaADeployedAntenna3},\
-{self.antennaADeployedAntenna4},{self.antennaAArmed},{self.antennaABoardTemp},{self.antennaAUptime},\
-{self.antennaBDeployedAntenna1},{self.antennaBDeployedAntenna2},{self.antennaBDeployedAntenna3},{self.antennaBDeployedAntenna4},\
-{self.antennaBArmed},{self.antennaBBoardTemp},{self.antennaBUptime}"
+        return f"{self.antennaAStatus & 0b1},{self.antennaAStatus & 0b10},{self.antennaAStatus & 0b100},{self.antennaAStatus & 0b1000},{self.antennaAStatus & 0b100000},\
+{self.antennaAStatus & 0b1000000},{self.antennaAStatus & 0b10000000},{self.antennaAStatus & 0b100000000},{self.antennaAStatus & 0b1000000000},{self.antennaAStatus & 0b10000000000},\
+{self.antennaAStatus & 0b100000000000},{self.antennaAStatus & 0b10000000000000},{self.antennaAStatus & 0b100000000000000},{self.antennaAStatus & 0b1000000000000000},{self.antennaABoardTemp},{self.antennaAUptime},\
+{self.antennaAStatus & 0b1},{self.antennaBStatus & 0b10},{self.antennaBStatus & 0b100},{self.antennaBStatus & 0b1000},{self.antennaBStatus & 0b100000},{self.antennaBStatus & 0b1000000},\
+{self.antennaBStatus & 0b10000000},{self.antennaBStatus & 0b100000000},{self.antennaBStatus & 0b1000000000},{self.antennaBStatus & 0b10000000000},{self.antennaBStatus & 0b100000000000},{self.antennaBStatus & 0b10000000000000},\
+{self.antennaBStatus & 0b100000000000000},{self.antennaBStatus & 0b1000000000000000},{self.antennaBBoardTemp},{self.antennaBUptime}"
 
 class DosimeterData(RadsatMessage):
     recipe = "ffffffffffffffff"
@@ -1099,29 +1096,6 @@ class Reset(RadsatMessage):
         return f"{self.device},{self.hard}"
     
 if __name__ == "__main__":
-    import random
-    radsatMsg = RadsatMessage()
-    obcTelem = ObcTelemetry()
-    trxvuTelem = TransceiverTelemetry()
-    cameraTelem = CameraTelemetry()
-    epsTelem = EpsTelemetry()
-    batteryTelem = BatteryTelemetry()
-    antennaTelem = AntennaTelemetry()
-    dosimeterData = DosimeterData()
-    imgPacket = ImagePacket()
-    modError = ModuleErrorReport()
-    compError = ComponentErrorReport()
-    errSummary = ErrorReportSummary()
-    ack = Ack()
-    nack = Nack()
-    beginPass = BeginPass()
-    beginFileTransfer = BeginFileTransfer()
-    ceaseTransmission = CeaseTransmission()
-    updateTime = UpdateTime()
-    reset = Reset()
     
-    msgHeader = b'\030 \276NA\004\003\002\001\aV\325\033E\262\"\034EV\325\033EaI\034E\037\357\033E\333\247,DFV\034EH\b\247A\262\"\034E\004\374\033EV\325\033E\262\"\034E\227/\034EFe$DaI\034EPt\250A'
-    msgIn = msgHeader[9:]
-
-    msgRx = generator(msgIn)
-    print(msgRx.log())
+    msgIn = b'\x01\x00\x00\xe4A\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+    print(generator(msgIn))
