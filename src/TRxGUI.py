@@ -44,7 +44,7 @@ def printRxMessage(msgIn):
     msg,preamble,checkSum,length,timeStamp = stripHeader(msgIn)
     try:
         msgObj = generator(msg)
-        append_text("From : RADSAT-SK")
+        append_text("Message Received")
         append_text("Message Time : " + getDateString(time=True))
         append_text("Raw : " + str(msg))
         append_text("CRC : " + str(checkSum))

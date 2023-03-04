@@ -115,19 +115,19 @@ class ObcTelemetry(RadsatMessage):
 
     def __str__(self):
         return f"""obcTelemetry = {{
-            Supervisor Uptime = {self.supervisorUptime},
-            OBC Uptime = {self.obcUptime},
-            OBS Reset Count = {self.obcResetCount},
-            ADCS Update Flag = {self.adcUpdateFlag},
-            ADCS Temperature = {self.adcsTemperature},
-            ADCS Voltage Inout 3v3 = {self.adcsVoltage_3v3in},
-            ADCS Voltage 3v3 = {self.adcsVoltage_3v3},
-            ADCS Voltage 2v5 = {self.adcsVoltage_2v5},
-            ADCS Voltage 1v8 = {self.adcsVoltage_1v8},
-            ADCS Voltage 1v0 = {self.adcsVoltage_1v0},
-            ADCS Current 3v3 = {self.adcsCurrent_3v3},
-            ADCS Current 1v8 = {self.adcsCurrent_1v8},
-            ADCS Current 1v0 = {self.adcsCurrent_1v0},
+            Supervisor Uptime = {self.supervisorUptime}
+            OBC Uptime = {self.obcUptime}
+            OBS Reset Count = {self.obcResetCount}
+            ADCS Update Flag = {self.adcUpdateFlag}
+            ADCS Temperature = {self.adcsTemperature}
+            ADCS Voltage Inout 3v3 = {self.adcsVoltage_3v3in}
+            ADCS Voltage 3v3 = {self.adcsVoltage_3v3}
+            ADCS Voltage 2v5 = {self.adcsVoltage_2v5}
+            ADCS Voltage 1v8 = {self.adcsVoltage_1v8}
+            ADCS Voltage 1v0 = {self.adcsVoltage_1v0}
+            ADCS Current 3v3 = {self.adcsCurrent_3v3}
+            ADCS Current 1v8 = {self.adcsCurrent_1v8}
+            ADCS Current 1v0 = {self.adcsCurrent_1v0}
             ADCS Voltage rtc = {self.adcsVoltage_rtc} 
         }}"""
     
@@ -218,26 +218,26 @@ class TransceiverTelemetry(RadsatMessage):
             
     def __str__(self):
         return f"""TransceiverTelemetry = {{
-            Rxver Reflected Power = {self.rxverReflectedPower},
-            Rxver FWD Power = {self.rxverForwardPower},
-            Rxver Bus Voltage = {self.rxverBusVoltage},
-            Rxver Total Current = {self.rxverTotalCurrent},
-            Rxver Tx Current = {self.rxverTxCurrent},
-            Rxver Rx Current = {self.rxverRxCurrent},
-            Rxver Power Amp Current = {self.rxverPowerAmplifierCurrent},
-            Rxver Power Amp Temp = {self.rxverPowerAmplifierTemperature},
-            Rxver Board Temp = {self.rxverBoardTemperature},
-            Rxver Uptime = {self.rxverUptime},
-            Txver Rx Doppler = {self.txverRxDoppler},
-            Txver Rssi = {self.txverRxRssi},
-            Txver Bus Voltage = {self.txverBusVoltage},
-            Txver Total Current = {self.txverTotalCurrent},
-            Txver Tx Current = {self.txverTxCurrent},
-            Txver Rx Current = {self.txverRxCurrent},
-            Txver Power Amp Current = {self.txverPowerAmplifierCurrent},
-            Txver Power Amp Temp = {self.txverPowerAmplifierTemperature},
-            Txver Board Temp = {self.txverBoardTemperature},
-            Txver Uptime = {self.txverUptime},
+            Rxver Reflected Power = {self.rxverReflectedPower}
+            Rxver FWD Power = {self.rxverForwardPower}
+            Rxver Bus Voltage = {self.rxverBusVoltage}
+            Rxver Total Current = {self.rxverTotalCurrent}
+            Rxver Tx Current = {self.rxverTxCurrent}
+            Rxver Rx Current = {self.rxverRxCurrent}
+            Rxver Power Amp Current = {self.rxverPowerAmplifierCurrent}
+            Rxver Power Amp Temp = {self.rxverPowerAmplifierTemperature}
+            Rxver Board Temp = {self.rxverBoardTemperature}
+            Rxver Uptime = {self.rxverUptime}
+            Txver Rx Doppler = {self.txverRxDoppler}
+            Txver Rssi = {self.txverRxRssi}
+            Txver Bus Voltage = {self.txverBusVoltage}
+            Txver Total Current = {self.txverTotalCurrent}
+            Txver Tx Current = {self.txverTxCurrent}
+            Txver Rx Current = {self.txverRxCurrent}
+            Txver Power Amp Current = {self.txverPowerAmplifierCurrent}
+            Txver Power Amp Temp = {self.txverPowerAmplifierTemperature}
+            Txver Board Temp = {self.txverBoardTemperature}
+            Txver Uptime = {self.txverUptime}
             Txver Frames = {self.txverFrames}
             }}"""
     
@@ -323,24 +323,24 @@ class CameraTelemetry(RadsatMessage):
             
     def __str__(self):
         return f"""CameraTelemetry = {{
-            Uptime = {self.uptime},
-            3V3 Current = {self.current_3V3},
-            5V Current = {self.current_5V},
-            SRAM1 Current = {self.current_SRAM_1},
-            SRAM2 Current = {self.current_SRAM_2},
-            SRAM1 Overcurrent = {self.overcurrent_SRAM_1},
-            SRAM2 Overcurrent = {self.overcurrent_SRAM_2},
-            Cam1 Detection Threshold = {self.camera1DetectionThreshold},
-            Cam1 Auto Adjust mode = {self.camera1AutoAdjustMode},
-            Cam1 Exposure = {self.camera1Exposure},
-            Cam1 Auto Gain Control = {self.camera1AutoGainControl},
-            Cam1 Blue Gain = {self.camera1BlueGain},
-            Cam1 Red Gain = {self.camera1RedGain},
-            Cam2 Detection Threshold = {self.camera2DetectionThreshold},
-            Cam2 Auto Adjust mode = {self.camera2AutoAdjustMode},
-            Cam2 Exposure = {self.camera2Exposure},
-            Cam2 Auto Gain Control = {self.camera2AutoGainControl},
-            Cam2 Blue Gain = {self.camera2BlueGain},
+            Uptime = {self.uptime}
+            3V3 Current = {self.current_3V3}
+            5V Current = {self.current_5V}
+            SRAM1 Current = {self.current_SRAM_1}
+            SRAM2 Current = {self.current_SRAM_2}
+            SRAM1 Overcurrent = {self.overcurrent_SRAM_1}
+            SRAM2 Overcurrent = {self.overcurrent_SRAM_2}
+            Cam1 Detection Threshold = {self.camera1DetectionThreshold}
+            Cam1 Auto Adjust mode = {self.camera1AutoAdjustMode}
+            Cam1 Exposure = {self.camera1Exposure}
+            Cam1 Auto Gain Control = {self.camera1AutoGainControl}
+            Cam1 Blue Gain = {self.camera1BlueGain}
+            Cam1 Red Gain = {self.camera1RedGain}
+            Cam2 Detection Threshold = {self.camera2DetectionThreshold}
+            Cam2 Auto Adjust mode = {self.camera2AutoAdjustMode}
+            Cam2 Exposure = {self.camera2Exposure}
+            Cam2 Auto Gain Control = {self.camera2AutoGainControl}
+            Cam2 Blue Gain = {self.camera2BlueGain}
             Cam2 Red Gain = {self.camera2RedGain}
             }}"""
     
@@ -426,23 +426,23 @@ class EpsTelemetry(RadsatMessage):
 
     def __str__(self):
         return f"""EpsTelemetry = {{
-        Sun Sensor BCR1 Voltage = {self.sunSensorBCR1Voltage},
-        Sun Sensor SA1A Current = {self.sunSensorSA1ACurrent},
-        Sun Sensor SA1B Current = {self.sunSensorSA1BCurrent},
-        Sun Sensor BCR2 Voltage = {self.sunSensorBCR2Voltage},
-        Sun Sensor SA2A Current = {self.sunSensorSA2ACurrent},
-        Sun Sensor SA2B Current = {self.sunSensorSA2BCurrent},
-        Sun Sensor BCR3 Voltage = {self.sunSensorBCR3Voltage},
-        Sun Sensor SA3A Current = {self.sunSensorSA3ACurrent},
-        Sun Sensor SA3B Current = {self.sunSensorSA3BCurrent},        
-        BCR Output Voltage = {self.outputVoltageBCR},
-        Battery Bus Voltage = {self.outputVoltageBatteryBus},
-        5V Bus Voltage = {self.outputVoltage5VBus},
-        3V3 Bus Voltage = {self.outputVoltage3V3Bus},
-        BCR Output Current = {self.outputCurrentBCR_mA},
-        Battery Bus Current = {self.outputCurrentBatteryBus},
-        5V Bus Current = {self.outputCurrent5VBus},
-        3V3 Bus Current = {self.outputCurrent3V3Bus},
+        Sun Sensor BCR1 Voltage = {self.sunSensorBCR1Voltage}
+        Sun Sensor SA1A Current = {self.sunSensorSA1ACurrent}
+        Sun Sensor SA1B Current = {self.sunSensorSA1BCurrent}
+        Sun Sensor BCR2 Voltage = {self.sunSensorBCR2Voltage}
+        Sun Sensor SA2A Current = {self.sunSensorSA2ACurrent}
+        Sun Sensor SA2B Current = {self.sunSensorSA2BCurrent}
+        Sun Sensor BCR3 Voltage = {self.sunSensorBCR3Voltage}
+        Sun Sensor SA3A Current = {self.sunSensorSA3ACurrent}
+        Sun Sensor SA3B Current = {self.sunSensorSA3BCurrent}
+        BCR Output Voltage = {self.outputVoltageBCR}
+        Battery Bus Voltage = {self.outputVoltageBatteryBus}
+        5V Bus Voltage = {self.outputVoltage5VBus}
+        3V3 Bus Voltage = {self.outputVoltage3V3Bus}
+        BCR Output Current = {self.outputCurrentBCR_mA}
+        Battery Bus Current = {self.outputCurrentBatteryBus}
+        5V Bus Current = {self.outputCurrent5VBus}
+        3V3 Bus Current = {self.outputCurrent3V3Bus}
         PDB Temperature = {self.PdbTemperature}
         }}"""
     
@@ -504,16 +504,16 @@ class BatteryTelemetry(RadsatMessage):
 
     def __str__(self):
         return f"""BatteryTelemetry = {{
-        Battery Bus Output Voltage = {self.outputVoltageBatteryBus},
-        5V Bus Voltage = {self.outputVoltage5VBus},
-        3V3 Bus Voltage = {self.outputVoltage3V3Bus},
-        Battery Bus Current = {self.outputCurrentBatteryBus},
-        5V Bus Current = {self.outputCurrent5VBus},
-        3V3 Bus Current = {self.outputCurrent3V3Bus},
-        Battery Current Direction = {self.batteryCurrentDirection},
-        Motherboard Temperature = {self.motherboardTemp},
-        Daugherboard 1 Temperature = {self.daughterboardTemp1},
-        Daugherboard 2 Temperature = {self.daughterboardTemp2},
+        Battery Bus Output Voltage = {self.outputVoltageBatteryBus}
+        5V Bus Voltage = {self.outputVoltage5VBus}
+        3V3 Bus Voltage = {self.outputVoltage3V3Bus}
+        Battery Bus Current = {self.outputCurrentBatteryBus}
+        5V Bus Current = {self.outputCurrent5VBus}
+        3V3 Bus Current = {self.outputCurrent3V3Bus}
+        Battery Current Direction = {self.batteryCurrentDirection}
+        Motherboard Temperature = {self.motherboardTemp}
+        Daugherboard 1 Temperature = {self.daughterboardTemp1}
+        Daugherboard 2 Temperature = {self.daughterboardTemp2}
         Daugherboard 3 Temperature = {self.daughterboardTemp3}        
         }}"""
     
@@ -523,7 +523,7 @@ class BatteryTelemetry(RadsatMessage):
 {self.motherboardTemp},{self.daughterboardTemp1},{self.daughterboardTemp2},{self.daughterboardTemp3}"
 
 class AntennaTelemetry(RadsatMessage):
-    recipe = "HHHHHfIHHHHHfI"
+    recipe = "HHHHHfIHHHHHfI" # Nothing in it, wrong size
     name = "Antenna Telemetry"
     size = struct.calcsize(recipe)
 
@@ -582,19 +582,19 @@ class AntennaTelemetry(RadsatMessage):
 
     def __str__(self):
         return f"""AntennaTelemetry = {{
-        Side A Deployed Antenna1 = {self.antennaADeployedAntenna1},
-        Side A Deployed Antenna2 = {self.antennaADeployedAntenna2},
-        Side A Deployed Antenna3 = {self.antennaADeployedAntenna3},
-        Side A Deployed Antenna4 = {self.antennaADeployedAntenna4},
-        Side A Armed = {self.antennaAArmed},
-        Side A Board Temp = {self.antennaABoardTemp},
-        Side A Uptime = {self.antennaAUptime},
-        Side B Deployed Antenna1 ={self.antennaBDeployedAntenna1},
-        Side B Deployed Antenna2 ={self.antennaBDeployedAntenna2},
-        Side B Deployed Antenna3 ={self.antennaBDeployedAntenna3},
-        Side B Deployed Antenna4 ={self.antennaBDeployedAntenna4},
-        Side B Armed = {self.antennaBArmed},
-        Side B Board Temp = {self.antennaBBoardTemp},
+        Side A Deployed Antenna1 = {self.antennaADeployedAntenna1}
+        Side A Deployed Antenna2 = {self.antennaADeployedAntenna2}
+        Side A Deployed Antenna3 = {self.antennaADeployedAntenna3}
+        Side A Deployed Antenna4 = {self.antennaADeployedAntenna4}
+        Side A Armed = {self.antennaAArmed}
+        Side A Board Temp = {self.antennaABoardTemp}
+        Side A Uptime = {self.antennaAUptime}
+        Side B Deployed Antenna1 ={self.antennaBDeployedAntenna1}
+        Side B Deployed Antenna2 ={self.antennaBDeployedAntenna2}
+        Side B Deployed Antenna3 ={self.antennaBDeployedAntenna3}
+        Side B Deployed Antenna4 ={self.antennaBDeployedAntenna4}
+        Side B Armed = {self.antennaBArmed}
+        Side B Board Temp = {self.antennaBBoardTemp}
         Side B Uptime = {self.antennaBUptime}
         }}"""
     
@@ -763,9 +763,9 @@ class ModuleErrorReport(RadsatMessage):
 
     def __str__(self):
         return f"""ModuleErrorReport = {{
-            Module ID = {self.moduleId},
-            Module Error = {self.moduleError},
-            Module Time Recorded = {self.moduleTimeRecorded},
+            Module ID = {self.moduleId}
+            Module Error = {self.moduleError}
+            Module Time Recorded = {self.moduleTimeRecorded}
             Module Error Count = {self.moduleCount}
         }}"""
     
