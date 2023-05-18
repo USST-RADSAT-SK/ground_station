@@ -23,6 +23,7 @@ beginFileTransfer = BeginFileTransfer()
 ceaseTransmission = CeaseTransmission()
 updateTime = UpdateTime()
 rst = Reset()
+cameraConfig = ConfigureCamera()
 
 ftMode = False
 startTime = 0
@@ -45,13 +46,13 @@ def printRxMessage(msgIn):
     try:
         msgObj = generator(msg)
         append_text("Message Received")
-        append_text("Message Time : " + getDateString(time=True))
-        append_text("Raw : " + str(msg))
-        append_text("CRC : " + str(checkSum))
-        append_text("Size : " + str(length))
-        append_text("Time Stamp : " + str(timeStamp))
-        append_text("Msg Type : " + str(msgObj.ID))
-        append_text("Message : " + str(msgObj))
+        append_text("       Message Time : " + getDateString(time=True))
+        append_text("       Raw : " + str(msgIn))
+        append_text("       CRC : " + str(checkSum))
+        append_text("       Size : " + str(length))
+        append_text("       Time Stamp : " + str(timeStamp))
+        append_text("       Msg Type : " + str(msgObj.ID))
+        append_text("       Message : " + str(msgObj))
         append_text("")
 
         sendToFile("rawDataLogger/RADSAT-" + getDateString() + ".csv",msgObj,preamble,checkSum,length,timeStamp)
@@ -96,8 +97,8 @@ class RX_Thread(QThread):
                             startTime = time()
                             
                     else:
-                        if time() - startTime > 5:
-                            append_text("No FT received in > 5s. Sending Ack!",dev=True,timeStamp=True)
+                        if time() - startTime > 0.5:
+                            append_text("No FT Received! Sending nack!",dev=True,timeStamp=True)
                             connect.send(xorCipher(addHeader(ack.encoder())))
                             startTime = time()
                         sleep(0.001)
@@ -127,14 +128,14 @@ def post_confirmation(toSend):
     msgXor = xorCipher(msgHeader)
     msgObj = generator(msg)
     append_text("Message sent!",dev=True,timeStamp=True)
-    append_text("From : Ground Station")
-    append_text("Message Time : " + getDateString(time=True))
-    append_text("Raw : " + str(msg))
-    append_text("CRC : " + str(checkSum))
-    append_text("Size : " + str(length))
-    append_text("Time Stamp : " + str(timeStamp))
-    append_text("Msg Type : " + str(msgObj.ID))
-    append_text("Message : " + str(msgObj))
+    append_text("Message Sent")
+    append_text("       Message Time : " + getDateString(time=True))
+    append_text("       Raw : " + str(msg))
+    append_text("       CRC : " + str(checkSum))
+    append_text("       Size : " + str(length))
+    append_text("       Time Stamp : " + str(timeStamp))
+    append_text("       Msg Type : " + str(msgObj.ID))
+    append_text("       Message : " + str(msgObj))
     append_text("")
     connect.send(msgXor)
     sendToFile("rawDataLogger/RADSAT-" + getDateString() + ".csv",msgObj,preamble,checkSum,length,timeStamp)
@@ -195,7 +196,61 @@ def onclick_unixtime():
     msgOut = updateTime.encoder()
     get_confirmation(msgOut)
 
-def onclick_reboot():
+def onclick_camconfig():
+    append_text("Setting Camera...", dev=True,timeStamp=True)
+    try:
+        det = int(camera_det.text())
+        adj = int(camera_adj.text())
+        exp = int(camera_exp.text())
+        agc = int(camera_agc.text())
+        blue = int(camera_blue.text())
+        red = int(camera_red.text())
+
+    except ValueError:
+        det = 100
+        adj = 1
+        exp = 1
+        agc = 1
+        blue = 1
+        red = 1
+
+    camSelect = camera_dropdown.currentIndex()
+    cameraConfig = ConfigureCamera()
+
+    if camSelect == 0:
+        cameraConfig.camera1DetectionThreshold = det
+        cameraConfig.camera1AutoAdjustMode = adj
+        cameraConfig.camera1Exposure = exp
+        cameraConfig.camera1AutoGainControl = agc
+        cameraConfig.camera1BlueGain = blue
+        cameraConfig.camera1RedGain = red
+    
+    elif camSelect == 1:
+        cameraConfig.camera2DetectionThreshold = det
+        cameraConfig.camera2AutoAdjustMode = adj
+        cameraConfig.camera2Exposure = exp
+        cameraConfig.camera2AutoGainControl = agc
+        cameraConfig.camera2BlueGain = blue
+        cameraConfig.camera2RedGain = red
+
+    elif camSelect == 2:
+        cameraConfig.camera1DetectionThreshold = det
+        cameraConfig.camera1AutoAdjustMode = adj
+        cameraConfig.camera1Exposure = exp
+        cameraConfig.camera1AutoGainControl = agc
+        cameraConfig.camera1BlueGain = blue
+        cameraConfig.camera1RedGain = red
+        cameraConfig.camera2DetectionThreshold = det
+        cameraConfig.camera2AutoAdjustMode = adj
+        cameraConfig.camera2Exposure = exp
+        cameraConfig.camera2AutoGainControl = agc
+        cameraConfig.camera2BlueGain = blue
+        cameraConfig.camera2RedGain = red
+    
+    msgOut = cameraConfig.encoder()
+    get_confirmation(msgOut)
+
+def onclick_reset():
     device = device_dropdown.currentIndex()
     reset = reset_dropdown.currentIndex()
     append_text("Generating Reset...", dev=True,timeStamp=True)
@@ -259,7 +314,7 @@ btnlayout.addWidget(passlen_label)
 passlen_label.show()
 
 int_input = QLineEdit()
-int_input.setPlaceholderText("Enter integer...")
+int_input.setPlaceholderText("Enter Value...")
 btnlayout.addWidget(int_input)
 int_input.show()
 
@@ -279,6 +334,49 @@ unixtime_btn = QPushButton("Set Unixtime")
 btnlayout.addWidget(unixtime_btn)
 unixtime_btn.clicked.connect(lambda: onclick_unixtime())
 
+##################################################################
+#                         Camera
+##################################################################
+
+camera_det = QLineEdit()
+camera_det.setPlaceholderText("Detection Threshold")
+btnlayout.addWidget(camera_det)
+camera_det.show()
+
+camera_adj = QLineEdit()
+camera_adj.setPlaceholderText("Adjust Mode")
+btnlayout.addWidget(camera_adj)
+camera_adj.show()
+
+camera_exp = QLineEdit()
+camera_exp.setPlaceholderText("Exposure")
+btnlayout.addWidget(camera_exp)
+camera_exp.show()
+
+camera_agc = QLineEdit()
+camera_agc.setPlaceholderText("AGC")
+btnlayout.addWidget(camera_agc)
+camera_agc.show()
+
+camera_blue = QLineEdit()
+camera_blue.setPlaceholderText("Blue Gain")
+btnlayout.addWidget(camera_blue)
+camera_blue.show()
+
+camera_red = QLineEdit()
+camera_red.setPlaceholderText("Red Gain")
+btnlayout.addWidget(camera_red)
+camera_red.show()
+
+camera_dropdown = QComboBox()
+camera_dropdown.addItem("Camera 1", 0)
+camera_dropdown.addItem("Camera 2", 1)
+camera_dropdown.addItem("Both", 2)
+btnlayout.addWidget(camera_dropdown)
+
+camera_btn = QPushButton("Camera Config")
+btnlayout.addWidget(camera_btn)
+camera_btn.clicked.connect(lambda: onclick_camconfig())
 
 ##################################################################
 #                         Reboot
@@ -286,20 +384,22 @@ unixtime_btn.clicked.connect(lambda: onclick_unixtime())
 
 device_dropdown = QComboBox()
 device_dropdown.addItem("OBC", 0)
-device_dropdown.addItem("Transmitter", 1)
-device_dropdown.addItem("Receiver", 2)
-device_dropdown.addItem("AntennaSideA", 3)
-device_dropdown.addItem("AntennaSideB", 4)
+device_dropdown.addItem("Transceiver", 1)
+device_dropdown.addItem("Antenna",2)
+device_dropdown.addItem("EPS", 3)
+device_dropdown.addItem("Battery Board", 4)
+device_dropdown.addItem("FRAM",5)
 btnlayout.addWidget(device_dropdown)
 
 reset_dropdown = QComboBox()
-reset_dropdown.addItem("Soft Reboot", 0)
-reset_dropdown.addItem("Hard OBC Reboot", 1)
+reset_dropdown.addItem("Hard Cycle", 0)
+reset_dropdown.addItem("Soft Reboot", 1)
+reset_dropdown.addItem("")
 btnlayout.addWidget(reset_dropdown)
 
-reboot_btn = QPushButton("Reboot")
-btnlayout.addWidget(reboot_btn)
-reboot_btn.clicked.connect(lambda: onclick_reboot())
+reset_btn = QPushButton("Reset")
+btnlayout.addWidget(reset_btn)
+reset_btn.clicked.connect(lambda: onclick_reset())
 
 
 ##################################################################

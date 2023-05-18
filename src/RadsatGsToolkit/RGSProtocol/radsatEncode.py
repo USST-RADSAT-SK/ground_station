@@ -5,15 +5,15 @@ from crc import CrcCalculator, Configuration
 
 rxHeader = [["recvTime","preamble","checkSum","length","timestamp","msgID"],
             ["supervisorUptime","obcUptime","obcResetCount","adcUpdateFlag","adcsTemperature","adcsVoltage_3v3in","adcsVoltage_3v3","adcsVoltage_2v5","adcsVoltage_1v8","adcsVoltage_1v0","adcsCurrent_3v3","adcsCurrent_1v8","adcsCurrent_1v0","adcsVoltage_rtc"],
-            ["rxDoppler","rxRssi","busVoltage","totalCurrent","txCurrent","rxCurrent","powerAmplifierCurrent","powerAmplifierTemperature","boardTemperature","uptime","frames",
-             "reflectedPower","forwardPower","busVoltage","totalCurrent","txCurrent","rxCurrent","powerAmplifierCurrent","powerAmplifierTemperature","boardTemperature","uptime"],
+            ["reflectedPower","forwardPower","busVoltage","totalCurrent","txCurrent","rxCurrent","powerAmplifierCurrent","powerAmplifierTemperature","boardTemperature","uptime",
+             "rxDoppler","rxRssi","busVoltage","totalCurrent","txCurrent","rxCurrent","powerAmplifierCurrent","powerAmplifierTemperature","boardTemperature","uptime","frames"],
             ["uptime","current_3V3","current_5V","current_SRAM_1","current_SRAM_2","overcurrent_SRAM_1","overcurrent_SRAM_2",
              "camera1DetectionThreshold","camera1AutoAdjustMode","camera1Exposure","camera1AutoGainControl","camera1BlueGain","camera1RedGain",
              "camera2DetectionThreshold","camera2AutoAdjustMode","camera2Exposure","camera2AutoGainControl","camera2BlueGain","camera2RedGain"],
-            ["outputVoltageBCR","outputVoltageBatteryBus","outputVoltage5VBus","outputVoltage3V3Bus","outputCurrentBCR_mA","outputCurrentBatteryBus","outputCurrent5VBus","outputCurrent3V3Bus","PdbTemperature","sunSensorBCR1Voltage",\
-             "sunSensorSA1ACurrent","sunSensorSA1BCurrent","sunSensorBCR2Voltage",
-             "sunSensorSA2ACurrent","sunSensorSA2BCurrent","sunSensorBCR3Voltage",
-             "sunSensorSA3ACurrent","sunSensorSA3BCurrent"],
+            ["sunSensorBCR1Voltage","sunSensorSA1ACurrent","sunSensorSA1BCurrent",
+             "sunSensorBCR2Voltage","sunSensorSA2ACurrent","sunSensorSA2BCurrent",
+             "sunSensorBCR3Voltage","sunSensorSA3ACurrent","sunSensorSA3BCurrent",
+             "outputVoltageBCR","outputVoltageBatteryBus","outputVoltage5VBus","outputVoltage3V3Bus","outputCurrentBCR_mA","outputCurrentBatteryBus","outputCurrent5VBus","outputCurrent3V3Bus","PdbTemperature"],
             ["outputVoltageBatteryBus","outputVoltage5VBus","outputVoltage3V3Bus","outputCurrentBatteryBus","outputCurrent5VBus","outputCurrent3V3Bus","batteryCurrentDirection","motherboardTemp","daughterboardTemp1","daughterboardTemp2","daughterboardTemp3"],
             ["deployedAntenna1","deployedAntenna2","deployedAntenna3","deployedAntenna4","armed","boardTemp","uptime",
              "deployedAntenna1","deployedAntenna2","deployedAntenna3","deployedAntenna4","armed","boardTemp","uptime"],
@@ -30,7 +30,9 @@ rxHeader = [["recvTime","preamble","checkSum","length","timestamp","msgID"],
             ["ceaseTransmission"],
             ["updateTime"],
             ["device","hard"],
-            ["sunTimeStamp","sunAlphaAngle","sunBetaAngle","nadirTimeStamp","nadirAlphaAngle","nadirBetaAngle"]
+            ["sunTimeStamp","sunAlphaAngle","sunBetaAngle","nadirTimeStamp","nadirAlphaAngle","nadirBetaAngle"],
+            ["camera1DetectionThreshold","camera1AutoAdjustMode}","camera1Exposure","camera1AutoGainControl}","camera1BlueGain}","camera1RedGain",
+             "camera2DetectionThreshold}","camera2AutoAdjustMode","camera2Exposure","camera2AutoGainControl}","camera2BlueGain","camera2RedGain"]
             ]
 
 def xorCipher(msgBytes):
@@ -103,3 +105,18 @@ def getDateString(time = False):
     else:
         timeString = now.strftime("%Y_%m_%d")
     return(timeString)
+
+if __name__ == "__main__":
+    from radsatMsgGen import *
+    msg = b'\x18 iD%!Zm8\x04U\x01O\x01\x02\x00\x07\x01\x02\x00\x03\x00\x06\x00\x02\x00\x02\x00\x92\x03\x86\x03[\x03\x05\x03\x1b\x00-\x00\x10\x00\x1e\x001\x03'
+    message,preamble,checkSum,length,timeStamp = stripHeader(msg)
+    print(generator(message))
+    print("Raw: " + str(message))
+    print("Preamble: " + str(preamble))
+    print("Checksum: " + str(checkSum))
+    print("Length: " + str(length))
+    print("Timestamp: " + str(timeStamp))
+    print("Type: " + str(message[0]))
+    print(len(message))
+
+    sendToFile("test.csv",generator(message),preamble,checkSum,length,timeStamp)

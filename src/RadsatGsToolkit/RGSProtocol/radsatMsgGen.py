@@ -37,7 +37,8 @@ def generator(bytes):
         16 : CeaseTransmission,
         17 : UpdateTime,
         18 : Reset,
-        19 : AdcsDetection
+        19 : AdcsDetection,
+        20 : ConfigureCamera
     }
     
     messageType = bytes[0]
@@ -137,24 +138,36 @@ class ObcTelemetry(RadsatMessage):
 {self.adcsVoltage_2v5},{self.adcsVoltage_1v8},{self.adcsVoltage_1v0},{self.adcsCurrent_3v3},\
 {self.adcsCurrent_1v8},{self.adcsCurrent_1v0},{self.adcsVoltage_rtc}"
     
-class TransceiverTelemetry(RadsatMessage):  # TODO FIX ME
-    recipe = "fffffffffIIfffffffffI"
+class TransceiverTelemetry(RadsatMessage):
+    recipe = "<HHHHHHHHHHHHHHHHHHHHH"
+    consts = ("i * 13.352 - 22300.0",
+              "i * 0.03 - 152",
+              "i * 0.00488",
+              "i * 0.16643964",
+              "i * 0.16643964",
+              "i * 0.16643964",
+              "i * 0.16643964",
+              "i * -0.07669 + 195.6037",
+              "i * -0.07669 + 195.6037",
+              "i",
+              "i",
+              "i * i * 5.887E-5",
+              "i * i * 5.887E-5",
+              "i * 0.00488",
+              "i * 0.16643964",
+              "i * 0.16643964",
+              "i * 0.16643964",
+              "i * 0.16643964",
+              "i * -0.07669 + 195.6037",
+              "i * -0.07669 + 195.6037",
+              "i"
+              )
     name = "Transceiver Telemetry"
     size = struct.calcsize(recipe)
 
     def __init__(self, convert=None):
         self.ID = 2
-        self.txverReflectedPower = 0
-        self.txverForwardPower = 0
-        self.txverBusVoltage = 0
-        self.txverTotalCurrent = 0
-        self.txverTxCurrent = 0
-        self.txverRxCurrent = 0
-        self.txverPowerAmplifierCurrent = 0
-        self.txverPowerAmplifierTemperature = 0
-        self.txverBoardTemperature = 0
-        self.txverUptime = 0
-        
+
         self.rxverRxDoppler = 0
         self.rxverRxRssi = 0
         self.rxverBusVoltage = 0
@@ -165,33 +178,46 @@ class TransceiverTelemetry(RadsatMessage):  # TODO FIX ME
         self.rxverPowerAmplifierTemperature = 0
         self.rxverBoardTemperature = 0
         self.rxverUptime = 0
-        self.txverFrames = 0 # Verify
+        self.rxverFrames = 0
+
+        self.txverReflectedPower = 0
+        self.txverForwardPower = 0
+        self.txverBusVoltage = 0
+        self.txverTotalCurrent = 0
+        self.txverTxCurrent = 0
+        self.txverRxCurrent = 0
+        self.txverPowerAmplifierCurrent = 0
+        self.txverPowerAmplifierTemperature = 0
+        self.txverBoardTemperature = 0
+        self.txverUptime = 0
 
         if convert:
             self.decoder(convert)
 
     def decoder(self, value):
-            self.txverReflectedPower,\
-            self.txverForwardPower,\
-            self.txverBusVoltage,\
-            self.txverTotalCurrent,\
-            self.txverTxCurrent,\
-            self.txverRxCurrent,\
-            self.txverPowerAmplifierCurrent,\
-            self.txverPowerAmplifierTemperature,\
-            self.txverBoardTemperature,\
-            self.txverUptime,\
-            self.rxverRxDoppler,\
-            self.rxverRxRssi,\
-            self.rxverBusVoltage,\
-            self.rxverTotalCurrent,\
-            self.rxverTxCurrent,\
-            self.rxverRxCurrent,\
-            self.rxverPowerAmplifierCurrent,\
-            self.rxverPowerAmplifierTemperature,\
-            self.rxverBoardTemperature,\
-            self.rxverUptime,\
-            self.txverFrames = struct.unpack(TransceiverTelemetry.recipe, value)
+        data = struct.unpack(TransceiverTelemetry.recipe, value)
+        data = [eval(conversion) for i, conversion in zip(data, TransceiverTelemetry.consts)]
+        self.rxverRxDoppler,\
+        self.rxverRxRssi,\
+        self.rxverBusVoltage,\
+        self.rxverTotalCurrent,\
+        self.rxverTxCurrent,\
+        self.rxverRxCurrent,\
+        self.rxverPowerAmplifierCurrent,\
+        self.rxverPowerAmplifierTemperature,\
+        self.rxverBoardTemperature,\
+        self.rxverUptime,\
+        self.rxverFrames,\
+        self.txverReflectedPower,\
+        self.txverForwardPower,\
+        self.txverBusVoltage,\
+        self.txverTotalCurrent,\
+        self.txverTxCurrent,\
+        self.txverRxCurrent,\
+        self.txverPowerAmplifierCurrent,\
+        self.txverPowerAmplifierTemperature,\
+        self.txverBoardTemperature,\
+        self.txverUptime, = data
 
     def encoder(self):
         return(bytes([self.ID]) + struct.pack(TransceiverTelemetry.recipe,
@@ -205,6 +231,7 @@ class TransceiverTelemetry(RadsatMessage):  # TODO FIX ME
             self.txverPowerAmplifierTemperature,
             self.txverBoardTemperature,
             self.txverUptime,            
+            self.rxverFrames,
             self.rxverRxDoppler,
             self.rxverRxRssi,
             self.rxverBusVoltage,
@@ -214,21 +241,10 @@ class TransceiverTelemetry(RadsatMessage):  # TODO FIX ME
             self.rxverPowerAmplifierCurrent,
             self.rxverPowerAmplifierTemperature,
             self.rxverBoardTemperature,
-            self.rxverUptime,
-            self.txverFrames))
+            self.rxverUptime))
             
     def __str__(self):
         return f"""TransceiverTelemetry = {{
-            Txver Reflected Power = {self.txverReflectedPower}
-            Txver FWD Power = {self.txverForwardPower}
-            Txver Bus Voltage = {self.txverBusVoltage}
-            Txver Total Current = {self.txverTotalCurrent}
-            Txver Tx Current = {self.txverTxCurrent}
-            Txver Rx Current = {self.txverRxCurrent}
-            Txver Power Amp Current = {self.txverPowerAmplifierCurrent}
-            Txver Power Amp Temp = {self.txverPowerAmplifierTemperature}
-            Txver Board Temp = {self.txverBoardTemperature}
-            Txver Uptime = {self.txverUptime}
             Rxver Rx Doppler = {self.rxverRxDoppler}
             Rxver Rssi = {self.rxverRxRssi}
             Rxver Bus Voltage = {self.rxverBusVoltage}
@@ -239,18 +255,46 @@ class TransceiverTelemetry(RadsatMessage):  # TODO FIX ME
             Rxver Power Amp Temp = {self.rxverPowerAmplifierTemperature}
             Rxver Board Temp = {self.rxverBoardTemperature}
             Rxver Uptime = {self.rxverUptime}
-            Txver Frames = {self.txverFrames}
+            Rxver Frames = {self.rxverFrames}
+            Txver Reflected Power = {self.txverReflectedPower}
+            Txver FWD Power = {self.txverForwardPower}
+            Txver Bus Voltage = {self.txverBusVoltage}
+            Txver Total Current = {self.txverTotalCurrent}
+            Txver Tx Current = {self.txverTxCurrent}
+            Txver Rx Current = {self.txverRxCurrent}
+            Txver Power Amp Current = {self.txverPowerAmplifierCurrent}
+            Txver Power Amp Temp = {self.txverPowerAmplifierTemperature}
+            Txver Board Temp = {self.txverBoardTemperature}
+            Txver Uptime = {self.txverUptime}
             }}"""
     
     def log(self):
-        return f"{self.txverReflectedPower},{self.txverForwardPower},{self.txverBusVoltage},{self.txverTotalCurrent},\
-{self.txverTxCurrent},{self.txverRxCurrent},{self.txverPowerAmplifierCurrent},{self.txverPowerAmplifierTemperature},\
-{self.txverBoardTemperature},{self.txverUptime},{self.rxverRxDoppler},{self.rxverRxRssi},{self.rxverBusVoltage},{self.rxverTotalCurrent},\
-{self.rxverTxCurrent},{self.rxverRxCurrent},{self.rxverPowerAmplifierCurrent},{self.rxverPowerAmplifierTemperature},{self.rxverBoardTemperature},\
-{self.rxverUptime},{self.txverFrames}"
+        return f"{self.rxverRxDoppler},{self.rxverRxRssi},{self.rxverBusVoltage},{self.rxverTotalCurrent},{self.rxverTxCurrent},{self.rxverRxCurrent},{self.rxverPowerAmplifierCurrent},\
+{self.rxverPowerAmplifierTemperature},{self.rxverBoardTemperature},{self.rxverUptime},{self.rxverFrames},{self.txverReflectedPower},{self.txverForwardPower},{self.txverBusVoltage},\
+{self.txverTotalCurrent},{self.txverTxCurrent},{self.txverRxCurrent},{self.txverPowerAmplifierCurrent},{self.txverPowerAmplifierTemperature},{self.txverBoardTemperature},{self.txverUptime}"
 
 class CameraTelemetry(RadsatMessage):
-    recipe = "IffffIIIIIIIIIIIIII"
+    recipe = "<HHHHHHHBBHBBBBBHBBB"
+    consts = ("i",
+              "i * 0.208",
+              "i * 0.208",
+              "i * 0.208",
+              "i * 0.208",
+              "i",
+              "i",
+              "i",
+              "i",
+              "i",
+              "i",
+              "i",
+              "i",
+              "i",
+              "i",
+              "i",
+              "i",
+              "i",
+              "i"
+              )
     name = "Camera Telemetry"
     size = struct.calcsize(recipe)
 
@@ -354,7 +398,27 @@ class CameraTelemetry(RadsatMessage):
 {self.camera2AutoGainControl},{self.camera2BlueGain},{self.camera2RedGain}"
 
 class EpsTelemetry(RadsatMessage):
-    recipe = "ffffffffffffffffff"
+    recipe = "<HHHHHHHHHHHHHHHHHH"
+    consts = ("i * 0.0322581",
+	          "i * 0.0009775",
+	          "i * 0.0009775",
+	          "i * 0.0322581",
+	          "i * 0.0009775",
+	          "i * 0.0009775",
+	          "i * 0.0322581",
+	          "i * 0.0009775",
+	          "i * 0.0009775",
+	          "i * 0.008993157",
+	          "i * 0.008978",
+	          "i * 0.005865",
+	          "i * 0.004311",
+	          "i * 14.662757",
+	          "i * 0.005237",
+	          "i * 0.005237",
+	          "i * 0.005237",
+	          "i * 0.372434 - 273.15"
+              )
+    
     name = "EPS Telemetry"
     size = struct.calcsize(recipe)
 
@@ -379,11 +443,12 @@ class EpsTelemetry(RadsatMessage):
         self.outputCurrent3V3Bus = 0
         self.PdbTemperature = 0
 
-
         if convert:
             self.decoder(convert)
 
     def decoder(self, value):
+        data = struct.unpack(EpsTelemetry.recipe, value)
+        data = [eval(conversion) for i, conversion in zip(data, EpsTelemetry.consts)]
         self.sunSensorBCR1Voltage,\
         self.sunSensorSA1ACurrent,\
         self.sunSensorSA1BCurrent,\
@@ -401,7 +466,7 @@ class EpsTelemetry(RadsatMessage):
         self.outputCurrentBatteryBus,\
         self.outputCurrent5VBus,\
         self.outputCurrent3V3Bus,\
-        self.PdbTemperature = struct.unpack(EpsTelemetry.recipe, value)
+        self.PdbTemperature = data
         
     def encoder(self):
         return(bytes([self.ID]) + struct.pack(EpsTelemetry.recipe,
@@ -450,12 +515,12 @@ class EpsTelemetry(RadsatMessage):
     def log(self):
         return f"{self.sunSensorBCR1Voltage},{self.sunSensorSA1ACurrent},{self.sunSensorSA1BCurrent},{self.sunSensorBCR2Voltage},\
 {self.sunSensorSA2ACurrent},{self.sunSensorSA2BCurrent},{self.sunSensorBCR3Voltage},\
-{self.sunSensorSA3ACurrent},{self.sunSensorSA3BCurrent}{self.outputVoltageBCR},{self.outputVoltageBatteryBus},{self.outputVoltage5VBus},\
+{self.sunSensorSA3ACurrent},{self.sunSensorSA3BCurrent},{self.outputVoltageBCR},{self.outputVoltageBatteryBus},{self.outputVoltage5VBus},\
 {self.outputVoltage3V3Bus},{self.outputCurrentBCR_mA},{self.outputCurrentBatteryBus},\
 {self.outputCurrent5VBus},{self.outputCurrent3V3Bus},{self.PdbTemperature}"
 
 class BatteryTelemetry(RadsatMessage):
-    recipe = "fffffffffff"
+    recipe = "<fffffffffff"
     name = "Battery Telemetry"
     size = struct.calcsize(recipe)
 
@@ -560,36 +625,36 @@ class AntennaTelemetry(RadsatMessage):
 
     def __str__(self):
         return f"""AntennaTelemetry = {{
-        Side A Armed = {self.antennaAStatus & 0b1}
-	    Side A Ant4Deploying = {self.antennaAStatus & 0b10}
-	    Side A Ant4Timeout = {self.antennaAStatus & 0b100}
-	    Side A Ant4Undeployed = {self.antennaAStatus & 0b1000}
-	    Side A Ant3Deploying = {self.antennaAStatus & 0b100000}
-	    Side A Ant3Timeout = {self.antennaAStatus & 0b1000000}
-	    Side A Ant3Undeployed = {self.antennaAStatus & 0b10000000}
-	    Side A AgnoreFlag = {self.antennaAStatus & 0b10000000}
-	    Side A Ant2Deploying = {self.antennaAStatus & 0b100000000}
-	    Side A Ant2Timeout = {self.antennaAStatus & 0b1000000000}
-	    Side A Ant2Undeployed = {self.antennaAStatus & 0b10000000000}
-	    Side A Ant1Deploying = {self.antennaAStatus & 0b1000000000000}
-	    Side A Ant1Timeout = {self.antennaAStatus & 0b10000000000000}
-	    Side A Ant1Undeployed = {self.antennaAStatus & 0b100000000000000}
+        Side A Armed = {bool(self.antennaAStatus & 0b1)}
+	    Side A Ant4Deploying = {bool(self.antennaAStatus & 0b10)}
+	    Side A Ant4Timeout = {bool(self.antennaAStatus & 0b100)}
+	    Side A Ant4Undeployed = {bool(self.antennaAStatus & 0b1000)}
+	    Side A Ant3Deploying = {bool(self.antennaAStatus & 0b100000)}
+	    Side A Ant3Timeout = {bool(self.antennaAStatus & 0b1000000)}
+	    Side A Ant3Undeployed = {bool(self.antennaAStatus & 0b10000000)}
+	    Side A AgnoreFlag = {bool(self.antennaAStatus & 0b10000000)}
+	    Side A Ant2Deploying = {bool(self.antennaAStatus & 0b100000000)}
+	    Side A Ant2Timeout = {bool(self.antennaAStatus & 0b1000000000)}
+	    Side A Ant2Undeployed = {bool(self.antennaAStatus & 0b10000000000)}
+	    Side A Ant1Deploying = {bool(self.antennaAStatus & 0b1000000000000)}
+	    Side A Ant1Timeout = {bool(self.antennaAStatus & 0b10000000000000)}
+	    Side A Ant1Undeployed = {bool(self.antennaAStatus & 0b100000000000000)}
         Side A Board Temp = {self.antennaABoardTemp}
         Side A Uptime = {self.antennaAUptime}
-        Side B Armed = {self.antennaBStatus & 0b1}
-	    Side B Ant4Deploying = {self.antennaBStatus & 0b10}
-	    Side B Ant4Timeout = {self.antennaBStatus & 0b100}
-	    Side B Ant4Undeployed = {self.antennaBStatus & 0b1000}
-	    Side B Ant3Deploying = {self.antennaBStatus & 0b100000}
-	    Side B Ant3Timeout = {self.antennaBStatus & 0b1000000}
-	    Side B Ant3Undeployed = {self.antennaBStatus & 0b10000000}
-	    Side B AgnoreFlag = {self.antennaBStatus & 0b100000000}
-	    Side B Ant2Deploying = {self.antennaBStatus & 0b1000000000}
-	    Side B Ant2Timeout = {self.antennaBStatus & 0b10000000000}
-	    Side B Ant2Undeployed = {self.antennaBStatus & 0b100000000000}
-	    Side B Ant1Deploying = {self.antennaBStatus & 0b10000000000000}
-	    Side B Ant1Timeout = {self.antennaBStatus & 0b100000000000000}
-	    Side B Ant1Undeployed = {self.antennaBStatus & 0b1000000000000000}
+        Side B Armed = {bool(self.antennaBStatus & 0b1)}
+	    Side B Ant4Deploying = {bool(self.antennaBStatus & 0b10)}
+	    Side B Ant4Timeout = {bool(self.antennaBStatus & 0b100)}
+	    Side B Ant4Undeployed = {bool(self.antennaBStatus & 0b1000)}
+	    Side B Ant3Deploying = {bool(self.antennaBStatus & 0b100000)}
+	    Side B Ant3Timeout = {bool(self.antennaBStatus & 0b1000000)}
+	    Side B Ant3Undeployed = {bool(self.antennaBStatus & 0b10000000)}
+	    Side B AgnoreFlag = {bool(self.antennaBStatus & 0b100000000)}
+	    Side B Ant2Deploying = {bool(self.antennaBStatus & 0b1000000000)}
+	    Side B Ant2Timeout = {bool(self.antennaBStatus & 0b10000000000)}
+	    Side B Ant2Undeployed = {bool(self.antennaBStatus & 0b100000000000)}
+	    Side B Ant1Deploying = {bool(self.antennaBStatus & 0b10000000000000)}
+	    Side B Ant1Timeout = {bool(self.antennaBStatus & 0b100000000000000)}
+	    Side B Ant1Undeployed = {bool(self.antennaBStatus & 0b1000000000000000)}
         Side B Board Temp = {self.antennaBBoardTemp}
         Side B Uptime = {self.antennaBUptime}
         }}"""
@@ -603,7 +668,7 @@ class AntennaTelemetry(RadsatMessage):
 {self.antennaBStatus & 0b100000000000000},{self.antennaBStatus & 0b1000000000000000},{self.antennaBBoardTemp},{self.antennaBUptime}"
 
 class DosimeterData(RadsatMessage):
-    recipe = "ffffffffffffffff"
+    recipe = "<ffffffffffffffff"
     name = "Dosimeter Data"
     size = struct.calcsize(recipe)
 
@@ -695,7 +760,7 @@ class DosimeterData(RadsatMessage):
 {self.boardTwoChannelSeven}"
 
 class ImagePacket(RadsatMessage):
-    recipe = "IBBB"
+    recipe = "<IBBB"
     name = "Image Packet"
     size = struct.calcsize(recipe)
 
@@ -731,7 +796,7 @@ class ImagePacket(RadsatMessage):
         return f"{self.id},{self.type},{self.data}"
 
 class ModuleErrorReport(RadsatMessage):
-    recipe = "BBBB"
+    recipe = "<BBBB"
     name = "Module Error Report"
     size = struct.calcsize(recipe)
 
@@ -771,7 +836,7 @@ class ModuleErrorReport(RadsatMessage):
         return f"{self.moduleId},{self.moduleError},{self.moduleTimeRecorded},{self.moduleCount}"
 
 class ComponentErrorReport(RadsatMessage):
-    recipe = "BBBB"
+    recipe = "<BBBB"
     name = "Component Error Report"
     size = struct.calcsize(recipe)
 
@@ -811,7 +876,7 @@ class ComponentErrorReport(RadsatMessage):
         return f"{self.componentId},{self.componentError},{self.componentTimeRecorded},{self.componentCount}"
     
 class ErrorReportSummary(RadsatMessage):
-    recipe = "BB"
+    recipe = "<BB"
     name = "Error Report Summary"
     size = struct.calcsize(recipe)
 
@@ -841,29 +906,37 @@ class ErrorReportSummary(RadsatMessage):
 
 
 class AdcsDetection(RadsatMessage):
-    recipe = "IHHIHH"
-    name = "ADCD Detection Data"
+    recipe = "<" + "IHHIHH"*15
+    name = "ADCS Detection Data"
     size = struct.calcsize(recipe)
 
     def __init__(self, convert=None):
         self.ID = 19
-        self.sunTimeStamp = 0
-        self.sunAlphaAngle = 0
-        self.sunBetaAngle = 0
-        self.nadirTimeStamp = 0
-        self.nadirAlphaAngle = 0
-        self.nadirBetaAngle = 0
+        self.sunTimeStamp = []
+        self.sunAlphaAngle = []
+        self.sunBetaAngle = []
+        self.nadirTimeStamp = []
+        self.nadirAlphaAngle = []
+        self.nadirBetaAngle = []
 
         if convert:
             self.decoder(convert)
 
     def decoder(self, value):
-        self.sunTimeStamp,\
-        self.sunAlphaAngle,\
-        self.sunBetaAngle,\
-        self.nadirTimeStamp,\
-        self.nadirAlphaAngle,\
-        self.nadirBetaAngle = struct.unpack(AdcsDetection.recipe, value)
+        for i in range(0,15):
+            sunTimeStamp,\
+            sunAlphaAngle,\
+            sunBetaAngle,\
+            nadirTimeStamp,\
+            nadirAlphaAngle,\
+            nadirBetaAngle = struct.unpack(AdcsDetection.recipe, value[i:i+5])
+        
+            self.sunTimeStamp.append(sunTimeStamp)
+            self.sunAlphaAngle.append(sunAlphaAngle)
+            self.sunBetaAngle.append(sunBetaAngle)
+            self.nadirTimeStamp.append(nadirTimeStamp)
+            self.nadirAlphaAngle.append(nadirAlphaAngle)
+            self.nadirBetaAngle.append(nadirBetaAngle)
         
     def encoder(self):
         return(bytes([self.ID]) + struct.pack(AdcsDetection.recipe,
@@ -872,28 +945,35 @@ class AdcsDetection(RadsatMessage):
         self.sunBetaAngle,
         self.nadirTimeStamp,
         self.nadirAlphaAngle,
-        self.nadirBetaAngle
+        self.nadirBetaAngle,
         ))
 
     def __str__(self):
         return f"""AdcsDetection = {{
-        Sun Time Stamp = {self.sunTimeStamp},
-        Sun Alpha Angle = {self.sunAlphaAngle},
-        Sun Beta Angle = {self.sunBetaAngle},
-        Nadir Time Stamp = {self.nadirTimeStamp},
-        Nadir Alpha Angle = {self.nadirAlphaAngle},
-        Nadir Beta Angle = {self.nadirBetaAngle}
+        Sun Time Stamp = {",".join(self.sunTimeStamp)},
+        Sun Alpha Angle = {",".join(self.sunAlphaAngle)},
+        Sun Beta Angle = {",".join(self.sunBetaAngle)},
+        Nadir Time Stamp = {",".join(self.nadirTimeStamp)},
+        Nadir Alpha Angle = {",".join(self.nadirAlphaAngle)},
+        Nadir Beta Angle = {",".join(self.nadirBetaAngle)},
         }}"""
     
     def log(self):
-        return f"{self.sunTimeStamp},{self.sunAlphaAngle},{self.sunBetaAngle},{self.nadirTimeStamp},{self.nadirAlphaAngle},{self.nadirBetaAngle}"
+        sunTimeStamp = ",".join(self.sunTimeStamp)
+        sunAlphaAngle = ",".join(self.sunAlphaAngle)
+        sunBetaAngle = ",".join(self.sunBetaAngle)
+        nadirTimeStamp = ",".join(self.nadirTimeStamp)
+        nadirAlphaAngle = ",".join(self.nadirAlphaAngle)
+        nadirBetaAngle = ",".join(self.nadirBetaAngle)
+        return f"{sunTimeStamp},{sunAlphaAngle},{sunBetaAngle},\
+{nadirTimeStamp},{nadirAlphaAngle},{nadirBetaAngle}"
     
 ###############################################
 #                  Protocol                   #
 ###############################################
 
 class Ack(RadsatMessage):
-    recipe = "B"
+    recipe = "<B"
     name = "Acknowledge"
     size = struct.calcsize(recipe)
 
@@ -921,7 +1001,7 @@ class Ack(RadsatMessage):
         return f"{self.resp}"
     
 class Nack(RadsatMessage):
-    recipe = "B"
+    recipe = "<B"
     name = "Not Acknowledge"
     size = struct.calcsize(recipe)
 
@@ -953,7 +1033,7 @@ class Nack(RadsatMessage):
 ###############################################
 
 class BeginPass(RadsatMessage):
-    recipe = "H"
+    recipe = "<H"
     name = "Begin Pass"
     size = struct.calcsize(recipe)
 
@@ -981,7 +1061,7 @@ class BeginPass(RadsatMessage):
         return f"{self.passLength}"
     
 class BeginFileTransfer(RadsatMessage):
-    recipe = "H"
+    recipe = "<H"
     name = "Begin File Transfer"
     size = struct.calcsize(recipe)
 
@@ -1009,7 +1089,7 @@ class BeginFileTransfer(RadsatMessage):
         return f"{self.resp}"
     
 class CeaseTransmission(RadsatMessage):
-    recipe = "H"
+    recipe = "<H"
     name = "Cease Transmission"
     size = struct.calcsize(recipe)
 
@@ -1037,7 +1117,7 @@ class CeaseTransmission(RadsatMessage):
         return f"{self.duration}"
     
 class UpdateTime(RadsatMessage):
-    recipe = "I"
+    recipe = "<I"
     name = "Update Time"
     size = struct.calcsize(recipe)
 
@@ -1065,7 +1145,7 @@ class UpdateTime(RadsatMessage):
         return f"{self.unixTime}"
     
 class Reset(RadsatMessage):
-    recipe = "BB"
+    recipe = "<BB"
     name = "Reset"
     size = struct.calcsize(recipe)
 
@@ -1088,14 +1168,91 @@ class Reset(RadsatMessage):
             ))
 
     def __str__(self):
+        devList = {0 : "OBC", 1 : "TRxvu", 2 : "Antenna", 3 : "EPS", 4 : "Battery Board", 5 : "FRAM"}
+        hardList = {0 : "Hard", 1 : "Soft"}
         return f"""Reset = {{
-        Reset Device = {self.device},
-        Hard Reset  = {self.hard}
+        Reset Device = {devList[self.device]},
+        Hard Reset  = {hardList[self.hard]}
         }}"""
     
     def log(self):
         return f"{self.device},{self.hard}"
     
+
+class ConfigureCamera(RadsatMessage):
+    recipe = "<BBHBBBBBHBBB"
+    name = "Camera Configuration Settings"
+    size = struct.calcsize(recipe)
+
+    def __init__(self, convert=None):
+        self.ID = 20
+        self.camera1DetectionThreshold = 0
+        self.camera1AutoAdjustMode = 0
+        self.camera1Exposure = 0
+        self.camera1AutoGainControl = 0
+        self.camera1BlueGain = 0
+        self.camera1RedGain = 0
+        self.camera2DetectionThreshold = 0
+        self.camera2AutoAdjustMode = 0
+        self.camera2Exposure = 0
+        self.camera2AutoGainControl = 0
+        self.camera2BlueGain = 0
+        self.camera2RedGain = 0
+
+        if convert:
+            self.decoder(convert)
+
+    def decoder(self, value):
+        self.camera1DetectionThreshold,\
+        self.camera1AutoAdjustMode,\
+        self.camera1Exposure,\
+        self.camera1AutoGainControl,\
+        self.camera1BlueGain,\
+        self.camera1RedGain,\
+        self.camera2DetectionThreshold,\
+        self.camera2AutoAdjustMode,\
+        self.camera2Exposure,\
+        self.camera2AutoGainControl,\
+        self.camera2BlueGain,\
+        self.camera2RedGain = struct.unpack(ConfigureCamera.recipe, value)
+        
+    def encoder(self):
+        return(bytes([self.ID]) + struct.pack(ConfigureCamera.recipe,
+        self.camera1DetectionThreshold,
+        self.camera1AutoAdjustMode,
+        self.camera1Exposure,
+        self.camera1AutoGainControl,
+        self.camera1BlueGain,
+        self.camera1RedGain,
+        self.camera2DetectionThreshold,
+        self.camera2AutoAdjustMode,
+        self.camera2Exposure,
+        self.camera2AutoGainControl,
+        self.camera2BlueGain,
+        self.camera2RedGain
+        ))
+
+    def __str__(self):
+        return f"""ConfigureCamera = {{
+        Camera 1 Detection Threshold = {self.camera1DetectionThreshold},
+        Camera 1 Auto Adjust = {self.camera1AutoAdjustMode},
+        Camera 1 Exposure = {self.camera1Exposure},
+        Camera 1 AGC = {self.camera1AutoGainControl},
+        Camera 1 Blue Gain = {self.camera1BlueGain},
+        Camera 1 Red Gain = {self.camera1RedGain},
+        Camera 2 Detection Threshold = {self.camera2DetectionThreshold},
+        Camera 2 Auto Adjust = {self.camera2AutoAdjustMode},
+        Camera 2 Exposure = {self.camera2Exposure},
+        Camera 2 AGC = {self.camera2AutoGainControl},
+        Camera 2 Blue Gain = {self.camera2BlueGain},
+        Camera 2 Red Gain = {self.camera2RedGain}
+        }}"""
+    
+    def log(self):
+        return f"{self.camera1DetectionThreshold},{self.camera1AutoAdjustMode},{self.camera1Exposure},{self.camera1AutoGainControl},{self.camera1BlueGain},{self.camera1RedGain},\
+{self.camera2DetectionThreshold},{self.camera2AutoAdjustMode},{self.camera2Exposure},{self.camera2AutoGainControl},{self.camera2BlueGain},{self.camera2RedGain}"
+    
+
 if __name__ == "__main__":
     
     msgIn = b'\x01\x00\x00\xe4A\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
