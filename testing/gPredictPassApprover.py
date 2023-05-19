@@ -31,22 +31,21 @@ def makeLocalServer():
 
 
 if __name__ == "__main__":
-    #yaesu = connectToRotator()
+    yaesu = connectToRotator()
     server = makeLocalServer()
 
     try:
         while True:
-            print("made it")
             client,address = server.accept()
             print(client)
             print(address)
             while True:
-                client.send(("p\n").encode())
+                client.send(("l\n").encode())
                 print("<%s>" % client.recv(1024).decode())
                 sleep(0.5)
 
     except Exception as e:
         print("Encountered exception :",e)
-        #yaesu.close()
+        yaesu.close()
         server.close()
         assert()
