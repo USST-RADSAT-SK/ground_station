@@ -2,6 +2,7 @@ import serial
 import socket
 from time import sleep
 
+# TODO : Impliment Yaesu commanding and integrate with GS
 
 def connectToRotator():
     try:
@@ -31,21 +32,44 @@ def makeLocalServer():
 
 
 if __name__ == "__main__":
-    yaesu = connectToRotator()
+    #yaesu = connectToRotator()
     server = makeLocalServer()
 
     try:
+
         while True:
+            az = "180.00"
+            el = "45.00"
             client,address = server.accept()
             print(client)
             print(address)
+            
             while True:
-                client.send(("l\n").encode())
-                print("<%s>" % client.recv(1024).decode())
-                sleep(0.5)
+                recvCommand = client.recv(512).decode().strip("\n")
+                print("Got : <%s>" % recvCommand)
 
+                if "S" in recvCommand:
+                    client.send(("\n").encode())
+                    x = 1/0 
+
+                elif "P" in recvCommand:
+                    coords = recvCommand.split(" ")
+                    az = (coords[1]).strip()
+                    el = (coords[2]).strip()
+
+                    print("Requested Az = <%s>, El = <%s>" % (az,el))
+                    client.send(("RPRT 0\n").encode())
+
+                    #yaesu.write((DESIRED YAESU COORDS).encode())
+                
+                elif "p" in recvCommand:
+                    #yaesu.write("GET CURRENT DATA")
+                    print("Sending: Az = <%s>, El = <%s>" % (az,el))
+                    client.send((az + "\n" + el + "\n").encode())
+                
+                
     except Exception as e:
         print("Encountered exception :",e)
-        yaesu.close()
+        #yaesu.close()
         server.close()
         assert()
