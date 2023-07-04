@@ -1,90 +1,106 @@
+from skyfield.api import load, wgs84
 import serial
-import socket
 
-def connectToRotator():
-    try:
-        s = serial.Serial(port = "/dev/ttyUSB0", baudrate = 9600, timeout = 1)
-        s.write(("\r\n\r\n\r\n\r\n\r\n\r\n").encode())
-        print("Connection succesful")
-    except Exception as e:
-        print("Rotator Error :",e)
-        exit()
-    return s
+gsLat = 52.144176
+gsLon = -106.612910
+ISS = 25544
 
-def makeLocalServer():
-    try:
-        s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        s.bind(("localhost",4533))
-        print("Server created. Listening for connections...")
-        s.listen()
-    except Exception as e:
-        print("Server Error :",e)
-        exit()
+class rigControl:
+    def __init__(self,lat,lon,satNum):
+        self.ts = load.timescale()
 
-    return s
+        self.gs = wgs84.latlon(lat,lon)
+
+        # TODO - URL needs to be for cubesats, keeping as ISS for testing
+        url = 'http://celestrak.org/NORAD/elements/stations.txt'
+        satellites = load.tle_file(url)
+        print("Loaded %s satellites" % len(satellites))
+
+        catalog = {sat.model.satnum: sat for sat in satellites}
+        self.satellite = catalog[satNum]
+        print(self.satellite)
 
 
-if __name__ == "__main__":
-    yaesu = connectToRotator()
-    server = makeLocalServer()
+    def getAzEl(self):
+        dist = self.satellite - self.gs
+        position = dist.at((self.ts).now())
 
-    try:
+        el, az, _ = position.altaz()
 
-        while True:
-            # Initial values to init with before getting real ones
-            az = "180.00"
-            el = "45.00"
-            yaz = "180"
-            yel = "045"
+        print('Azimuth:', az)
+        print('Elevation:', el)
+        return az.degrees, el.degrees
 
-            # Number of posotion requests from Gpredict to avoid overwhelming yaesu buffer
-            nReq = 0
 
-            client,address = server.accept()
-            
-            while True:
-                recvCommand = client.recv(1024).decode().strip("\n")
-                print("Got : <%s>" % recvCommand)
+    def isPass(self):
+        _, el = self.getAzEl()
+        
+        print("Elevation = %s degrees" % el)
 
-                if "S" in recvCommand:
-                    client.send(("\n").encode())
-                    x = 1/0 
+        if el > 5:
+            return True
+        else:
+            return False
 
-                elif "P" in recvCommand:
-                    coords = recvCommand.split(" ")
-                    az = (coords[1]).strip()
-                    el = (coords[2]).strip()
+    def getDoppler(self,UL_FREQ,DL_FREQ):
+        dist = self.satellite - self.gs
+        position = dist.at((self.ts).now())
+        _, _, _, _, _, satRate = position.frame_latlon_and_rates(self.gs)
 
-                    print("Requested Az = <%s>, El = <%s>" % (az,el))
-                    client.send(("RPRT 0\n").encode())
+        ul_doppler = satRate.m_per_s * UL_FREQ / 299792458
+        dl_doppler = - satRate.m_per_s * DL_FREQ / 299792458
 
-                    yaesu.write(("W" + f'{int(float(az)):03}' + " " + f'{int(float(el)):03}' + "\r\n").encode())
-                    yaesu.readline(1024)
+        print('UL Doppler: {:.1f} Hz'.format(ul_doppler))
+        print('DL Doppler: {:.1f} Hz'.format(dl_doppler))
 
-                elif "p" in recvCommand:
-                    if nReq == 0:
-                        nReq = 10
-                        yaesu.write(("c2\r\n").encode())
-                        azel = yaesu.readline(1024).decode().strip("\n")                    
-                        if "?>" in azel:
-                            yaesu.write(("c2\r\n").encode())
-                            azel = yaesu.readline(1024).decode().strip("\n")
-                        
-                            print("Yaesu :",azel)
+        # TODO - Do these need to be +/- ? 
+        UL_FREQ_shifted = UL_FREQ + ul_doppler
+        DL_FREQ_shifted = DL_FREQ + dl_doppler
 
-                        if azel[3:6] != "" or azel[11:] != "":
-                            yaz = azel[3:6]
-                            yel = azel[11:]
+        return UL_FREQ_shifted, DL_FREQ_shifted
 
-                        print("Sending: Az = <%s>, El = <%s>" % (yaz,yel))
+    def getPassTimes(self, year, month, day, el = 5):
+        start = self.ts.utc(year,month,day)
+        stop  = self.ts.utc(year,month,day + 1)
 
-                    nReq = nReq-1
+        t,events = self.satellite.find_events(self.gs,start,stop,altitude_degrees = 5.0)
+        eventNames = 'rise above %s°' % el, 'culminate', 'set below 5°'
+        for ti, event in zip(t, events):
+            name = eventNames[event]
+            print(ti.utc_strftime('%Y %b %d %H:%M:%S'), name)
 
-                    client.send((yaz + "\n" + yel + "\n").encode())
-                
+        return t,events
 
-    except Exception as e:
-        print("Encountered exception :",e)
-        yaesu.close()
-        server.close()
-        exit()
+class rotControl:
+    def __init__(self):
+        try:
+            self.s = serial.Serial(port = "/dev/ttyUSB0", baudrate = 9600, timeout = 1)
+            self.s.write(("\r\n\r\n\r\n\r\n\r\n\r\n").encode())
+            print("Connection succesful")
+        except Exception as e:
+            print("Rotator Error :",e)
+            exit()
+
+    def setPos(self,az,el):
+        self.s.write(("W" + f'{int(float(az)):03}' + " " + f'{int(float(el)):03}' + "\r\n").encode())
+        self.s.readline(1024)
+
+    def getPos(self):
+        self.s.write(("c2\r\n").encode())
+        azel = self.s.readline(1024).decode().strip("\n") 
+        az = azel[3:6]
+        el = azel[11:]
+
+        return az,el
+    
+    # TODO - Add more commands from controller datasheet (start/stop?)
+
+if __name__ == "__main__" :
+    radsat = rigControl(gsLat,gsLon,ISS)
+    az,el = radsat.getAzEl()
+
+    print(radsat.isPass())
+
+    UL, DL = radsat.getDoppler(145.83e6,435.4e6)
+
+    # TODO - Corey to re-write antenna controller loop
