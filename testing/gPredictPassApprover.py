@@ -53,7 +53,6 @@ class rigControl:
         print('UL Doppler: {:.1f} Hz'.format(ul_doppler))
         print('DL Doppler: {:.1f} Hz'.format(dl_doppler))
 
-        # TODO - Do these need to be +/- ? 
         UL_FREQ_shifted = UL_FREQ + ul_doppler
         DL_FREQ_shifted = DL_FREQ + dl_doppler
 
@@ -93,7 +92,26 @@ class rotControl:
 
         return az,el
     
-    # TODO - Add more commands from controller datasheet (start/stop?)
+    def rotateRight(self):
+        self.s.write(("r\r\n").encode())
+        self.s.readline(1024)
+
+    def rotateLeft(self):
+        self.s.write(("l\r\n").encode())
+        self.s.readline(1024)
+
+    def rotateUp(self):
+        self.s.write(("u\r\n").encode())
+        self.s.readline(1024)
+
+    def rotateDown(self):
+        self.s.write(("d\r\n").encode())
+        self.s.readline(1024)
+
+    def rotateStop(self):
+        self.s.write(("s\r\n").encode())
+        self.s.readline(1024)
+
 
 if __name__ == "__main__" :
     radsat = rigControl(gsLat,gsLon,ISS)
@@ -102,5 +120,3 @@ if __name__ == "__main__" :
     print(radsat.isPass())
 
     UL, DL = radsat.getDoppler(145.83e6,435.4e6)
-
-    # TODO - Corey to re-write antenna controller loop
