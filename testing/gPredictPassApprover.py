@@ -11,15 +11,13 @@ class rigControl:
 
         self.gs = wgs84.latlon(lat,lon)
 
-        # TODO - URL needs to be for cubesats, keeping as ISS for testing
-        url = 'http://celestrak.org/NORAD/elements/stations.txt'
+        url = 'http://celestrak.org/NORAD/elements/active.txt'
         satellites = load.tle_file(url)
         print("Loaded %s satellites" % len(satellites))
 
         catalog = {sat.model.satnum: sat for sat in satellites}
         self.satellite = catalog[satNum]
         print(self.satellite)
-
 
     def getAzEl(self):
         dist = self.satellite - self.gs
@@ -30,7 +28,6 @@ class rigControl:
         print('Azimuth:', az)
         print('Elevation:', el)
         return az.degrees, el.degrees
-
 
     def isPass(self):
         _, el = self.getAzEl()
@@ -69,6 +66,7 @@ class rigControl:
             print(ti.utc_strftime('%Y %b %d %H:%M:%S'), name)
 
         return t,events
+
 
 class rotControl:
     def __init__(self):
@@ -120,3 +118,4 @@ if __name__ == "__main__" :
     print(radsat.isPass())
 
     UL, DL = radsat.getDoppler(145.83e6,435.4e6)
+
