@@ -1,5 +1,6 @@
 from skyfield.api import load, wgs84
 import serial
+import time
 
 gsLat = 52.144176
 gsLon = -106.612910
@@ -39,7 +40,7 @@ class rigControl:
         else:
             return False
 
-    def getDoppler(self,UL_FREQ,DL_FREQ):
+    def getDoppler(self,UL_FREQ,DL_FREQ,updateFiles = False):
         dist = self.satellite - self.gs
         position = dist.at((self.ts).now())
         _, _, _, _, _, satRate = position.frame_latlon_and_rates(self.gs)
@@ -52,6 +53,14 @@ class rigControl:
 
         UL_FREQ_shifted = UL_FREQ + ul_doppler
         DL_FREQ_shifted = DL_FREQ + dl_doppler
+
+        if updateFiles:
+            timeTime = time.time()
+            with open("ul_doppler.txt","w") as ul, open("dl_doppler.txt","w") as dl:
+                ul.write(str(timeTime) + " " + str(ul_doppler))
+                dl.write(str(timeTime) + " " + str(dl_doppler))
+                print()
+
 
         return UL_FREQ_shifted, DL_FREQ_shifted
 
@@ -117,5 +126,5 @@ if __name__ == "__main__" :
 
     print(radsat.isPass())
 
-    UL, DL = radsat.getDoppler(145.83e6,435.4e6)
+    UL, DL = radsat.getDoppler(145.83e6,435.4e6,updateFiles = True)
 
