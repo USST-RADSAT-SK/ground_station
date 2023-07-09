@@ -35,7 +35,7 @@ class rigControl:
         
         print("Elevation = %s degrees" % el)
 
-        if el > 5:
+        if el >= 0:
             return True
         else:
             return False
@@ -92,12 +92,14 @@ class rotControl:
         self.s.readline(1024)
 
     def getPos(self):
-        self.s.write(("c2\r\n").encode())
-        azel = self.s.readline(1024).decode().strip("\n") 
-        az = azel[3:6]
-        el = azel[11:]
+        az = el = ""
+        while az == "" or el == "":
+            self.s.write(("c2\r\n").encode())
+            azel = self.s.readline(1024).decode().strip("\n") 
+            az = azel[3:6]
+            el = azel[11:]
 
-        return az,el
+        return int(az),int(el)
     
     def rotateRight(self):
         self.s.write(("r\r\n").encode())
@@ -122,9 +124,5 @@ class rotControl:
 
 if __name__ == "__main__" :
     radsat = rigControl(gsLat,gsLon,ISS)
-    az,el = radsat.getAzEl()
-
-    print(radsat.isPass())
-
-    UL, DL = radsat.getDoppler(145.83e6,435.4e6,updateFiles = True)
+    radsat.getPassTimes(2023,7,9)
 
