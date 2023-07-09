@@ -53,3 +53,6 @@ coverage.xml
 
 # Sphinx documentation
 docs/_build/
+
+# XOR Cipher
+src/RadsatGsToolkit/RGSProtocol/xor_key
