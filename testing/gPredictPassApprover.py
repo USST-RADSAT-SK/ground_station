@@ -2,10 +2,6 @@ from skyfield.api import load, wgs84
 import serial
 import time
 
-gsLat = 52.144176
-gsLon = -106.612910
-ISS = 25544
-
 class rigControl:
     def __init__(self,lat,lon,satNum):
         self.ts = load.timescale()
@@ -28,7 +24,7 @@ class rigControl:
 
         print('Azimuth:', az)
         print('Elevation:', el)
-        return az.degrees, el.degrees
+        return int(az.degrees), int(el.degrees)
 
     def isPass(self):
         _, el = self.getAzEl()
@@ -123,6 +119,10 @@ class rotControl:
 
 
 if __name__ == "__main__" :
+    gsLat = 52.144176
+    gsLon = -106.612910
+    ISS = 25544
+    
     radsat = rigControl(gsLat,gsLon,ISS)
     radsat.getPassTimes(2023,7,9)
 
