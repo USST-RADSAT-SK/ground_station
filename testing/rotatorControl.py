@@ -17,22 +17,25 @@ except Exception as e:
     exit()
 
 while True:
+    sleep(cmdDelay)
+    print("\n################################\n")
+
     setAz,setEl = rad.getAzEl()
     getAz,getEl = rot.getPos()
 
     print("Get: Az=%s / El=%s" % (getAz,getEl))
     print("Set: Az=%s / El=%s" % (setAz,setEl))
 
-    if setEl <= 0:
-        setEl = 0
+    if -10 <= setEl < 0:
+        rot.setPos(setAz,0)
 
-    if (setAz - degToler) <= getAz <= (setAz + degToler) and (setEl - degToler) <= getEl <= (setEl + degToler):
-        print("Within tolerance!")
+    elif setEl < -10:
+        continue
 
     else:
-        print("Adjusting rotator...")
-        rot.setPos(setAz,setEl)
-    
-    sleep(cmdDelay)
+        if (setAz - degToler) <= getAz <= (setAz + degToler) and (setEl - degToler) <= getEl <= (setEl + degToler):
+            print("Within tolerance!")
 
-    print("\n################################\n")
+        else:
+            print("Adjusting rotator...")
+            rot.setPos(setAz,setEl)

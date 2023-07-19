@@ -78,6 +78,7 @@ class rotControl:
         try:
             self.s = serial.Serial(port = "/dev/ttyUSB0", baudrate = 9600, timeout = 1)
             self.s.write(("\r\n\r\n\r\n\r\n\r\n\r\n").encode())
+            print(self.s.readline(1024).decode().strip("\n"))
             print("Connection succesful")
         except Exception as e:
             print("Rotator Error :",e)
