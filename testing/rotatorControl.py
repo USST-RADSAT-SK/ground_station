@@ -1,11 +1,15 @@
 from gPredictPassApprover import rotControl,rigControl
 from time import sleep
+from os import path,remove
 
 gsLat = 52.144176
 gsLon = -106.612910
 ISS = 25544
 cmdDelay = 3
 degToler = 1.5
+
+if path.isfile("active.txt"):
+    remove("active.txt")
 
 try:
     rot = rotControl()

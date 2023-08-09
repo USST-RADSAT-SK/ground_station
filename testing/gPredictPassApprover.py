@@ -91,10 +91,17 @@ class rotControl:
     def getPos(self):
         az = el = ""
         while az == "" or el == "":
-            self.s.write(("c2\r\n").encode())
-            azel = self.s.readline(1024).decode().strip("\n") 
-            az = azel[3:6]
-            el = azel[11:]
+            try:
+                self.s.write(("c2\r\n").encode())
+                azel = self.s.readline(1024).decode().strip("\n") 
+                az = azel[3:6]
+                el = azel[11:]
+
+            except ValueError:
+                print("<%s>" % azel)
+                az = el = ""
+                pass
+                
 
         return int(az),int(el)
     
