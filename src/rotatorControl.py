@@ -1,4 +1,4 @@
-from gPredictPassApprover import rotControl,rigControl
+from RadsatGsToolkit import *
 from time import sleep
 from os import path,remove
 
@@ -8,8 +8,8 @@ ISS = 57313
 cmdDelay = 3
 degToler = 1.5
 
-if path.isfile("active.txt"):
-    remove("active.txt")
+if path.isfile("RadsatGsToolkit/active.txt"):
+    remove("RadsatGsToolkit/active.txt")
 
 try:
     rot = rotControl()
@@ -21,6 +21,7 @@ except Exception as e:
     exit()
 
 while True:
+    loopNum = 0
     try:
         sleep(cmdDelay)
         print("\n################################\n")
@@ -44,6 +45,11 @@ while True:
             else:
                 print("Adjusting rotator...")
                 rot.setPos(setAz,setEl)
+
+        if loopNum == 50:
+            rigControl.updateTles()
+
+        loopNum += 1
 
     except Exception as e:
         print(e)
