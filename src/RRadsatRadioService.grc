@@ -258,12 +258,12 @@ blocks:
     label: Send Inter-frame Flags
     'true': 'True'
     type: bool
-    value: 'True'
+    value: 'False'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [176, 204.0]
+    coordinate: [160, 204.0]
     rotation: 0
     state: true
 - name: txBaseband
@@ -337,7 +337,7 @@ blocks:
     rangeType: float
     start: '0'
     step: '1'
-    stop: '60'
+    stop: '65'
     value: '0'
     widget: counter_slider
   states:
@@ -376,9 +376,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    attack_rate: 1e-2
+    attack_rate: 1E-1
     comment: ''
-    decay_rate: 1e-1
+    decay_rate: 1E-2
     gain: '1.0'
     max_gain: '65536'
     maxoutbuf: '1024'
@@ -389,7 +389,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [776, 672.0]
+    coordinate: [752, 676.0]
     rotation: 0
     state: enabled
 - name: blocks_char_to_float_0
@@ -408,7 +408,7 @@ blocks:
     bus_structure: null
     coordinate: [736, 556.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: blocks_file_source_1
   id: blocks_file_source
   parameters:
@@ -460,7 +460,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [992, 336.0]
+    coordinate: [1016, 324.0]
     rotation: 0
     state: enabled
 - name: blocks_msgpair_to_var_1
@@ -474,7 +474,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [992, 288.0]
+    coordinate: [1016, 260.0]
     rotation: 0
     state: enabled
 - name: blocks_throttle_0
@@ -493,7 +493,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1000, 440.0]
+    coordinate: [1008, 444.0]
     rotation: 0
     state: bypassed
 - name: epy_block_0
@@ -555,7 +555,7 @@ blocks:
     gsLon: '-106.61291'
     maxoutbuf: '0'
     minoutbuf: '0'
-    noradId: '25544'
+    noradId: '57313'
     upBaseFreq: txBaseband
   states:
     _io_cache: ('Doppler Block', 'blk', [('upBaseFreq', '100000000.0'), ('dnBaseFreq',
@@ -601,7 +601,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [944, 680.0]
+    coordinate: [952, 680.0]
     rotation: 0
     state: enabled
 - name: import_0
@@ -697,7 +697,7 @@ blocks:
     bus_structure: null
     coordinate: [776, 912.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: qtgui_sink_x_0
   id: qtgui_sink_x
   parameters:
@@ -739,7 +739,7 @@ blocks:
     gui_hint: tabs@1:2,0,1,1
     maxoutbuf: '0'
     minoutbuf: '0'
-    name: '""'
+    name: '"Rx Spectrum (Pre-AGC)"'
     plotconst: 'True'
     plotfreq: 'True'
     plottime: 'True'
@@ -753,7 +753,36 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [776, 792.0]
+    coordinate: [752, 796.0]
+    rotation: 0
+    state: enabled
+- name: qtgui_sink_x_1_0
+  id: qtgui_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    bw: rxSampleRate
+    comment: ''
+    fc: rxBaseband
+    fftsize: '512'
+    gui_hint: tabs@1:3,0,1,1
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    name: '"Rx Spectrum (Post-AGC)"'
+    plotconst: 'False'
+    plotfreq: 'True'
+    plottime: 'True'
+    plotwaterfall: 'False'
+    rate: '10'
+    showports: 'False'
+    showrf: 'False'
+    type: complex
+    wintype: window.WIN_BLACKMAN_hARRIS
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1024, 796.0]
     rotation: 0
     state: enabled
 - name: qtgui_time_sink_x_0_1_0
@@ -852,7 +881,7 @@ blocks:
     bus_structure: null
     coordinate: [888, 540.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: rtlsdr_source_0
   id: rtlsdr_source
   parameters:
@@ -1256,7 +1285,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1144, 744.0]
+    coordinate: [1160, 744.0]
     rotation: 0
     state: enabled
 - name: trxvuAx25Framer_0
@@ -2010,7 +2039,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [488, 680.0]
+    coordinate: [488, 684.0]
     rotation: 0
     state: enabled
 - name: zeromq_push_msg_sink_0
@@ -2026,7 +2055,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1376, 728.0]
+    coordinate: [1400, 732.0]
     rotation: 0
     state: enabled
 - name: zeromq_sub_msg_source_0
@@ -2050,6 +2079,7 @@ blocks:
 
 connections:
 - [analog_agc2_xx_0, '0', gmskDemod_0, '0']
+- [analog_agc2_xx_0, '0', qtgui_sink_x_1_0, '0']
 - [blocks_char_to_float_0, '0', qtgui_time_sink_x_0_1_0, '0']
 - [blocks_file_source_1, '0', xlatingFIRfilter, '0']
 - [blocks_message_strobe_0, strobe, epy_block_0, update_msg]
@@ -2076,4 +2106,3 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: 3.10.2.0

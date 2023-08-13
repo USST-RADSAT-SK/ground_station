@@ -33,6 +33,7 @@ from fskMod import fskMod  # grc-generated hier_block
 from gmskDemod import gmskDemod  # grc-generated hier_block
 from gnuradio import analog
 from gnuradio import blocks
+import pmt
 from gnuradio import filter
 from gnuradio import gr
 from gnuradio.fft import window
@@ -48,6 +49,7 @@ from PyQt5 import QtCore
 from math import pi, ceil
 from trxvuAx25Deframer import trxvuAx25Deframer  # grc-generated hier_block
 from trxvuAx25Framer import trxvuAx25Framer  # grc-generated hier_block
+import RRadsatRadioService_epy_block_0 as epy_block_0  # embedded python block
 
 
 
@@ -101,7 +103,7 @@ class RRadsatRadioService(gr.top_block, Qt.QWidget):
         self.txFrequencyDeviation = txFrequencyDeviation = 3500
         self.txCorrection = txCorrection = 0
         self.txBaseband = txBaseband = 145.83E6
-        self.sendFlags = sendFlags = True
+        self.sendFlags = sendFlags = False
         self.rxOverSample = rxOverSample = ceil(200000 / rxSampleRate)
         self.rxLowPassFilterTap = rxLowPassFilterTap = firdes.low_pass(1.0, rxSampleRate, rxLowPassCutoff,500, window.WIN_HAMMING, 6.76)
         self.rxGain = rxGain = 0
@@ -126,7 +128,7 @@ class RRadsatRadioService(gr.top_block, Qt.QWidget):
         self.tabs_layout_1.addLayout(self.tabs_grid_layout_1)
         self.tabs.addTab(self.tabs_widget_1, 'Rx Tab')
         self.top_layout.addWidget(self.tabs)
-        self._txGain_range = Range(0, 60, 1, 0, 200)
+        self._txGain_range = Range(0, 65, 1, 0, 200)
         self._txGain_win = RangeWidget(self._txGain_range, self.set_txGain, "Tx Gain", "counter_slider", float, QtCore.Qt.Horizontal)
         self.tabs_grid_layout_0.addWidget(self._txGain_win, 0, 0, 1, 1)
         for r in range(0, 1):
@@ -168,7 +170,7 @@ class RRadsatRadioService(gr.top_block, Qt.QWidget):
             ",".join(("serial=31E34AD", 'name=MyB210,product=B210')),
             uhd.stream_args(
                 cpu_format="fc32",
-                args='',
+                args='peak=0.003906',
                 channels=list(range(0,1)),
             ),
             "tx_pkt_len",
@@ -190,65 +192,34 @@ class RRadsatRadioService(gr.top_block, Qt.QWidget):
         )
         self.trxvuAx25Framer_0.set_max_output_buffer(8192)
         self.trxvuAx25Deframer_0 = trxvuAx25Deframer()
-        self.qtgui_time_sink_x_0_1_0 = qtgui.time_sink_f(
-            8*32, #size
-            txSampleRate, #samp_rate
-            "", #name
-            1, #number of inputs
+        self.qtgui_sink_x_1_0 = qtgui.sink_c(
+            512, #fftsize
+            window.WIN_BLACKMAN_hARRIS, #wintype
+            rxBaseband, #fc
+            rxSampleRate, #bw
+            "Rx Spectrum (Post-AGC)", #name
+            True, #plotfreq
+            False, #plotwaterfall
+            True, #plottime
+            False, #plotconst
             None # parent
         )
-        self.qtgui_time_sink_x_0_1_0.set_update_time(0.016)
-        self.qtgui_time_sink_x_0_1_0.set_y_axis(-1, 1)
+        self.qtgui_sink_x_1_0.set_update_time(1.0/10)
+        self._qtgui_sink_x_1_0_win = sip.wrapinstance(self.qtgui_sink_x_1_0.qwidget(), Qt.QWidget)
 
-        self.qtgui_time_sink_x_0_1_0.set_y_label('Amplitude', "")
+        self.qtgui_sink_x_1_0.enable_rf_freq(False)
 
-        self.qtgui_time_sink_x_0_1_0.enable_tags(True)
-        self.qtgui_time_sink_x_0_1_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, 0.0, 0, 0, "pkt_length")
-        self.qtgui_time_sink_x_0_1_0.enable_autoscale(False)
-        self.qtgui_time_sink_x_0_1_0.enable_grid(False)
-        self.qtgui_time_sink_x_0_1_0.enable_axis_labels(False)
-        self.qtgui_time_sink_x_0_1_0.enable_control_panel(False)
-        self.qtgui_time_sink_x_0_1_0.enable_stem_plot(False)
-
-        self.qtgui_time_sink_x_0_1_0.disable_legend()
-
-        labels = ['Signal 1', 'Signal 2', 'Signal 3', 'Signal 4', 'Signal 5',
-            'Signal 6', 'Signal 7', 'Signal 8', 'Signal 9', 'Signal 10']
-        widths = [1, 1, 1, 1, 1,
-            1, 1, 1, 1, 1]
-        colors = ['blue', 'red', 'green', 'black', 'cyan',
-            'magenta', 'yellow', 'dark red', 'dark green', 'dark blue']
-        alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
-            1.0, 1.0, 1.0, 1.0, 1.0]
-        styles = [1, 1, 1, 1, 1,
-            1, 1, 1, 1, 1]
-        markers = [-1, -1, -1, -1, -1,
-            -1, -1, -1, -1, -1]
-
-
-        for i in range(1):
-            if len(labels[i]) == 0:
-                self.qtgui_time_sink_x_0_1_0.set_line_label(i, "Data {0}".format(i))
-            else:
-                self.qtgui_time_sink_x_0_1_0.set_line_label(i, labels[i])
-            self.qtgui_time_sink_x_0_1_0.set_line_width(i, widths[i])
-            self.qtgui_time_sink_x_0_1_0.set_line_color(i, colors[i])
-            self.qtgui_time_sink_x_0_1_0.set_line_style(i, styles[i])
-            self.qtgui_time_sink_x_0_1_0.set_line_marker(i, markers[i])
-            self.qtgui_time_sink_x_0_1_0.set_line_alpha(i, alphas[i])
-
-        self._qtgui_time_sink_x_0_1_0_win = sip.wrapinstance(self.qtgui_time_sink_x_0_1_0.qwidget(), Qt.QWidget)
-        self.tabs_grid_layout_0.addWidget(self._qtgui_time_sink_x_0_1_0_win, 4, 0, 1, 1)
-        for r in range(4, 5):
-            self.tabs_grid_layout_0.setRowStretch(r, 1)
+        self.tabs_grid_layout_1.addWidget(self._qtgui_sink_x_1_0_win, 3, 0, 1, 1)
+        for r in range(3, 4):
+            self.tabs_grid_layout_1.setRowStretch(r, 1)
         for c in range(0, 1):
-            self.tabs_grid_layout_0.setColumnStretch(c, 1)
+            self.tabs_grid_layout_1.setColumnStretch(c, 1)
         self.qtgui_sink_x_1 = qtgui.sink_c(
             1024, #fftsize
             window.WIN_BLACKMAN_hARRIS, #wintype
             rxBaseband, #fc
             rxSampleRate, #bw
-            "", #name
+            "Rx Spectrum (Pre-AGC)", #name
             True, #plotfreq
             True, #plotwaterfall
             True, #plottime
@@ -287,52 +258,6 @@ class RRadsatRadioService(gr.top_block, Qt.QWidget):
             self.tabs_grid_layout_0.setRowStretch(r, 1)
         for c in range(0, 1):
             self.tabs_grid_layout_0.setColumnStretch(c, 1)
-        self.qtgui_freq_sink_x_0 = qtgui.freq_sink_c(
-            1024, #size
-            window.WIN_BLACKMAN_hARRIS, #wintype
-            rxBaseband, #fc
-            rxSampleRate, #bw
-            "", #name
-            2,
-            None # parent
-        )
-        self.qtgui_freq_sink_x_0.set_update_time(0.016)
-        self.qtgui_freq_sink_x_0.set_y_axis(-250, 1)
-        self.qtgui_freq_sink_x_0.set_y_label('Relative Gain', 'dB')
-        self.qtgui_freq_sink_x_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, 0.0, 0, "")
-        self.qtgui_freq_sink_x_0.enable_autoscale(False)
-        self.qtgui_freq_sink_x_0.enable_grid(True)
-        self.qtgui_freq_sink_x_0.set_fft_average(1.0)
-        self.qtgui_freq_sink_x_0.enable_axis_labels(True)
-        self.qtgui_freq_sink_x_0.enable_control_panel(False)
-        self.qtgui_freq_sink_x_0.set_fft_window_normalized(False)
-
-
-
-        labels = ['Post Filtering', 'Pre Filtering', '', '', '',
-            '', '', '', '', '']
-        widths = [2, 2, 1, 1, 1,
-            1, 1, 1, 1, 1]
-        colors = ["dark green", "dark blue", "green", "black", "cyan",
-            "magenta", "yellow", "dark red", "dark green", "dark blue"]
-        alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
-            1.0, 1.0, 1.0, 1.0, 1.0]
-
-        for i in range(2):
-            if len(labels[i]) == 0:
-                self.qtgui_freq_sink_x_0.set_line_label(i, "Data {0}".format(i))
-            else:
-                self.qtgui_freq_sink_x_0.set_line_label(i, labels[i])
-            self.qtgui_freq_sink_x_0.set_line_width(i, widths[i])
-            self.qtgui_freq_sink_x_0.set_line_color(i, colors[i])
-            self.qtgui_freq_sink_x_0.set_line_alpha(i, alphas[i])
-
-        self._qtgui_freq_sink_x_0_win = sip.wrapinstance(self.qtgui_freq_sink_x_0.qwidget(), Qt.QWidget)
-        self.tabs_grid_layout_1.addWidget(self._qtgui_freq_sink_x_0_win, 1, 0, 1, 1)
-        for r in range(1, 2):
-            self.tabs_grid_layout_1.setRowStretch(r, 1)
-        for c in range(0, 1):
-            self.tabs_grid_layout_1.setColumnStretch(c, 1)
         self.gmskDemod_0 = gmskDemod(
             sampleRate=rxSampleRate,
             samplesPerSymbol=rxSamplesPerSymbol,
@@ -343,8 +268,11 @@ class RRadsatRadioService(gr.top_block, Qt.QWidget):
             samplesPerSymbol=txSamplesPerSymbol,
         )
         self.fskMod_0.set_max_output_buffer(100)
-        self.blocks_char_to_float_0 = blocks.char_to_float(1, 1)
-        self.analog_agc2_xx_0 = analog.agc2_cc(1e-2, 1e-1, 0.5, 1.0)
+        self.epy_block_0 = epy_block_0.blk(upBaseFreq=txBaseband, dnBaseFreq=rxBaseband, gsLat=52.144176, gsLon=-106.61291, noradId=57313)
+        self.blocks_msgpair_to_var_1 = blocks.msg_pair_to_var(self.set_rxBaseband)
+        self.blocks_msgpair_to_var_0 = blocks.msg_pair_to_var(self.set_txBaseband)
+        self.blocks_message_strobe_0 = blocks.message_strobe(pmt.intern("TEST"), 1000)
+        self.analog_agc2_xx_0 = analog.agc2_cc(1E-1, 1E-2, 0.5, 1.0)
         self.analog_agc2_xx_0.set_max_gain(65536)
         self.analog_agc2_xx_0.set_max_output_buffer(1024)
 
@@ -352,22 +280,19 @@ class RRadsatRadioService(gr.top_block, Qt.QWidget):
         ##################################################
         # Connections
         ##################################################
-        self.msg_connect((self.qtgui_freq_sink_x_0, 'freq'), (self.qtgui_freq_sink_x_0, 'freq'))
-        self.msg_connect((self.qtgui_freq_sink_x_0, 'freq'), (self.uhd_usrp_source_0, 'command'))
-        self.msg_connect((self.qtgui_freq_sink_x_0, 'freq'), (self.xlatingFIRfilter, 'freq'))
+        self.msg_connect((self.blocks_message_strobe_0, 'strobe'), (self.epy_block_0, 'update_msg'))
+        self.msg_connect((self.epy_block_0, 'uplk_freq_msg'), (self.blocks_msgpair_to_var_0, 'inpair'))
+        self.msg_connect((self.epy_block_0, 'dnlk_freq_msg'), (self.blocks_msgpair_to_var_1, 'inpair'))
         self.msg_connect((self.trxvuAx25Deframer_0, 'msg_out'), (self.zeromq_push_msg_sink_0, 'in'))
         self.msg_connect((self.zeromq_sub_msg_source_0, 'out'), (self.trxvuAx25Framer_0, 'Info in'))
         self.connect((self.analog_agc2_xx_0, 0), (self.gmskDemod_0, 0))
-        self.connect((self.blocks_char_to_float_0, 0), (self.qtgui_time_sink_x_0_1_0, 0))
+        self.connect((self.analog_agc2_xx_0, 0), (self.qtgui_sink_x_1_0, 0))
         self.connect((self.fskMod_0, 0), (self.qtgui_sink_x_0, 0))
         self.connect((self.fskMod_0, 0), (self.uhd_usrp_sink_0, 0))
         self.connect((self.gmskDemod_0, 2), (self.trxvuAx25Deframer_0, 0))
-        self.connect((self.trxvuAx25Framer_0, 0), (self.blocks_char_to_float_0, 0))
         self.connect((self.trxvuAx25Framer_0, 0), (self.fskMod_0, 0))
-        self.connect((self.uhd_usrp_source_0, 0), (self.qtgui_freq_sink_x_0, 1))
         self.connect((self.uhd_usrp_source_0, 0), (self.xlatingFIRfilter, 0))
         self.connect((self.xlatingFIRfilter, 0), (self.analog_agc2_xx_0, 0))
-        self.connect((self.xlatingFIRfilter, 0), (self.qtgui_freq_sink_x_0, 0))
         self.connect((self.xlatingFIRfilter, 0), (self.qtgui_sink_x_1, 0))
 
 
@@ -421,8 +346,8 @@ class RRadsatRadioService(gr.top_block, Qt.QWidget):
         self.set_rxLowPassFilterTap(firdes.low_pass(1.0, self.rxSampleRate, self.rxLowPassCutoff, 500, window.WIN_HAMMING, 6.76))
         self.set_rxOverSample(ceil(200000 / self.rxSampleRate))
         self.gmskDemod_0.set_sampleRate(self.rxSampleRate)
-        self.qtgui_freq_sink_x_0.set_frequency_range(self.rxBaseband, self.rxSampleRate)
         self.qtgui_sink_x_1.set_frequency_range(self.rxBaseband, self.rxSampleRate)
+        self.qtgui_sink_x_1_0.set_frequency_range(self.rxBaseband, self.rxSampleRate)
         self.uhd_usrp_source_0.set_samp_rate(self.rxSampleRate*self.rxOverSample)
 
     def get_rxLowPassCutoff(self):
@@ -437,8 +362,8 @@ class RRadsatRadioService(gr.top_block, Qt.QWidget):
 
     def set_txSampleRate(self, txSampleRate):
         self.txSampleRate = txSampleRate
+        self.blocks_throttle_0.set_sample_rate(self.txSampleRate)
         self.qtgui_sink_x_0.set_frequency_range(self.txBaseband, self.txSampleRate)
-        self.qtgui_time_sink_x_0_1_0.set_samp_rate(self.txSampleRate)
         self.uhd_usrp_sink_0.set_samp_rate(self.txSampleRate)
 
     def get_txGain(self):
@@ -529,8 +454,8 @@ class RRadsatRadioService(gr.top_block, Qt.QWidget):
 
     def set_rxBaseband(self, rxBaseband):
         self.rxBaseband = rxBaseband
-        self.qtgui_freq_sink_x_0.set_frequency_range(self.rxBaseband, self.rxSampleRate)
         self.qtgui_sink_x_1.set_frequency_range(self.rxBaseband, self.rxSampleRate)
+        self.qtgui_sink_x_1_0.set_frequency_range(self.rxBaseband, self.rxSampleRate)
         self.uhd_usrp_source_0.set_center_freq(self.rxBaseband + self.rxFrequencyOffset*0 + self.rxCorrection, 0)
 
     def get_radsatCallsign(self):
