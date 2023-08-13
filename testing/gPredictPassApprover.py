@@ -75,14 +75,24 @@ class rigControl:
 
 class rotControl:
     def __init__(self):
-        try:
-            self.s = serial.Serial(port = "/dev/ttyUSB0", baudrate = 9600, timeout = 1)
-            self.s.write(("\r\n\r\n\r\n\r\n\r\n\r\n").encode())
-            print(self.s.readline(1024).decode().strip("\n"))
-            print("Connection succesful")
-        except Exception as e:
-            print("Rotator Error :",e)
-            exit()
+        connected = False
+        while not connected:
+            try:
+                self.s = serial.Serial(port = "COM3", baudrate = 9600, timeout = 1)
+                self.s.flush()
+                self.s.write(("c2\r\n").encode())
+                resp = self.s.readline(1024).decode().strip("\n") 
+                print(resp)
+
+                if resp != "":
+                    connected = True
+                    print("Connection succesful")
+
+            except Exception as e:
+                print("Rotator Error :",e)
+                exit()            
+        
+
 
     def setPos(self,az,el):
         self.s.write(("W" + f'{int(float(az)):03}' + " " + f'{int(float(el)):03}' + "\r\n").encode())
@@ -97,11 +107,11 @@ class rotControl:
                 az = azel[3:6]
                 el = azel[11:]
 
-            except ValueError:
+            except Exception as e:
+                print(e)
+                self.s.flush()
                 print("<%s>" % azel)
                 az = el = ""
-                pass
-                
 
         return int(az),int(el)
     
@@ -125,6 +135,9 @@ class rotControl:
         self.s.write(("s\r\n").encode())
         self.s.readline(1024)
 
+    def close(self):
+        print("Closing rotator")
+        self.s.close()
 
 if __name__ == "__main__" :
     gsLat = 52.144176

@@ -4,7 +4,7 @@ from os import path,remove
 
 gsLat = 52.144176
 gsLon = -106.612910
-ISS = 25544
+ISS = 57313
 cmdDelay = 3
 degToler = 1.5
 
@@ -21,25 +21,31 @@ except Exception as e:
     exit()
 
 while True:
-    sleep(cmdDelay)
-    print("\n################################\n")
+    try:
+        sleep(cmdDelay)
+        print("\n################################\n")
 
-    setAz,setEl = rad.getAzEl()
-    getAz,getEl = rot.getPos()
+        setAz,setEl = rad.getAzEl()
+        getAz,getEl = rot.getPos()
 
-    print("Get: Az=%s / El=%s" % (getAz,getEl))
-    print("Set: Az=%s / El=%s" % (setAz,setEl))
+        print("Get: Az=%s / El=%s" % (getAz,getEl))
+        print("Set: Az=%s / El=%s" % (setAz,setEl))
 
-    if -10 <= setEl < 0:
-        rot.setPos(setAz,0)
+        if -10 <= setEl < 0:
+            rot.setPos(setAz,0)
 
-    elif setEl < -10:
-        continue
-
-    else:
-        if (setAz - degToler) <= getAz <= (setAz + degToler) and (setEl - degToler) <= getEl <= (setEl + degToler):
-            print("Within tolerance!")
+        elif setEl < -10:
+            continue
 
         else:
-            print("Adjusting rotator...")
-            rot.setPos(setAz,setEl)
+            if (setAz - degToler) <= getAz <= (setAz + degToler) and (setEl - degToler) <= getEl <= (setEl + degToler):
+                print("Within tolerance!")
+
+            else:
+                print("Adjusting rotator...")
+                rot.setPos(setAz,setEl)
+
+    except Exception as e:
+        print(e)
+        rot.close()
+        exit()
