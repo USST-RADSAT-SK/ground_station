@@ -51,9 +51,13 @@ from trxvuAx25Deframer import trxvuAx25Deframer  # grc-generated hier_block
 from trxvuAx25Framer import trxvuAx25Framer  # grc-generated hier_block
 import RRadsatRadioService_epy_block_0 as epy_block_0  # embedded python block
 
-
-
 from gnuradio import qtgui
+
+try:
+    norID = int(sys.argv[1])
+
+except IndexError:
+    norID = 25544
 
 class RRadsatRadioService(gr.top_block, Qt.QWidget):
 
@@ -268,7 +272,7 @@ class RRadsatRadioService(gr.top_block, Qt.QWidget):
             samplesPerSymbol=txSamplesPerSymbol,
         )
         self.fskMod_0.set_max_output_buffer(100)
-        self.epy_block_0 = epy_block_0.blk(upBaseFreq=txBaseband, dnBaseFreq=rxBaseband, gsLat=52.144176, gsLon=-106.61291, noradId=57313)
+        self.epy_block_0 = epy_block_0.blk(upBaseFreq=txBaseband, dnBaseFreq=rxBaseband, gsLat=52.144176, gsLon=-106.61291, noradId=norID)
         self.blocks_msgpair_to_var_1 = blocks.msg_pair_to_var(self.set_rxBaseband)
         self.blocks_msgpair_to_var_0 = blocks.msg_pair_to_var(self.set_txBaseband)
         self.blocks_message_strobe_0 = blocks.message_strobe(pmt.intern("TEST"), 1000)

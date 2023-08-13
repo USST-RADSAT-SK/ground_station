@@ -1,15 +1,22 @@
 from RadsatGsToolkit import *
 from time import sleep
 from os import path,remove
+import sys
 
 gsLat = 52.144176
 gsLon = -106.612910
-ISS = 57313
+
+try:
+    ISS = int(sys.argv[1])
+
+except IndexError:
+    ISS = 25544
+
 cmdDelay = 3
 degToler = 1.5
 
-if path.isfile("RadsatGsToolkit/active.txt"):
-    remove("RadsatGsToolkit/active.txt")
+if path.isfile("active.txt"):
+    remove("active.txt")
 
 try:
     rot = rotControl()
@@ -25,6 +32,11 @@ while True:
     try:
         sleep(cmdDelay)
         print("\n################################\n")
+        
+        if loopNum == 50:
+            rad.updateTles()
+            loopNum = 0
+        loopNum += 1
 
         setAz,setEl = rad.getAzEl()
         getAz,getEl = rot.getPos()
@@ -45,11 +57,6 @@ while True:
             else:
                 print("Adjusting rotator...")
                 rot.setPos(setAz,setEl)
-
-        if loopNum == 50:
-            rigControl.updateTles()
-
-        loopNum += 1
 
     except Exception as e:
         print(e)

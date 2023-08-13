@@ -20,10 +20,10 @@ class rigControl:
     def updateTles(self):
         timeNow = (self.ts).now()
 
-        epochDelta = timeNow - self.satellite.epoch
+        epochDelta = round(timeNow - self.satellite.epoch,3)
         print("%s days since update" % epochDelta)
 
-        if epochDelta > 1:
+        if epochDelta > 2:
             satellites = load.tle_file(self.url)
             print("Loaded %s satellites" % len(satellites))
 
@@ -93,7 +93,7 @@ class rotControl:
         connected = False
         while not connected:
             try:
-                self.s = serial.Serial(port = "COM3", baudrate = 9600, timeout = 1)
+                self.s = serial.Serial(port = "/dev/ttyUSB0", baudrate = 9600, timeout = 1)
                 self.s.flush()
                 self.s.write(("c2\r\n").encode())
                 resp = self.s.readline(1024).decode().strip("\n") 
