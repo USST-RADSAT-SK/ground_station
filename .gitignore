@@ -55,4 +55,4 @@ coverage.xml
 docs/_build/
 
 # XOR Cipher
-src/RadsatGsToolkit/RGSProtocol/xor_key
+src/RadsatGsToolkit/RGSProtocol/xor/xor_key

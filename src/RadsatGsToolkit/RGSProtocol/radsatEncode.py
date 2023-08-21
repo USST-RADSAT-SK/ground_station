@@ -36,7 +36,7 @@ rxHeader = [["recvTime","preamble","checkSum","length","timestamp","msgID"],
             ]
 
 def xorCipher(msgBytes):
-    with open("./RadsatGsToolkit/RGSProtocol/xor_key","rb") as fk:
+    with open("./RadsatGsToolkit/RGSProtocol/xor/xor_key","rb") as fk:
         key = fk.read()
     msgEncoded = []
 
