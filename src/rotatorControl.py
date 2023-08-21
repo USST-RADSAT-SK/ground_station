@@ -32,12 +32,12 @@ while True:
     try:
         sleep(cmdDelay)
         print("\n################################\n")
-        
+        """
         if loopNum == 50:
             rad.updateTles()
             loopNum = 0
         loopNum += 1
-
+        """
         setAz,setEl = rad.getAzEl()
         getAz,getEl = rot.getPos()
 

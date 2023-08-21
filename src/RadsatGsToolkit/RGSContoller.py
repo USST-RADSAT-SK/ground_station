@@ -96,8 +96,8 @@ class rotControl:
                 self.s = serial.Serial(port = "/dev/ttyUSB0", baudrate = 9600, timeout = 1)
                 self.s.flush()
                 self.s.write(("c2\r\n").encode())
-                resp = self.s.readline(1024).decode().strip("\n") 
-                print(resp)
+                resp = self.s.readline(1024).decode().strip("\n\r") 
+                print("<%s>" % resp)
 
                 if resp != "":
                     connected = True
@@ -118,9 +118,9 @@ class rotControl:
         while az == "" or el == "":
             try:
                 self.s.write(("c2\r\n").encode())
-                azel = self.s.readline(1024).decode().strip("\n") 
-                az = azel[3:6]
-                el = azel[11:]
+                azel = (self.s.readline(1024).decode().strip("\n")).split(" ")
+                az = azel[0][3:]
+                el = azel[2][3:]
 
             except Exception as e:
                 print(e)
