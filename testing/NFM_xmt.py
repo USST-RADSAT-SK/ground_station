@@ -86,7 +86,7 @@ class NFM_xmt(gr.top_block, Qt.QWidget):
         self.usrp_rate = usrp_rate = 576000
         self.volume = volume = 5.0
         self.txGain = txGain = 0
-        self.txBaseband = txBaseband = 145.83E6
+        self.txBaseband = txBaseband = 145.99E6
         self.samp_rate = samp_rate = 48000
         self.pl_freq = pl_freq = 0.0
         self.if_rate = if_rate = int(usrp_rate/2)

@@ -555,7 +555,7 @@ blocks:
     gsLon: '-106.61291'
     maxoutbuf: '0'
     minoutbuf: '0'
-    noradId: '57313'
+    noradId: '57315'
     upBaseFreq: txBaseband
   states:
     _io_cache: ('Doppler Block', 'blk', [('upBaseFreq', '100000000.0'), ('dnBaseFreq',
