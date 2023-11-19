@@ -30,6 +30,7 @@ import sip
 from gnuradio import analog
 from gnuradio import audio
 from gnuradio import blocks
+import pmt
 from gnuradio import filter
 from gnuradio import gr
 from gnuradio.fft import window
@@ -42,6 +43,7 @@ from gnuradio import uhd
 import time
 from gnuradio.qtgui import Range, RangeWidget
 from PyQt5 import QtCore
+import NFM_xmt_epy_block_0 as epy_block_0  # embedded python block
 
 
 
@@ -84,12 +86,19 @@ class NFM_xmt(gr.top_block, Qt.QWidget):
         # Variables
         ##################################################
         self.usrp_rate = usrp_rate = 576000
+        self.samp_rate = samp_rate = 48000
+        self.volume_0 = volume_0 = 0.05
         self.volume = volume = 5.0
         self.txGain = txGain = 0
         self.txBaseband = txBaseband = 145.99E6
-        self.samp_rate = samp_rate = 48000
+        self.sq_lvl = sq_lvl = -50
+        self.samp_rate_0 = samp_rate_0 = 576000
+        self.rxGain = rxGain = 0
+        self.rxBaseband = rxBaseband = 437.8e6
+        self.rf_decim = rf_decim = 3
         self.pl_freq = pl_freq = 0.0
-        self.if_rate = if_rate = int(usrp_rate/2)
+        self.if_rate = if_rate = int(usrp_rate)
+        self.channel_filter = channel_filter = firdes.complex_band_pass(1.0, samp_rate, -3000, 3000, 200, window.WIN_BLACKMAN, 6.76)
         self.PTT = PTT = 0
 
         ##################################################
@@ -101,6 +110,12 @@ class NFM_xmt(gr.top_block, Qt.QWidget):
         self._txGain_range = Range(0, 65, 1, 0, 200)
         self._txGain_win = RangeWidget(self._txGain_range, self.set_txGain, "Tx Gain", "counter_slider", float, QtCore.Qt.Horizontal)
         self.top_layout.addWidget(self._txGain_win)
+        self._sq_lvl_range = Range(-100, 0, 5, -50, 200)
+        self._sq_lvl_win = RangeWidget(self._sq_lvl_range, self.set_sq_lvl, "Squelch", "counter_slider", float, QtCore.Qt.Horizontal)
+        self.top_layout.addWidget(self._sq_lvl_win)
+        self._rxGain_range = Range(0, 100, 1, 0, 200)
+        self._rxGain_win = RangeWidget(self._rxGain_range, self.set_rxGain, "Rx Gain", "counter_slider", float, QtCore.Qt.Horizontal)
+        self.top_layout.addWidget(self._rxGain_win)
         # Create the options list
         self._pl_freq_options = [0.0, 67.0, 71.9, 74.4, 77.0, 79.7, 82.5, 85.4, 88.5, 91.5, 94.8, 97.4, 100.0, 103.5, 107.2, 110.9, 114.8, 118.8, 123.0, 127.3, 131.8, 136.5, 141.3, 146.2, 151.4, 156.7, 162.2, 167.9, 173.8, 179.9, 186.2, 192.8, 203.5, 210.7, 218.1, 225.7, 233.6, 241.8, 250.3]
         # Create the labels list
@@ -124,6 +139,23 @@ class NFM_xmt(gr.top_block, Qt.QWidget):
         self._PTT_callback(self.PTT)
         _PTT_check_box.stateChanged.connect(lambda i: self.set_PTT(self._PTT_choices[bool(i)]))
         self.top_layout.addWidget(_PTT_check_box)
+        self._volume_0_range = Range(0, 1.00, 0.05, 0.05, 200)
+        self._volume_0_win = RangeWidget(self._volume_0_range, self.set_volume_0, "Volume", "slider", float, QtCore.Qt.Horizontal)
+        self.top_layout.addWidget(self._volume_0_win)
+        self.uhd_usrp_source_0 = uhd.usrp_source(
+            ",".join(("serial=31E34AD", 'name=MyB210,product=B210')),
+            uhd.stream_args(
+                cpu_format="fc32",
+                args='peak=0.003906',
+                channels=list(range(0,1)),
+            ),
+        )
+        self.uhd_usrp_source_0.set_samp_rate(samp_rate)
+        self.uhd_usrp_source_0.set_time_unknown_pps(uhd.time_spec(0))
+
+        self.uhd_usrp_source_0.set_center_freq(rxBaseband, 0)
+        self.uhd_usrp_source_0.set_antenna("RX2", 0)
+        self.uhd_usrp_source_0.set_gain(rxGain, 0)
         self.uhd_usrp_sink_0 = uhd.usrp_sink(
             ",".join(("serial=31E34AD", 'name=MyB210,product=B210')),
             uhd.stream_args(
@@ -140,6 +172,41 @@ class NFM_xmt(gr.top_block, Qt.QWidget):
         self.uhd_usrp_sink_0.set_antenna("TX/RX", 0)
         self.uhd_usrp_sink_0.set_gain(txGain, 0)
         self.uhd_usrp_sink_0.set_max_output_buffer(255)
+        self.qtgui_waterfall_sink_x_0 = qtgui.waterfall_sink_c(
+            1024, #size
+            window.WIN_BLACKMAN_hARRIS, #wintype
+            0, #fc
+            samp_rate, #bw
+            "", #name
+            1, #number of inputs
+            None # parent
+        )
+        self.qtgui_waterfall_sink_x_0.set_update_time(0.10)
+        self.qtgui_waterfall_sink_x_0.enable_grid(False)
+        self.qtgui_waterfall_sink_x_0.enable_axis_labels(True)
+
+
+
+        labels = ['', '', '', '', '',
+                  '', '', '', '', '']
+        colors = [0, 0, 0, 0, 0,
+                  0, 0, 0, 0, 0]
+        alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
+                  1.0, 1.0, 1.0, 1.0, 1.0]
+
+        for i in range(1):
+            if len(labels[i]) == 0:
+                self.qtgui_waterfall_sink_x_0.set_line_label(i, "Data {0}".format(i))
+            else:
+                self.qtgui_waterfall_sink_x_0.set_line_label(i, labels[i])
+            self.qtgui_waterfall_sink_x_0.set_color_map(i, colors[i])
+            self.qtgui_waterfall_sink_x_0.set_line_alpha(i, alphas[i])
+
+        self.qtgui_waterfall_sink_x_0.set_intensity_range(-140, 10)
+
+        self._qtgui_waterfall_sink_x_0_win = sip.wrapinstance(self.qtgui_waterfall_sink_x_0.qwidget(), Qt.QWidget)
+
+        self.top_layout.addWidget(self._qtgui_waterfall_sink_x_0_win)
         self.qtgui_sink_x_0 = qtgui.sink_c(
             1024, #fftsize
             window.WIN_BLACKMAN_hARRIS, #wintype
@@ -167,7 +234,14 @@ class NFM_xmt(gr.top_block, Qt.QWidget):
                 2000,
                 window.WIN_BLACKMAN,
                 6.76))
+        self.fft_filter_xxx_0_0 = filter.fft_filter_ccc(rf_decim, channel_filter, 1)
+        self.fft_filter_xxx_0_0.declare_sample_delay(0)
+        self.epy_block_0 = epy_block_0.blk(upBaseFreq=txBaseband, dnBaseFreq=rxBaseband, gsLat=52.144176, gsLon=-106.61291, noradId=25544)
+        self.blocks_multiply_const_vxx_0_0 = blocks.multiply_const_ff(volume)
         self.blocks_multiply_const_vxx_0 = blocks.multiply_const_ff(volume*PTT)
+        self.blocks_msgpair_to_var_1 = blocks.msg_pair_to_var(self.set_rxBaseband)
+        self.blocks_msgpair_to_var_0 = blocks.msg_pair_to_var(self.set_txBaseband)
+        self.blocks_message_strobe_0 = blocks.message_strobe(pmt.intern("TEST"), 1000)
         self.blocks_add_xx_0 = blocks.add_vff(1)
         self.band_pass_filter_0 = filter.fir_filter_fff(
             1,
@@ -180,6 +254,8 @@ class NFM_xmt(gr.top_block, Qt.QWidget):
                 window.WIN_BLACKMAN,
                 6.76))
         self.audio_source_0 = audio.source(48000, '', False)
+        self.audio_sink_0 = audio.sink(48000, '', False)
+        self.analog_simple_squelch_cc_0 = analog.simple_squelch_cc(sq_lvl, 1)
         self.analog_sig_source_x_0 = analog.sig_source_f(samp_rate, analog.GR_SIN_WAVE, pl_freq, 0.15, 0, 0)
         self.analog_nbfm_tx_0 = analog.nbfm_tx(
         	audio_rate=samp_rate,
@@ -188,19 +264,34 @@ class NFM_xmt(gr.top_block, Qt.QWidget):
         	max_dev=5e3,
         	fh=-1.0,
                 )
+        self.analog_nbfm_rx_0 = analog.nbfm_rx(
+        	audio_rate=48000,
+        	quad_rate=(int)(samp_rate_0/rf_decim),
+        	tau=75e-6,
+        	max_dev=5e3,
+          )
 
 
         ##################################################
         # Connections
         ##################################################
+        self.msg_connect((self.blocks_message_strobe_0, 'strobe'), (self.epy_block_0, 'update_msg'))
+        self.msg_connect((self.epy_block_0, 'uplk_freq_msg'), (self.blocks_msgpair_to_var_0, 'inpair'))
+        self.msg_connect((self.epy_block_0, 'dnlk_freq_msg'), (self.blocks_msgpair_to_var_1, 'inpair'))
+        self.connect((self.analog_nbfm_rx_0, 0), (self.blocks_multiply_const_vxx_0_0, 0))
         self.connect((self.analog_nbfm_tx_0, 0), (self.low_pass_filter_0, 0))
         self.connect((self.analog_sig_source_x_0, 0), (self.blocks_add_xx_0, 0))
+        self.connect((self.analog_simple_squelch_cc_0, 0), (self.analog_nbfm_rx_0, 0))
         self.connect((self.audio_source_0, 0), (self.band_pass_filter_0, 0))
         self.connect((self.band_pass_filter_0, 0), (self.blocks_multiply_const_vxx_0, 0))
         self.connect((self.blocks_add_xx_0, 0), (self.analog_nbfm_tx_0, 0))
         self.connect((self.blocks_multiply_const_vxx_0, 0), (self.blocks_add_xx_0, 1))
+        self.connect((self.blocks_multiply_const_vxx_0_0, 0), (self.audio_sink_0, 0))
+        self.connect((self.fft_filter_xxx_0_0, 0), (self.analog_simple_squelch_cc_0, 0))
         self.connect((self.low_pass_filter_0, 0), (self.qtgui_sink_x_0, 0))
         self.connect((self.low_pass_filter_0, 0), (self.uhd_usrp_sink_0, 0))
+        self.connect((self.uhd_usrp_source_0, 0), (self.fft_filter_xxx_0_0, 0))
+        self.connect((self.uhd_usrp_source_0, 0), (self.qtgui_waterfall_sink_x_0, 0))
 
 
     def closeEvent(self, event):
@@ -216,7 +307,24 @@ class NFM_xmt(gr.top_block, Qt.QWidget):
 
     def set_usrp_rate(self, usrp_rate):
         self.usrp_rate = usrp_rate
-        self.set_if_rate(int(self.usrp_rate/2))
+        self.set_if_rate(int(self.usrp_rate))
+
+    def get_samp_rate(self):
+        return self.samp_rate
+
+    def set_samp_rate(self, samp_rate):
+        self.samp_rate = samp_rate
+        self.set_channel_filter(firdes.complex_band_pass(1.0, self.samp_rate, -3000, 3000, 200, window.WIN_BLACKMAN, 6.76))
+        self.analog_sig_source_x_0.set_sampling_freq(self.samp_rate)
+        self.band_pass_filter_0.set_taps(firdes.band_pass(1, self.samp_rate, 300, 5000, 200, window.WIN_BLACKMAN, 6.76))
+        self.qtgui_waterfall_sink_x_0.set_frequency_range(0, self.samp_rate)
+        self.uhd_usrp_source_0.set_samp_rate(self.samp_rate)
+
+    def get_volume_0(self):
+        return self.volume_0
+
+    def set_volume_0(self, volume_0):
+        self.volume_0 = volume_0
 
     def get_volume(self):
         return self.volume
@@ -224,6 +332,7 @@ class NFM_xmt(gr.top_block, Qt.QWidget):
     def set_volume(self, volume):
         self.volume = volume
         self.blocks_multiply_const_vxx_0.set_k(self.volume*self.PTT)
+        self.blocks_multiply_const_vxx_0_0.set_k(self.volume)
 
     def get_txGain(self):
         return self.txGain
@@ -239,13 +348,38 @@ class NFM_xmt(gr.top_block, Qt.QWidget):
         self.txBaseband = txBaseband
         self.uhd_usrp_sink_0.set_center_freq(self.txBaseband, 0)
 
-    def get_samp_rate(self):
-        return self.samp_rate
+    def get_sq_lvl(self):
+        return self.sq_lvl
 
-    def set_samp_rate(self, samp_rate):
-        self.samp_rate = samp_rate
-        self.analog_sig_source_x_0.set_sampling_freq(self.samp_rate)
-        self.band_pass_filter_0.set_taps(firdes.band_pass(1, self.samp_rate, 300, 5000, 200, window.WIN_BLACKMAN, 6.76))
+    def set_sq_lvl(self, sq_lvl):
+        self.sq_lvl = sq_lvl
+        self.analog_simple_squelch_cc_0.set_threshold(self.sq_lvl)
+
+    def get_samp_rate_0(self):
+        return self.samp_rate_0
+
+    def set_samp_rate_0(self, samp_rate_0):
+        self.samp_rate_0 = samp_rate_0
+
+    def get_rxGain(self):
+        return self.rxGain
+
+    def set_rxGain(self, rxGain):
+        self.rxGain = rxGain
+        self.uhd_usrp_source_0.set_gain(self.rxGain, 0)
+
+    def get_rxBaseband(self):
+        return self.rxBaseband
+
+    def set_rxBaseband(self, rxBaseband):
+        self.rxBaseband = rxBaseband
+        self.uhd_usrp_source_0.set_center_freq(self.rxBaseband, 0)
+
+    def get_rf_decim(self):
+        return self.rf_decim
+
+    def set_rf_decim(self, rf_decim):
+        self.rf_decim = rf_decim
 
     def get_pl_freq(self):
         return self.pl_freq
@@ -263,6 +397,13 @@ class NFM_xmt(gr.top_block, Qt.QWidget):
         self.low_pass_filter_0.set_taps(firdes.low_pass(1, self.if_rate, 5000, 2000, window.WIN_BLACKMAN, 6.76))
         self.qtgui_sink_x_0.set_frequency_range(0, self.if_rate)
         self.uhd_usrp_sink_0.set_samp_rate(self.if_rate)
+
+    def get_channel_filter(self):
+        return self.channel_filter
+
+    def set_channel_filter(self, channel_filter):
+        self.channel_filter = channel_filter
+        self.fft_filter_xxx_0_0.set_taps(self.channel_filter)
 
     def get_PTT(self):
         return self.PTT

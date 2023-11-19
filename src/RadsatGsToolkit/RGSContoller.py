@@ -1,6 +1,7 @@
 from skyfield.api import load, wgs84
 import serial
 import time
+import numpy as np
 
 class rigControl:
     def __init__(self,lat,lon,satNum):
@@ -51,20 +52,30 @@ class rigControl:
         else:
             return False
 
-    def getDoppler(self,UL_FREQ,DL_FREQ,updateFiles = False):
-        dist = self.satellite - self.gs
-        position = dist.at((self.ts).now())
-        _, _, _, _, _, satRate = position.frame_latlon_and_rates(self.gs)
+    def getDoppler(self,UL_FREQ,DL_FREQ,updateFiles = True):
+        dt = 1/86400
+        t1 = (self.ts).now() - dt
+        t2 = (self.ts).now()
+        t3 = (self.ts).now() + dt
 
-        ul_doppler = satRate.m_per_s * UL_FREQ / 299792458
-        dl_doppler = - satRate.m_per_s * DL_FREQ / 299792458
+        comp1 = self.satellite.at(t1) - self.gs.at(t1)
+        comp2 = self.satellite.at(t2) - self.gs.at(t2)
+        comp3 = self.satellite.at(t3) - self.gs.at(t3)
+        
+        dists = [comp1.distance().m,comp2.distance().m,comp3.distance().m]
+        satRate = (np.gradient(dists))[2]
+
+        ul_doppler = satRate * UL_FREQ / 299792458
+        dl_doppler = -satRate * DL_FREQ / 299792458
+ 
+        print("Sat Rate:",satRate)
 
         print('UL Doppler: {:.1f} Hz'.format(ul_doppler))
         print('DL Doppler: {:.1f} Hz'.format(dl_doppler))
 
         UL_FREQ_shifted = UL_FREQ + ul_doppler
         DL_FREQ_shifted = DL_FREQ + dl_doppler
-
+        
         if updateFiles:
             timeTime = time.time()
             with open("ul_doppler.txt","w") as ul, open("dl_doppler.txt","w") as dl:

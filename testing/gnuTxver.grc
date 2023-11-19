@@ -54,7 +54,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: int(usrp_rate/2)
+    value: int(usrp_rate)
   states:
     bus_sink: false
     bus_source: false

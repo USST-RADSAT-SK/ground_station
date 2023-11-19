@@ -86,6 +86,7 @@ class NFM_rcv(gr.top_block, Qt.QWidget):
         ##################################################
         self.samp_rate = samp_rate = 576000
         self.volume = volume = 0.05
+        self.txBaseband = txBaseband = 145.83e6
         self.sq_lvl = sq_lvl = -50
         self.rxGain = rxGain = 0
         self.rxBaseband = rxBaseband = 437.8e6
@@ -155,10 +156,10 @@ class NFM_rcv(gr.top_block, Qt.QWidget):
         self.top_layout.addWidget(self._qtgui_waterfall_sink_x_0_win)
         self.fft_filter_xxx_0_0 = filter.fft_filter_ccc(rf_decim, channel_filter, 1)
         self.fft_filter_xxx_0_0.declare_sample_delay(0)
-        self.epy_block_0 = epy_block_0.blk(upBaseFreq=rxBaseband, dnBaseFreq=rxBaseband, gsLat=52.144176, gsLon=-106.61291, noradId=25544)
+        self.epy_block_0 = epy_block_0.blk(upBaseFreq=txBaseband, dnBaseFreq=rxBaseband, gsLat=52.144176, gsLon=-106.61291, noradId=25544)
         self.blocks_multiply_const_vxx_0_0 = blocks.multiply_const_ff(volume)
         self.blocks_msgpair_to_var_1 = blocks.msg_pair_to_var(self.set_rxBaseband)
-        self.blocks_message_strobe_0 = blocks.message_strobe(pmt.intern("TEST"), 1000)
+        self.blocks_message_strobe_0 = blocks.message_strobe(pmt.intern("TEST"), 500)
         self.audio_sink_0 = audio.sink(48000, '', False)
         self.analog_simple_squelch_cc_0 = analog.simple_squelch_cc(sq_lvl, 1)
         self.analog_nbfm_rx_0 = analog.nbfm_rx(
@@ -205,6 +206,12 @@ class NFM_rcv(gr.top_block, Qt.QWidget):
     def set_volume(self, volume):
         self.volume = volume
         self.blocks_multiply_const_vxx_0_0.set_k(self.volume)
+
+    def get_txBaseband(self):
+        return self.txBaseband
+
+    def set_txBaseband(self, txBaseband):
+        self.txBaseband = txBaseband
 
     def get_sq_lvl(self):
         return self.sq_lvl

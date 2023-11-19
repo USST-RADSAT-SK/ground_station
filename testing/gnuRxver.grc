@@ -61,7 +61,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [288, 12.0]
+    coordinate: [280, 12.0]
     rotation: 0
     state: true
 - name: rxBaseband
@@ -73,7 +73,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [200, 68.0]
+    coordinate: [192, 68.0]
     rotation: 0
     state: enabled
 - name: rxGain
@@ -106,7 +106,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [200, 12.0]
+    coordinate: [192, 12.0]
     rotation: 0
     state: enabled
 - name: sq_lvl
@@ -128,6 +128,18 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [536, 12.0]
+    rotation: 0
+    state: enabled
+- name: txBaseband
+  id: variable
+  parameters:
+    comment: ''
+    value: 145.83e6
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [192, 124.0]
     rotation: 0
     state: enabled
 - name: volume
@@ -213,7 +225,7 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     msg: pmt.intern("TEST")
-    period: '1000'
+    period: '500'
   states:
     bus_sink: false
     bus_source: false
@@ -261,26 +273,32 @@ blocks:
       \ of your block. The arguments to __init__  will\nbe the parameters. All of\
       \ them are required to have default values!\n\"\"\"\nimport numpy as np\nfrom\
       \ gnuradio import gr\nimport pmt\n\nfrom skyfield.api import load, wgs84\nimport\
-      \ serial\n\nclass rigControl:\n    def __init__(self,lat,lon,satNum):\n    \
-      \    self.ts = load.timescale()\n\n        self.gs = wgs84.latlon(lat,lon)\n\
-      \n        url = 'http://celestrak.org/NORAD/elements/active.txt'\n        satellites\
-      \ = load.tle_file(url)\n        print(\"Loaded %s satellites\" % len(satellites))\n\
-      \n        catalog = {sat.model.satnum: sat for sat in satellites}\n        self.satellite\
-      \ = catalog[satNum]\n        print(self.satellite)\n\n    def getAzEl(self):\n\
+      \ serial\nimport time\n\nclass rigControl:\n    def __init__(self,lat,lon,satNum):\n\
+      \        self.ts = load.timescale()\n\n        self.gs = wgs84.latlon(lat,lon)\n\
+      \n        satellites = load.tle_file(\"/home/radsat-gs/Desktop/austinsWorkspace/ground_station/src/active.txt\"\
+      )\n        print(\"Loaded %s satellites\" % len(satellites))\n\n        catalog\
+      \ = {sat.model.satnum: sat for sat in satellites}\n        self.satellite =\
+      \ catalog[satNum]\n        print(self.satellite)\n\n    def getAzEl(self):\n\
       \        dist = self.satellite - self.gs\n        position = dist.at((self.ts).now())\n\
-      \n        el, az, _ = position.altaz()\n\n        print('Azimuth:', az)\n  \
-      \      print('Elevation:', el)\n        return az.degrees, el.degrees\n\n  \
-      \  def isPass(self):\n        _, el = self.getAzEl()\n        \n        print(\"\
-      Elevation = %s degrees\" % el)\n\n        if el > 5:\n            return True\n\
-      \        else:\n            return False\n\n    def getDoppler(self,UL_FREQ,DL_FREQ):\n\
-      \        dist = self.satellite - self.gs\n        position = dist.at((self.ts).now())\n\
-      \        _, _, _, _, _, satRate = position.frame_latlon_and_rates(self.gs)\n\
-      \n        ul_doppler = satRate.m_per_s * UL_FREQ / 299792458\n        dl_doppler\
-      \ = - satRate.m_per_s * DL_FREQ / 299792458\n\n        print('UL Doppler: {:.1f}\
+      \n        el, az, _ = position.altaz()\n\n        return az.degrees, el.degrees\n\
+      \n    def isPass(self):\n        _, el = self.getAzEl()\n\n        if el > 5:\n\
+      \            return True\n        else:\n            return False\n\n    def\
+      \ getDoppler(self,UL_FREQ,DL_FREQ,updateFiles = True):\n        dt = 1/86400\n\
+      \        t1 = (self.ts).now() - dt\n        t2 = (self.ts).now()\n        t3\
+      \ = (self.ts).now() + dt\n\n        comp1 = self.satellite.at(t1) - self.gs.at(t1)\n\
+      \        comp2 = self.satellite.at(t2) - self.gs.at(t2)\n        comp3 = self.satellite.at(t3)\
+      \ - self.gs.at(t3)\n        \n        dists = [comp1.distance().m,comp2.distance().m,comp3.distance().m]\n\
+      \        satRate = (np.gradient(dists))[2]\n\n        ul_doppler = satRate *\
+      \ UL_FREQ / 299792458\n        dl_doppler = -satRate * DL_FREQ / 299792458\n\
+      \n        print(\"Sat Rate: %s\" % satRate)\n\n        print('UL Doppler: {:.1f}\
       \ Hz'.format(ul_doppler))\n        print('DL Doppler: {:.1f} Hz'.format(dl_doppler))\n\
       \n        UL_FREQ_shifted = UL_FREQ + ul_doppler\n        DL_FREQ_shifted =\
-      \ DL_FREQ + dl_doppler\n\n        return UL_FREQ_shifted, DL_FREQ_shifted\n\n\
-      \    def getPassTimes(self, year, month, day, el = 5):\n        start = self.ts.utc(year,month,day)\n\
+      \ DL_FREQ + dl_doppler\n        \n        if updateFiles:\n            timeTime\
+      \ = time.time()\n            with open(\"ul_doppler.txt\",\"w\") as ul, open(\"\
+      dl_doppler.txt\",\"w\") as dl:\n                ul.write(str(timeTime) + \"\
+      \ \" + str(ul_doppler))\n                dl.write(str(timeTime) + \" \" + str(dl_doppler))\n\
+      \                print()\n\n\n        return UL_FREQ_shifted, DL_FREQ_shifted\n\
+      \n    def getPassTimes(self, year, month, day, el = 5):\n        start = self.ts.utc(year,month,day)\n\
       \        stop  = self.ts.utc(year,month,day + 1)\n\n        t,events = self.satellite.find_events(self.gs,start,stop,altitude_degrees\
       \ = 5.0)\n        eventNames = 'rise above %s\xB0' % el, 'culminate', 'set below\
       \ 5\xB0'\n        for ti, event in zip(t, events):\n            name = eventNames[event]\n\
@@ -313,7 +331,7 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     noradId: '25544'
-    upBaseFreq: rxBaseband
+    upBaseFreq: txBaseband
   states:
     _io_cache: ('Doppler Block', 'blk', [('upBaseFreq', '100000000.0'), ('dnBaseFreq',
       '100000000.0'), ('gsLat', '52.144176'), ('gsLon', '-106.61291'), ('noradId',
