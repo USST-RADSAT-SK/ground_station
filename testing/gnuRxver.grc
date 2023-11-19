@@ -287,19 +287,24 @@ blocks:
       \        t1 = (self.ts).now() - dt\n        t2 = (self.ts).now()\n        t3\
       \ = (self.ts).now() + dt\n\n        comp1 = self.satellite.at(t1) - self.gs.at(t1)\n\
       \        comp2 = self.satellite.at(t2) - self.gs.at(t2)\n        comp3 = self.satellite.at(t3)\
-      \ - self.gs.at(t3)\n        \n        dists = [comp1.distance().m,comp2.distance().m,comp3.distance().m]\n\
+      \ - self.gs.at(t3)\n\n        dists = [comp1.distance().m,comp2.distance().m,comp3.distance().m]\n\
       \        satRate = (np.gradient(dists))[2]\n\n        ul_doppler = satRate *\
-      \ UL_FREQ / 299792458\n        dl_doppler = -satRate * DL_FREQ / 299792458\n\
-      \n        print(\"Sat Rate: %s\" % satRate)\n\n        print('UL Doppler: {:.1f}\
+      \ UL_FREQ / 299792458\n        dl_doppler = satRate * DL_FREQ / 299792458\n\
+      \ \n        print(\"Sat Rate:\",satRate)\n\n        print('UL Doppler: {:.1f}\
       \ Hz'.format(ul_doppler))\n        print('DL Doppler: {:.1f} Hz'.format(dl_doppler))\n\
-      \n        UL_FREQ_shifted = UL_FREQ + ul_doppler\n        DL_FREQ_shifted =\
-      \ DL_FREQ + dl_doppler\n        \n        if updateFiles:\n            timeTime\
-      \ = time.time()\n            with open(\"ul_doppler.txt\",\"w\") as ul, open(\"\
-      dl_doppler.txt\",\"w\") as dl:\n                ul.write(str(timeTime) + \"\
-      \ \" + str(ul_doppler))\n                dl.write(str(timeTime) + \" \" + str(dl_doppler))\n\
-      \                print()\n\n\n        return UL_FREQ_shifted, DL_FREQ_shifted\n\
-      \n    def getPassTimes(self, year, month, day, el = 5):\n        start = self.ts.utc(year,month,day)\n\
-      \        stop  = self.ts.utc(year,month,day + 1)\n\n        t,events = self.satellite.find_events(self.gs,start,stop,altitude_degrees\
+      \n        if comp3.distance().m <= comp1.distance().m: # Approaching\n     \
+      \       UL_FREQ_shifted = UL_FREQ - ul_doppler\n            DL_FREQ_shifted\
+      \ = DL_FREQ + dl_doppler\n            print(\"Approaching\")\n\n        elif\
+      \ comp3.distance().m > comp1.distance().m: # Leaving\n            UL_FREQ_shifted\
+      \ = UL_FREQ + ul_doppler\n            DL_FREQ_shifted = DL_FREQ - dl_doppler\n\
+      \            print(\"Leaving\")        \n\n        if updateFiles:\n       \
+      \     timeTime = time.time()\n            with open(\"ul_doppler.txt\",\"w\"\
+      ) as ul, open(\"dl_doppler.txt\",\"w\") as dl:\n                ul.write(str(timeTime)\
+      \ + \" \" + str(ul_doppler))\n                dl.write(str(timeTime) + \" \"\
+      \ + str(dl_doppler))\n                print()\n\n\n        return UL_FREQ_shifted,\
+      \ DL_FREQ_shifted\n\n    def getPassTimes(self, year, month, day, el = 5):\n\
+      \        start = self.ts.utc(year,month,day)\n        stop  = self.ts.utc(year,month,day\
+      \ + 1)\n\n        t,events = self.satellite.find_events(self.gs,start,stop,altitude_degrees\
       \ = 5.0)\n        eventNames = 'rise above %s\xB0' % el, 'culminate', 'set below\
       \ 5\xB0'\n        for ti, event in zip(t, events):\n            name = eventNames[event]\n\
       \            print(ti.utc_strftime('%Y %b %d %H:%M:%S'), name)\n\n        return\

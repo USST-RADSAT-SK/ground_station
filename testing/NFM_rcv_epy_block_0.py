@@ -51,21 +51,28 @@ class rigControl:
         comp1 = self.satellite.at(t1) - self.gs.at(t1)
         comp2 = self.satellite.at(t2) - self.gs.at(t2)
         comp3 = self.satellite.at(t3) - self.gs.at(t3)
-        
+
         dists = [comp1.distance().m,comp2.distance().m,comp3.distance().m]
         satRate = (np.gradient(dists))[2]
 
         ul_doppler = satRate * UL_FREQ / 299792458
-        dl_doppler = -satRate * DL_FREQ / 299792458
-
-        print("Sat Rate: %s" % satRate)
+        dl_doppler = satRate * DL_FREQ / 299792458
+ 
+        print("Sat Rate:",satRate)
 
         print('UL Doppler: {:.1f} Hz'.format(ul_doppler))
         print('DL Doppler: {:.1f} Hz'.format(dl_doppler))
 
-        UL_FREQ_shifted = UL_FREQ + ul_doppler
-        DL_FREQ_shifted = DL_FREQ + dl_doppler
-        
+        if comp3.distance().m <= comp1.distance().m: # Approaching
+            UL_FREQ_shifted = UL_FREQ - ul_doppler
+            DL_FREQ_shifted = DL_FREQ + dl_doppler
+            print("Approaching")
+
+        elif comp3.distance().m > comp1.distance().m: # Leaving
+            UL_FREQ_shifted = UL_FREQ + ul_doppler
+            DL_FREQ_shifted = DL_FREQ - dl_doppler
+            print("Leaving")        
+
         if updateFiles:
             timeTime = time.time()
             with open("ul_doppler.txt","w") as ul, open("dl_doppler.txt","w") as dl:
