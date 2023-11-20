@@ -504,7 +504,7 @@ blocks:
       \ of your block. The arguments to __init__  will\nbe the parameters. All of\
       \ them are required to have default values!\n\"\"\"\nimport numpy as np\nfrom\
       \ gnuradio import gr\nimport pmt\n\nfrom skyfield.api import load, wgs84\nimport\
-      \ serial\nimport time\n\nclass rigControl:\n    def __init__(self,lat,lon,satNum):\n\
+      \ serial\nimport time\nimport sys\n\nclass rigControl:\n    def __init__(self,lat,lon,satNum):\n\
       \        self.ts = load.timescale()\n\n        self.gs = wgs84.latlon(lat,lon)\n\
       \n        satellites = load.tle_file(\"/home/radsat-gs/Desktop/austinsWorkspace/ground_station/src/active.txt\"\
       )\n        print(\"Loaded %s satellites\" % len(satellites))\n\n        catalog\
@@ -542,13 +542,15 @@ blocks:
       \ t,events\n\n\nclass blk(gr.sync_block):  # other base classes are basic_block,\
       \ decim_block, interp_block\n    \"\"\"Embedded Python Block example - a simple\
       \ multiply const\"\"\"\n\n    def __init__(self, upBaseFreq=100e6, dnBaseFreq=100e6,\
-      \ gsLat=52.144176, gsLon=-106.612910, noradId=25544):\n        \"\"\"arguments\
-      \ to this function show up as parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n\
-      \            self,\n            name='Doppler Block',   # will show up in GRC\n\
-      \            in_sig=None,\n            out_sig=None\n        )\n        \n \
-      \       self.uplinkFreq = upBaseFreq\n        self.dnlinkFreq = dnBaseFreq\n\
-      \        self.controller = rigControl(gsLat, gsLon, noradId)\n        \n   \
-      \     # Register message ports\n        self.message_port_register_out(pmt.intern('uplk_freq_msg'))\n\
+      \ gsLat=52.144176, gsLon=-106.612910):\n        \"\"\"arguments to this function\
+      \ show up as parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n    \
+      \        self,\n            name='Doppler Block',   # will show up in GRC\n\
+      \            in_sig=None,\n            out_sig=None\n        )\n\n        try:\n\
+      \            noradId = int(sys.argv[1])\n\n        except IndexError:\n    \
+      \        print(\"No TLE given, defaulting to ISS = 25544\\n\")\n           \
+      \ noradId = 25544\n\n        self.uplinkFreq = upBaseFreq\n        self.dnlinkFreq\
+      \ = dnBaseFreq\n        self.controller = rigControl(gsLat, gsLon, noradId)\n\
+      \        \n        # Register message ports\n        self.message_port_register_out(pmt.intern('uplk_freq_msg'))\n\
       \        self.message_port_register_out(pmt.intern('dnlk_freq_msg'))\n     \
       \   self.message_port_register_out(pmt.intern('pass_msg'))\n        self.message_port_register_in(pmt.intern('update_msg'))\n\
       \        self.set_msg_handler(pmt.intern('update_msg'), self.sendInfo)\n   \
@@ -566,14 +568,13 @@ blocks:
     gsLon: '-106.61291'
     maxoutbuf: '0'
     minoutbuf: '0'
-    noradId: '57315'
     upBaseFreq: txBaseband
   states:
     _io_cache: ('Doppler Block', 'blk', [('upBaseFreq', '100000000.0'), ('dnBaseFreq',
-      '100000000.0'), ('gsLat', '52.144176'), ('gsLon', '-106.61291'), ('noradId',
-      '25544')], [('update_msg', 'message', 1)], [('pass_msg', 'message', 1), ('dnlk_freq_msg',
-      'message', 1), ('uplk_freq_msg', 'message', 1)], 'Embedded Python Block example
-      - a simple multiply const', [])
+      '100000000.0'), ('gsLat', '52.144176'), ('gsLon', '-106.61291')], [('update_msg',
+      'message', 1)], [('pass_msg', 'message', 1), ('dnlk_freq_msg', 'message', 1),
+      ('uplk_freq_msg', 'message', 1)], 'Embedded Python Block example - a simple
+      multiply const', [])
     bus_sink: false
     bus_source: false
     bus_structure: null

@@ -2,6 +2,7 @@ from skyfield.api import load, wgs84
 import serial
 import time
 import numpy as np
+import os
 
 class rigControl:
     def __init__(self,lat,lon,satNum):
@@ -11,26 +12,33 @@ class rigControl:
         self.gs = wgs84.latlon(lat,lon)
 
         self.url = 'http://celestrak.org/NORAD/elements/active.txt'
-        satellites = load.tle_file(self.url)
-        print("Loaded %s satellites" % len(satellites))
+        self.path = "/home/radsat-gs/Desktop/austinsWorkspace/ground_station/src/active.txt"
+        
+        self.updateTles()
+
+
+    def updateTles(self):
+        
+        noFile = False
+
+        try:
+            fileTimeDelta = round((time.time() - os.path.getmtime(self.path))/86400,3)
+            print("%s days since TLE file update" % fileTimeDelta)
+        
+        except FileNotFoundError:
+            print("TLE file not found! Regenerating...")
+            fileTimeDelta = 100
+
+        if fileTimeDelta > 1 or noFile:
+            satellites = load.tle_file(self.url)
+            print("Loaded %s satellites from new file" % len(satellites))
+        else:
+            satellites = load.tle_file(self.path)
 
         catalog = {sat.model.satnum: sat for sat in satellites}
         self.satellite = catalog[self.satNum]
         print(self.satellite)
 
-    def updateTles(self):
-        timeNow = (self.ts).now()
-
-        epochDelta = round(timeNow - self.satellite.epoch,3)
-        print("%s days since update" % epochDelta)
-
-        if epochDelta > 2:
-            satellites = load.tle_file(self.url)
-            print("Loaded %s satellites" % len(satellites))
-
-            catalog = {sat.model.satnum: sat for sat in satellites}
-            self.satellite = catalog[self.satNum]
-            print(self.satellite)
 
     def getAzEl(self):
         dist = self.satellite - self.gs
@@ -183,9 +191,3 @@ if __name__ == "__main__" :
     ISS = 25544
     
     radsat = rigControl(gsLat,gsLon,ISS)
-    radsat.updateTles()
-
-    while True:
-        radsat.getDoppler(UL_FREQ,DL_FREQ)
-        print("\n#############################\n")
-        sleep(2)

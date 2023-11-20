@@ -12,7 +12,7 @@ try:
 except IndexError:
     ISS = 25544
 
-cmdDelay = 3
+cmdDelay = 1
 degToler = 1.5
 
 if path.isfile("active.txt"):

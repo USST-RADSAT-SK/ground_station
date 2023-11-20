@@ -268,10 +268,10 @@ class RRadsatRadioService(gr.top_block, Qt.QWidget):
             samplesPerSymbol=txSamplesPerSymbol,
         )
         self.fskMod_0.set_max_output_buffer(100)
-        self.epy_block_0 = epy_block_0.blk(upBaseFreq=txBaseband, dnBaseFreq=rxBaseband, gsLat=52.144176, gsLon=-106.61291, noradId=57315)
+        self.epy_block_0 = epy_block_0.blk(upBaseFreq=txBaseband, dnBaseFreq=rxBaseband, gsLat=52.144176, gsLon=-106.61291)
         self.blocks_msgpair_to_var_1 = blocks.msg_pair_to_var(self.set_rxBaseband)
         self.blocks_msgpair_to_var_0 = blocks.msg_pair_to_var(self.set_txBaseband)
-        self.blocks_message_strobe_0 = blocks.message_strobe(pmt.intern("TEST"), 1000)
+        self.blocks_message_strobe_0 = blocks.message_strobe(pmt.intern("TEST"), 500)
         self.analog_agc2_xx_0 = analog.agc2_cc(1E-1, 1E-2, 0.5, 1.0)
         self.analog_agc2_xx_0.set_max_gain(65536)
         self.analog_agc2_xx_0.set_max_output_buffer(1024)
