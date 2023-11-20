@@ -7,20 +7,17 @@ gsLat = 52.144176
 gsLon = -106.612910
 
 try:
-    ISS = int(sys.argv[1])
+    noradID = int(sys.argv[1])
 
 except IndexError:
-    ISS = 25544
+    noradID = 25544
 
-cmdDelay = 1
+cmdDelay = 2
 degToler = 1.5
-
-if path.isfile("active.txt"):
-    remove("active.txt")
 
 try:
     rot = rotControl()
-    rad = rigControl(gsLat,gsLon,ISS)
+    rad = rigControl(gsLat,gsLon,noradID)
     sleep(2)
 
 except Exception as e:

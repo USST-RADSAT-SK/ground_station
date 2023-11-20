@@ -18,8 +18,6 @@ class rigControl:
 
 
     def updateTles(self):
-        
-        noFile = False
 
         try:
             fileTimeDelta = round((time.time() - os.path.getmtime(self.path))/86400,3)
@@ -29,7 +27,7 @@ class rigControl:
             print("TLE file not found! Regenerating...")
             fileTimeDelta = 100
 
-        if fileTimeDelta > 1 or noFile:
+        if fileTimeDelta > 1:
             satellites = load.tle_file(self.url)
             print("Loaded %s satellites from new file" % len(satellites))
         else:
