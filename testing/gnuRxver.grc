@@ -288,8 +288,8 @@ blocks:
       \ = (self.ts).now() + dt\n\n        comp1 = self.satellite.at(t1) - self.gs.at(t1)\n\
       \        comp2 = self.satellite.at(t2) - self.gs.at(t2)\n        comp3 = self.satellite.at(t3)\
       \ - self.gs.at(t3)\n\n        dists = [comp1.distance().m,comp2.distance().m,comp3.distance().m]\n\
-      \        satRate = (np.gradient(dists))[2]\n\n        ul_doppler = satRate *\
-      \ UL_FREQ / 299792458\n        dl_doppler = satRate * DL_FREQ / 299792458\n\
+      \        satRate = abs((np.gradient(dists))[2])\n\n        ul_doppler = satRate\
+      \ * UL_FREQ / 299792458\n        dl_doppler = satRate * DL_FREQ / 299792458\n\
       \ \n        print(\"Sat Rate:\",satRate)\n\n        print('UL Doppler: {:.1f}\
       \ Hz'.format(ul_doppler))\n        print('DL Doppler: {:.1f} Hz'.format(dl_doppler))\n\
       \n        if comp3.distance().m <= comp1.distance().m: # Approaching\n     \
@@ -804,7 +804,7 @@ blocks:
     nchan: '1'
     num_mboards: '1'
     otw: ''
-    rx_agc0: Default
+    rx_agc0: Disabled
     rx_agc1: Default
     rx_agc10: Default
     rx_agc11: Default

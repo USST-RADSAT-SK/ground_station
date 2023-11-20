@@ -54,7 +54,7 @@ class rigControl:
         comp3 = self.satellite.at(t3) - self.gs.at(t3)
 
         dists = [comp1.distance().m,comp2.distance().m,comp3.distance().m]
-        satRate = (np.gradient(dists))[2]
+        satRate = abs((np.gradient(dists))[2])
 
         ul_doppler = satRate * UL_FREQ / 299792458
         dl_doppler = satRate * DL_FREQ / 299792458

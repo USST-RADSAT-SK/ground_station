@@ -175,7 +175,7 @@ blocks:
     start: '0'
     step: '1'
     stop: '100'
-    value: '0'
+    value: '40'
     widget: counter_slider
   states:
     bus_sink: false
@@ -338,7 +338,7 @@ blocks:
     start: '0'
     step: '1'
     stop: '65'
-    value: '0'
+    value: '48'
     widget: counter_slider
   states:
     bus_sink: false
@@ -519,8 +519,8 @@ blocks:
       \ = (self.ts).now() + dt\n\n        comp1 = self.satellite.at(t1) - self.gs.at(t1)\n\
       \        comp2 = self.satellite.at(t2) - self.gs.at(t2)\n        comp3 = self.satellite.at(t3)\
       \ - self.gs.at(t3)\n\n        dists = [comp1.distance().m,comp2.distance().m,comp3.distance().m]\n\
-      \        satRate = (np.gradient(dists))[2]\n\n        ul_doppler = satRate *\
-      \ UL_FREQ / 299792458\n        dl_doppler = satRate * DL_FREQ / 299792458\n\
+      \        satRate = abs((np.gradient(dists))[2])\n\n        ul_doppler = satRate\
+      \ * UL_FREQ / 299792458\n        dl_doppler = satRate * DL_FREQ / 299792458\n\
       \ \n        print(\"Sat Rate:\",satRate)\n\n        print('UL Doppler: {:.1f}\
       \ Hz'.format(ul_doppler))\n        print('DL Doppler: {:.1f} Hz'.format(dl_doppler))\n\
       \n        if comp3.distance().m <= comp1.distance().m: # Approaching\n     \
@@ -747,7 +747,7 @@ blocks:
     bw: rxSampleRate
     comment: ''
     fc: rxBaseband
-    fftsize: '1024'
+    fftsize: '16384'
     gui_hint: tabs@1:2,0,1,1
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -796,7 +796,7 @@ blocks:
     bus_structure: null
     coordinate: [1024, 796.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: qtgui_time_sink_x_0_1_0
   id: qtgui_time_sink_x
   parameters:
